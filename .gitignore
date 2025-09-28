@@ -40,7 +40,9 @@
 # debug information files
 *.dwo
 
-
+# vs folder
 .vs/
-
+# binaries
 bin/
+# user specific files
+*.user
