@@ -123,14 +123,14 @@ int Beap::pop()
 {
     int minValue = container[0];
     std::swap(container[1], container[size]);
+    size--;
     auto currentLevel = Beap::span(height);
     if (size < (unsigned int)currentLevel.first)
     {
         height--;
     }
-    size--;
-    container.resize(size);
     
+    container.resize(size);
     siftUp(0, 1);
     return minValue;
 }
