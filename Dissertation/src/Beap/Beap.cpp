@@ -1,5 +1,14 @@
 #include "Beap.hpp"
 
+Beap& Beap::operator=(Beap const& rhs)
+{
+    
+
+    
+
+
+}
+
 void Beap::siftUp(int pos, int h)
 {
     int startPos = pos;
@@ -25,6 +34,7 @@ void Beap::siftUp(int pos, int h)
 
     container[pos] = newItem;
     siftDown(startPos, pos, h);
+    
 }
 
 void Beap::siftDown(int startPos, int pos, int startHeight) 
@@ -124,7 +134,7 @@ int Beap::pop()
     int minValue = container[0];
     std::swap(container[1], container[size]);
     size--;
-    auto currentLevel = Beap::span(height);
+    std::pair<int,int> currentLevel = Beap::span(height);
     if (size < (unsigned int)currentLevel.first)
     {
         height--;
@@ -138,7 +148,7 @@ int Beap::pop()
 void Beap::push(int value)
 {
     size++;
-    auto currentLevel = span(height);
+    std::pair<int, int> currentLevel = span(height);
     if (size > (unsigned int)currentLevel.second)
     {
         height++;

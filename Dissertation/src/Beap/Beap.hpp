@@ -15,6 +15,7 @@ public:
 	};
 
 	~Beap() {};
+	Beap& operator=(Beap const&);
 
 	void siftUp(int startPos, int height);
 
