@@ -27,36 +27,45 @@ void Beap::siftUp(int pos, int h)
     siftDown(startPos, pos, h);
 }
 
-void Beap::siftDown(int startPos, int pos, int startHeight) 
+void Beap::siftDown(int startPos, int pos, int childHeight) 
 {
+    // siftDown(0, size-1, height);
+    //std::cout << "pushing " << container[pos] << " from " << pos << " to " << startPos << std::endl;
     int newItem = container[pos];
 
     while (pos > startPos)
     {
-        std::pair<int, int> parents = getParents(startHeight, pos);
-        int minParentPos = getMinIndexIncontainer(parents.first, parents.second);
+        std::pair<int, int> parents = getParents(childHeight, pos);
+        //std::cout << parents.first << ',' << parents.second << " at height " << childHeight << std::endl;
+        int minParentPos = getMaxIndexIncontainer(parents.first, parents.second);
         if (newItem < container[minParentPos])
         {
             container[pos] = container[minParentPos];
             pos = minParentPos;
+            childHeight--;
+            //std::cout << "moved " << container[minParentPos] << " to " << pos << std::endl; 
             continue;
         }
         break;
     }
-
+    //std::cout << newItem << std::endl;
     container[pos] = newItem;
 }
 
-int Beap::getMinIndexIncontainer(int index1, int index2)
+int Beap::getMaxIndexIncontainer(int index1, int index2)
 {
     if (index2 == -1) return index1;
     if (index1 == -1) return index2;
 
-    return container[index1] < container[index2] ? index1 : index2;
+    return container[index1] > container[index2] ? index1 : index2;
 }
 
 std::pair<int, int> Beap::search(int value)
 {
+    if(size <= 0)
+    {
+        return {-1, -1};
+    }
     auto lastLevel = span(height);
 
     int start = lastLevel.first, end = lastLevel.second;
@@ -72,7 +81,7 @@ std::pair<int, int> Beap::search(int value)
                 return { -1,-1 };
             }
 
-            auto diff = idx - start;
+            int diff = idx - start;
             h--;
             lastLevel = span(h);
             start = lastLevel.first, end = lastLevel.second;
@@ -81,7 +90,7 @@ std::pair<int, int> Beap::search(int value)
         }
         else if (value < container[idx])
         {
-            if ((unsigned int)idx == (size - 1))
+            if (idx == (size - 1))
             {
                 auto diff = idx - start;
                 h--;
@@ -95,7 +104,7 @@ std::pair<int, int> Beap::search(int value)
             lastLevel = span(h + 1);
             auto newStart = lastLevel.first, newEnd = lastLevel.second;
             auto newIdx = newStart + diff + 1;
-            if ((unsigned int) newIdx < size)
+            if (newIdx < size)
             {
                 h++;
                 start = newStart;
@@ -121,11 +130,15 @@ std::pair<int, int> Beap::search(int value)
 
 int Beap::pop()
 {
+    if(size <= 0)
+    {
+        throw std::out_of_range("cannot pop empty beap");
+    }
     int minValue = container[0];
-    std::swap(container[1], container[size]);
+    std::swap(container[0], container[size-1]);
     size--;
-    auto currentLevel = Beap::span(height);
-    if (size < (unsigned int)currentLevel.first)
+    std::pair<int, int> currentLevel = Beap::span(height);
+    if (size-1 < currentLevel.first)
     {
         height--;
     }
@@ -138,13 +151,14 @@ int Beap::pop()
 void Beap::push(int value)
 {
     size++;
-    auto currentLevel = span(height);
-    if (size > (unsigned int)currentLevel.second)
+    std::pair<int,int> currentLevel = span(height);
+    //std::cout << currentLevel.first << "," << currentLevel.second << std::endl;
+    if (size-1 > currentLevel.second)
     {
         height++;
     }
     container.push_back(value);
-    siftDown(0, size, 1);
+    siftDown(0, size-1, height);
 } 
 
 void Beap::remove(int value)
@@ -157,16 +171,16 @@ void Beap::remove(int value)
     }
 
     auto level = span(indexAndHeight.second);
-    int start = level.first, end = level.second;
+    int start = level.first; //end = level.second;
 
     std::swap(container[index], container[size]);
-    if (size - 1 == (unsigned int)start)
+    if (size - 1 == start)
     {
         height--;
     }
     size--;
     container.resize(size);
-    if ((unsigned int)index == size)
+    if (index == size)
     {
         // removing the last element in the vector.
         return;
@@ -176,16 +190,21 @@ void Beap::remove(int value)
 
 std::pair<int, int> Beap::span(int h)
 {
-    int start = (h * (h - 1)) / 2 + 1;
+    int start = ((h * (h - 1)) / 2) + 1;
     int end = (h * (h + 1)) / 2;
-    return {start, end};
+    return {start-1, end-1};
+    /*
+    0 - 0*(0-1) / 2 + 1 = 1. 0*(0+1) / 2 = 0 - (1,0) - (0, -1)
+    1 - 1*(1-1)/2 + 1 = 1, 1*(1+1)/2 = 1 = (1,1) - (0, 0)
+    2 - 2*(2-1)/2 + 1 = 2, 2*(2+1)/2 = 3 = (2,3) - (1, 2)
+    */
 }
 
-std::pair<int, int> Beap::getParents(int childHeight, int childIndex) {
-    int parentHeight = childHeight--;
-    auto parentLevel = Beap::span(parentHeight);
-    auto childLevel = Beap::span(childHeight);
-    auto numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
+std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex) {
+    int parentHeight = childHeight - 1;
+    std::pair<int, int> parentLevel = Beap::span(parentHeight);
+    std::pair<int, int> childLevel = Beap::span(childHeight);
+    int numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
 
     if (childIndex == childLevel.first)
     {
@@ -202,10 +221,24 @@ std::pair<int, int> Beap::getParents(int childHeight, int childIndex) {
     return { firstParent, firstParent++ };
 }
 
+/*
+     5
+  10.  15 
+
+     3 
+  10.   15
+5
+
+    3
+  5.  15
+10
+
+*/
+
 std::pair<int, int> Beap::getChildren(int parentheight, int index)
 {
-    auto currentLevel = Beap::span(parentheight);
-    auto numberOfElementsInTheLevel = currentLevel.second - currentLevel.first;
+    std::pair<int,int> currentLevel = Beap::span(parentheight);
+    int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first;
 
     return { index + numberOfElementsInTheLevel, index + numberOfElementsInTheLevel + 1 };
 }
