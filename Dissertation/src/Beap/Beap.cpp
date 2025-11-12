@@ -1,5 +1,14 @@
 #include "Beap.hpp"
 
+Beap& Beap::operator=(Beap const& rhs)
+{
+    
+
+    
+
+
+}
+
 void Beap::siftUp(int pos, int h)
 {
     int startPos = pos;
@@ -25,6 +34,7 @@ void Beap::siftUp(int pos, int h)
 
     container[pos] = newItem;
     siftDown(startPos, pos, h);
+    
 }
 
 void Beap::siftDown(int startPos, int pos, int childHeight) 

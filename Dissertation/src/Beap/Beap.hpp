@@ -16,6 +16,7 @@ public:
 	};
 
 	~Beap() {};
+	Beap& operator=(Beap const&);
 
 	
 
