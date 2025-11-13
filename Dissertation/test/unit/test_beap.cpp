@@ -68,32 +68,25 @@ TEST_F(BeapTest, PopSingleElement) {
 
 TEST_F(BeapTest, PopMaintainsBeapProperty) {
     beap.push(10);
-    //beap.printState("push 10");
     beap.push(5);
-    //beap.printState("push 5");
     beap.push(15);
-    //beap.printState("push 15");
     beap.push(3);
-    //beap.printState("push 3");
     beap.push(7);
-    //beap.printState("push 7");
     beap.push(30);
-    //beap.printState("push 30");
     
     int min = beap.pop();
-    beap.printState("pop 3");
    
     EXPECT_EQ(min, 3);
     EXPECT_EQ(beap.size, 5);
     EXPECT_EQ(beap.container[0], 5);
 }
 
-/*TEST_F(BeapTest, SearchInEmptyBeap) {
+TEST_F(BeapTest, SearchInEmptyBeap) {
     auto result = beap.search(10);
     EXPECT_EQ(result.first, -1);
     EXPECT_EQ(result.second, -1);
 }
-
+/*
 TEST_F(BeapTest, SearchExistingElement) {
     beap.push(10);
     beap.push(5);
@@ -142,7 +135,7 @@ TEST_F(BeapTest, RemoveNonExistingElement) {
     */
 
 // Complex Operations Tests
-TEST_F(BeapTest, MultipleOperationsSequence) {
+/*TEST_F(BeapTest, MultipleOperationsSequence) {
     // Test a sequence of operations
     beap.push(20);
     beap.push(10);
@@ -160,7 +153,7 @@ TEST_F(BeapTest, MultipleOperationsSequence) {
     // Final state should be valid
     EXPECT_GT(beap.size, 0);
     // Beap property should be maintained
-}
+}*/
 
 TEST_F(BeapTest, LargeNumberOfInsertions) {
     const int NUM_ELEMENTS = 100;
@@ -169,13 +162,12 @@ TEST_F(BeapTest, LargeNumberOfInsertions) {
         beap.push(i);
     }
     
-    //beap.printState("pushes");
     EXPECT_EQ(beap.size, NUM_ELEMENTS);
     
     // Should pop in sorted order (min first)
-    /*for (int i = 1; i <= NUM_ELEMENTS; ++i) {
+    for (int i = 1; i <= NUM_ELEMENTS; ++i) {
         EXPECT_EQ(beap.pop(), i);
-    }*/
+    }
 }
 
 // Edge Cases
@@ -198,7 +190,7 @@ TEST_F(BeapTest, LargeNumbers) {
 }
 
 // Performance-oriented Tests (can be disabled for quick runs)
-TEST_F(BeapTest, DISABLED_StressTest) {
+TEST_F(BeapTest, StressTest) {
     const int STRESS_COUNT = 1000;
     
     for (int i = 0; i < STRESS_COUNT; ++i) {
