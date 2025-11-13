@@ -99,7 +99,7 @@ std::pair<int, int> Beap::search(int value)
     {
         return {-1, -1};
     }
-    auto lastLevel = span(height);
+    std::pair<int, int> lastLevel = span(height);
 
     int start = lastLevel.first, end = lastLevel.second;
     int idx = start;
