@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GtaTestDurations xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Executable>C:\Users\Alonso\Code\Dissertation\Dissertation\x64\Debug\DissertationTests.exe</Executable>
+  <TestDurations>
+    <TestDuration Test="BeapTest.ConstructorInitializesCorrectly" Duration="1" />
+    <TestDuration Test="BeapTest.InsertFirstElement" Duration="1" />
+    <TestDuration Test="BeapTest.InsertMultipleElementsMaintainsOrder" Duration="1" />
+    <TestDuration Test="BeapTest.InsertDuplicateValues" Duration="1" />
+    <TestDuration Test="BeapTest.PopFromEmptyBeap" Duration="1" />
+    <TestDuration Test="BeapTest.PopSingleElement" Duration="1" />
+    <TestDuration Test="BeapTest.PopMaintainsBeapProperty" Duration="1" />
+    <TestDuration Test="BeapTest.MultipleOperationsSequence" Duration="0" />
+  </TestDurations>
+</GtaTestDurations>

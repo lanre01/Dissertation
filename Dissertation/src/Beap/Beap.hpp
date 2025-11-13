@@ -36,6 +36,7 @@ public:
 			std::cout << val << " ";
 		}
 		std::cout << " | size=" << size << " height=" << height << std::endl;
+		std::cout.flush();
 	}
 
 private:
