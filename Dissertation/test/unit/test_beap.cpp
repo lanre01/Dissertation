@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Beap/Beap.hpp"  
+#include "../../src/Beap/Beap.hpp"  
 
 class BeapTest : public ::testing::Test {
 protected:
@@ -212,4 +212,3 @@ TEST_F(BeapTest, DISABLED_StressTest) {
         prev = current;
     }
 }
-    

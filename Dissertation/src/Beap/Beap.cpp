@@ -2,64 +2,87 @@
 
 Beap& Beap::operator=(Beap const& rhs)
 {
-    
-
-    
-
-
-}
-
-void Beap::siftUp(int pos, int h)
-{
-    int startPos = pos;
-    int endPos = size;
-    int newItem = container[pos];
-
-    std::pair<int, int> childPair = getChildren(h, pos);
-    int minChildPos = childPair.first;
-
-    while (minChildPos < endPos)
+    if (this == &rhs)
     {
-        if ((childPair.second < endPos) && container[childPair.second] < container[minChildPos])
-        {
-            minChildPos = childPair.second;
-        }
-
-        container[pos] = container[minChildPos];
-        pos = minChildPos;
-        h++;
-        childPair = getChildren(h, pos);
-        minChildPos = childPair.first;
+        return *this;
     }
 
-    container[pos] = newItem;
-    siftDown(startPos, pos, h);
-    
+    container = rhs.container;
+    height = rhs.height;
+    size = rhs.size;
+    return *this;
 }
 
-void Beap::siftDown(int startPos, int pos, int childHeight) 
+void Beap::siftUp(const int pos, const int h)
 {
+    if (container.empty())
+    {
+        return;
+    }
+
+    int currentPos = pos;
+    int currentHeight = h;
+    int newItem = container[pos];
+
+    while (true)
+    {
+        std::pair<int, int> children = getChildren(currentHeight, currentPos);
+        int leftChild = children.first;
+        int rightChild = children.second;
+        //std::cout << "leftChild is " << container[leftChild] << "and rightChild is " << container[rightChild] << std::endl;
+        // Find the smallest child
+        int minChildPos = -1;
+        if (leftChild < size) {
+            minChildPos = leftChild;
+            if (rightChild < size && container[rightChild] < container[leftChild]) {
+                minChildPos = rightChild;
+            }
+        }
+
+        //std::cout << "min child is " << container[minChildPos] << std::endl;
+
+        // If no children or children are larger, we're done
+        if (minChildPos == -1 /* || newItem <= container[minChildPos]*/) {
+            break;
+        }
+
+        // Move the smaller child up
+        container[currentPos] = container[minChildPos];
+        currentPos = minChildPos;
+        currentHeight++;
+    }
+
+    container[currentPos] = newItem;
+    siftDown(pos, currentPos, currentHeight);
+}
+
+void Beap::siftDown(const int startPos, const int pos, const int childHeight) 
+{
+    if (container.empty())
+    {
+        return;
+    }
     // siftDown(0, size-1, height);
     //std::cout << "pushing " << container[pos] << " from " << pos << " to " << startPos << std::endl;
     int newItem = container[pos];
+    int currentPos = pos;
+    int currentHeight = childHeight;
 
-    while (pos > startPos)
+    while (currentPos > startPos)
     {
-        std::pair<int, int> parents = getParents(childHeight, pos);
+        std::pair<int, int> parents = getParents(currentHeight, currentPos);
         //std::cout << parents.first << ',' << parents.second << " at height " << childHeight << std::endl;
-        int minParentPos = getMaxIndexIncontainer(parents.first, parents.second);
-        if (newItem < container[minParentPos])
-        {
-            container[pos] = container[minParentPos];
-            pos = minParentPos;
-            childHeight--;
-            //std::cout << "moved " << container[minParentPos] << " to " << pos << std::endl; 
-            continue;
+        int maxParentPos = getMaxIndexIncontainer(parents.first, parents.second);
+        if (maxParentPos == -1 || newItem >= container[maxParentPos]) {
+            break;
         }
-        break;
+
+        container[currentPos] = container[maxParentPos];
+        currentPos = maxParentPos;
+        currentHeight--;
     }
     //std::cout << newItem << std::endl;
-    container[pos] = newItem;
+    container[currentPos] = newItem;
 }
 
 int Beap::getMaxIndexIncontainer(int index1, int index2)
@@ -163,12 +186,12 @@ void Beap::push(int value)
     size++;
     std::pair<int,int> currentLevel = span(height);
     //std::cout << currentLevel.first << "," << currentLevel.second << std::endl;
-    if (size-1 > currentLevel.second)
+    if (size - 1 > currentLevel.second)
     {
         height++;
     }
     container.push_back(value);
-    siftDown(0, size-1, height);
+    siftDown(0, size - 1, height);
 } 
 
 void Beap::remove(int value)
@@ -226,9 +249,9 @@ std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex
         return { -1, parentLevel.second };
     }
 
-    auto firstParent = childIndex - numberOfElementInTheLevel;
+    int secondParent = childIndex - numberOfElementInTheLevel;
 
-    return { firstParent, firstParent++ };
+    return { secondParent - 1, secondParent};
 }
 
 /*
@@ -245,10 +268,10 @@ std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex
 
 */
 
-std::pair<int, int> Beap::getChildren(int parentheight, int index)
+std::pair<int, int> Beap::getChildren(int parentHeight, int index)
 {
-    std::pair<int,int> currentLevel = Beap::span(parentheight);
-    int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first;
+    std::pair<int,int> currentLevel = Beap::span(parentHeight);
+    int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first + 1;
 
     return { index + numberOfElementsInTheLevel, index + numberOfElementsInTheLevel + 1 };
 }
