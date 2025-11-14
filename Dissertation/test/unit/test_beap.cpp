@@ -29,15 +29,9 @@ TEST_F(BeapTest, InsertFirstElement) {
 
 TEST_F(BeapTest, InsertMultipleElementsMaintainsOrder) {
     beap.push(10);
-    //beap.printState("push 10");
     beap.push(5);
-    //beap.printState("push 5");
     beap.push(15);
-    //beap.printState("push 15");
     beap.push(3);
-    //beap.printState("push 3");
-
-
     
     EXPECT_EQ(beap.size, 4);
     EXPECT_EQ(beap.container[0], 3);
@@ -86,15 +80,15 @@ TEST_F(BeapTest, SearchInEmptyBeap) {
     EXPECT_EQ(result.first, -1);
     EXPECT_EQ(result.second, -1);
 }
-/*
+
 TEST_F(BeapTest, SearchExistingElement) {
     beap.push(10);
     beap.push(5);
     beap.push(15);
     
-    auto result = beap.search(5);
+    std::pair<int, int> result = beap.search(5);
     EXPECT_NE(result.first, -1); 
-    EXPECT_TRUE(result.second >= 0); 
+    EXPECT_EQ(beap.container[result.first], 5); 
 }
 
 TEST_F(BeapTest, SearchNonExistingElement) {
@@ -115,12 +109,15 @@ TEST_F(BeapTest, RemoveExistingElement) {
     beap.push(10);
     beap.push(5);
     beap.push(15);
-    
+    beap.push(3);
+    beap.push(7);
     int initialSize = beap.size;
     beap.remove(5);
-    
     EXPECT_EQ(beap.size, initialSize - 1);
-    EXPECT_NE(beap.container[0], 5); 
+    EXPECT_EQ(beap.container[0], 3); 
+    EXPECT_EQ(beap.container[1], 10);
+    beap.remove(7);
+    EXPECT_EQ(beap.container[2], 15);
 }
 
 TEST_F(BeapTest, RemoveNonExistingElement) {
@@ -129,14 +126,12 @@ TEST_F(BeapTest, RemoveNonExistingElement) {
     
     int initialSize = beap.size;
     beap.remove(99);
-    
     EXPECT_EQ(beap.size, initialSize); 
 }
-    */
+
 
 // Complex Operations Tests
-/*TEST_F(BeapTest, MultipleOperationsSequence) {
-    // Test a sequence of operations
+TEST_F(BeapTest, MultipleOperationsSequence) {
     beap.push(20);
     beap.push(10);
     beap.push(30);
@@ -151,9 +146,9 @@ TEST_F(BeapTest, RemoveNonExistingElement) {
     beap.remove(20);
     
     // Final state should be valid
-    EXPECT_GT(beap.size, 0);
-    // Beap property should be maintained
-}*/
+    EXPECT_EQ(beap.size, 2);
+    EXPECT_EQ(beap.container[0], 25);
+}
 
 TEST_F(BeapTest, LargeNumberOfInsertions) {
     const int NUM_ELEMENTS = 100;
