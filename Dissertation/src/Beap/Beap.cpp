@@ -99,30 +99,62 @@ std::pair<int, int> Beap::search(int value)
     {
         return {-1, -1};
     }
-    std::pair<int, int> lastLevel = span(height);
+
+    int h = height;
+    std::pair<int, int> lastLevel = span(h);
     int end = lastLevel.first;
+    
     if(value == container[end])
     {
-        return {end, height};
+        return {end, h};
     }
     int start = lastLevel.second;
 
-    
-
-    if(start > size)
+    if(start >= size)
     {
-        start = span(height - 1).second;
+        h--;
+        start = span(h).second;
     }
 
     int idx = start;
-    int h = height;
-
+    
     while(true)
     {
+        /*std::cout 
+            << "\n[SEARCH STEP]"
+            << " idx=" << idx
+            << " h=" << h
+            << " value=" << value
+            << " current=" << (idx >= 0 && idx < size ? std::to_string(container[idx]) : "OUT_OF_RANGE")
+            << " | level_span=" << span(h).first << "-" << span(h).second
+            << " | height=" << height
+            << " | size=" << size
+            << std::endl;*/
+        
+        #ifdef DEBUG
+        auto row = span(h);
+        if (idx < row.first || idx > row.second || idx < 0 || idx >= size) {
+            std::cerr << "[INVARIANT BROKEN] idx=" << idx
+                    << " h=" << h
+                    << " span=" << row.first << "-" << row.second
+                    << " size=" << size << std::endl;
+            throw std::logic_error("search left beap geometry");
+        }
+        #endif
+
+        if(idx == end)
+        {
+            return {-1, -1};
+        }
+
         if(value < container[idx])
         {
             std::pair<int, int> parents = getParents(h, idx);
-            idx = parents.first != -1 ? parents.first : parents.second;
+            if(parents.first <= -1)
+            {
+                return {-1, -1};
+            }
+            idx = parents.first;
             h--;
         }
         else if(value > container[idx])
@@ -140,11 +172,6 @@ std::pair<int, int> Beap::search(int value)
         }
         else{
             return {idx, h};
-        }
-
-        if(idx == end)
-        {
-            return {-1, -1};
         }
     }
 }
@@ -207,7 +234,7 @@ void Beap::remove(int value)
     siftUp(index, indexAndHeight.second);
 }
 
-std::pair<int, int> Beap::span(int h)
+inline std::pair<int, int> Beap::span(int h)
 {
     int start = ((h * (h - 1)) / 2) + 1;
     int end = (h * (h + 1)) / 2;
@@ -220,6 +247,7 @@ std::pair<int, int> Beap::span(int h)
 }
 
 std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex) {
+    
     int parentHeight = childHeight - 1;
     std::pair<int, int> parentLevel = Beap::span(parentHeight);
     std::pair<int, int> childLevel = Beap::span(childHeight);
@@ -227,12 +255,12 @@ std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex
 
     if (childIndex == childLevel.first)
     {
-        return { parentLevel.first, -1 };
+        return {-1 ,  parentLevel.first};
     }
 
     if (childIndex == childLevel.second)
     {
-        return { -1, parentLevel.second };
+        return {parentLevel.second, -1};
     }
 
     int secondParent = childIndex - numberOfElementInTheLevel;

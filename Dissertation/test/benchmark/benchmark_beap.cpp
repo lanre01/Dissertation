@@ -189,10 +189,10 @@ BENCHMARK(BM_PushSortedDesc)->Arg(1000)->Arg(5000)->Arg(10000);
 
 BENCHMARK(BM_Pop)->Arg(1000)->Arg(5000)->Arg(10000);
 
-//BENCHMARK(BM_Search)->Arg(10000);
+BENCHMARK(BM_Search)->Arg(10000);
 
-//BENCHMARK(BM_RemoveValue)->Arg(2000)->Arg(5000);
+BENCHMARK(BM_RemoveValue)->Arg(2000)->Arg(5000);
 
-//BENCHMARK(BM_MixedWorkload)->Arg(50000);
+BENCHMARK(BM_MixedWorkload)->Arg(50000);
 
 BENCHMARK_MAIN();

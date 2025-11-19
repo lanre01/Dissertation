@@ -41,11 +41,11 @@ public:
 
 private:
 
-	void siftUp(int startPos, int height);
+	void siftUp(const int pos, const int h);
 
-	void siftDown(int startPos, int endPos, int startHeight);
+	void siftDown(const int startPos, const int pos, const int childHeight) ;
 
-	std::pair<int, int> span(int height);
+	inline std::pair<int, int> span(int height);
 
 	std::pair<int, int> getParents(const int childHeight, const int child);
 
