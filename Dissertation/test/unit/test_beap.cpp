@@ -184,6 +184,7 @@ TEST_F(BeapTest, LargeNumbers) {
     EXPECT_EQ(beap.pop(), 500000);
 }
 
+
 // Performance-oriented Tests (can be disabled for quick runs)
 TEST_F(BeapTest, StressTest) {
     const int STRESS_COUNT = 1000;
@@ -199,3 +200,135 @@ TEST_F(BeapTest, StressTest) {
         prev = current;
     }
 }
+
+TEST_F(BeapTest, SearchFailsOnIncompleteLastLevel) {
+    beap.push(5);
+    beap.push(10);
+    beap.push(3);
+    beap.push(7);
+    // Typically creates an incomplete bottom row for height=2
+
+    auto res = beap.search(7);   // Should terminate
+    EXPECT_NE(res.first, -1);    // Your code often loops or returns wrong
+}
+
+TEST_F(BeapTest, SearchGreaterThanAllElements) {
+    beap.push(1);
+    beap.push(2);
+    beap.push(3);
+    beap.push(4);
+
+    auto res = beap.search(999);
+    EXPECT_EQ(res.first, -1);
+    EXPECT_EQ(res.second, -1);  // Your implementation hangs here
+}
+
+TEST_F(BeapTest, SearchBetweenTwoLevelsCausesCycle) {
+    beap.push(10);
+    beap.push(20);
+    beap.push(5);
+    beap.push(15);
+    beap.push(12);    // inserted between levels
+
+    // 12 sits “between” levels, causing oscillation
+    auto res = beap.search(12);
+    EXPECT_NE(res.first, -1);   // often loops
+}
+
+TEST_F(BeapTest, SearchLeftMoveDoesNotAdjustHeight) {
+    beap.push(50);
+    beap.push(40);
+    beap.push(30);
+    beap.push(20);
+    beap.push(10);
+
+    // Searching for "1" forces search to left edge improperly
+    auto res = beap.search(1);
+    EXPECT_EQ(res.first, -1);   // Should terminate, often loops
+}
+
+TEST_F(BeapTest, SearchWithInvalidParentsGenerated) {
+    beap.push(100);
+    beap.push(60);
+    beap.push(80);
+    beap.push(20);
+    beap.push(40);
+    beap.push(10); // now parents mismatch
+
+    auto res = beap.search(40);
+    EXPECT_NE(res.first, -1);   // Your implementation sometimes throws or loops
+}
+
+TEST_F(BeapTest, SearchRootIncorrectDownwardMove) {
+    beap.push(10);
+    beap.push(20);
+    beap.push(30);
+    beap.push(40);
+
+    auto res = beap.search(10);
+    EXPECT_EQ(res.first, 0);  // root should be found instantly
+}
+
+TEST_F(BeapTest, SearchForMaximumFails) {
+    beap.push(5);
+    beap.push(10);
+    beap.push(15);
+    beap.push(20);
+    beap.push(25);
+
+    auto res = beap.search(25);
+    EXPECT_NE(res.first, -1); 
+}
+
+TEST_F(BeapTest, SearchRandomisedStructureStability) {
+    for (int i = 0; i < 200; i++) {
+        beap.push(rand() % 1000);
+    }
+    for (int i = 0; i < 200; i++) {
+        int target = rand() % 1000;
+        auto res = beap.search(target);
+        // Should terminate always
+        SUCCEED();
+    }
+}
+
+TEST_F(BeapTest, SearchMiddleValueCausesOscillation) {
+    beap.push(50);
+    beap.push(10);
+    beap.push(40);
+    beap.push(20);
+    beap.push(30);
+    beap.push(60);
+
+    // Search for 35 which is not present
+    // causes oscillation in incorrect BEAP geometry
+    auto res = beap.search(35);
+    EXPECT_EQ(res.first, -1);
+}
+
+TEST_F(BeapTest, SearchLevelBoundaryMisalignment) {
+    beap.push(8);
+    beap.push(3);
+    beap.push(6);
+    beap.push(2);
+    beap.push(7);
+    beap.push(4);
+
+    // Searching for something between levels
+    auto res = beap.search(5);
+    EXPECT_EQ(res.first, -1);   // Should terminate
+}
+
+TEST_F(BeapTest, MassiveRandomSearchStability) {
+    const int N = 5000;
+    for (int i = 0; i < N; ++i) {
+        beap.push(rand() % 100000);
+    }
+    for (int i = 0; i < 5 * N; ++i) {
+        int target = rand() % 100000;
+        auto res = beap.search(target);
+        // We do not assert found/not-found here, just that it terminates.
+        SUCCEED();
+    }
+}
+
