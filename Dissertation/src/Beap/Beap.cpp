@@ -95,7 +95,7 @@ int Beap::getMaxIndexIncontainer(int index1, int index2)
 
 std::pair<int, int> Beap::search(int value)
 {
-    if(size <= 0)
+    if(size <= 0 || value < container[0])
     {
         return {-1, -1};
     }
