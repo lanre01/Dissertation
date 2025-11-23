@@ -33,8 +33,11 @@
         "chrono": "cpp",
         "compare": "cpp",
         "algorithm": "cpp",
+<<<<<<< HEAD
         "iostream": "cpp",
         "ostream": "cpp",
+=======
+>>>>>>> optimise
         "any": "cpp",
         "array": "cpp",
         "cctype": "cpp",
@@ -62,9 +65,17 @@
         "format": "cpp",
         "fstream": "cpp",
         "iomanip": "cpp",
+<<<<<<< HEAD
         "istream": "cpp",
         "mutex": "cpp",
         "numbers": "cpp",
+=======
+        "iostream": "cpp",
+        "istream": "cpp",
+        "mutex": "cpp",
+        "numbers": "cpp",
+        "ostream": "cpp",
+>>>>>>> optimise
         "semaphore": "cpp",
         "span": "cpp",
         "sstream": "cpp",
