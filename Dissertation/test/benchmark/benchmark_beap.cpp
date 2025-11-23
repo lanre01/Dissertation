@@ -12,25 +12,14 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-// --------------------------------------------------------
-// Fixture for benchmarks
-// --------------------------------------------------------
 
-class BeapFixture : public benchmark::Fixture {
-public:
-    Beap b;
+void SetUp(const ::benchmark::State& s)  {
+        Beap b = Beap();
+}
 
-    void SetUp(const ::benchmark::State&) override {
-        b = Beap();
-    }
+void TearDown(const ::benchmark::State&) {}
 
-    void TearDown(const ::benchmark::State&) override {}
-};
-
-// --------------------------------------------------------
-// 1. Constructor Benchmark
-// --------------------------------------------------------
-
+// Benchmark beap construction
 static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
         Beap b;
@@ -38,10 +27,7 @@ static void BM_Construct(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 2. Benchmark push() with random data
-// --------------------------------------------------------
-
+// Benchmark pushing random data
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -57,10 +43,8 @@ static void BM_PushRandom(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 3. Benchmark push() with sorted ascending input
-// --------------------------------------------------------
 
+// Benchmark push ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -76,10 +60,8 @@ static void BM_PushSortedAsc(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 4. Benchmark push() with reverse sorted input
-// --------------------------------------------------------
 
+// Benchmark push descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -95,10 +77,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 5. Benchmark pop()
-// --------------------------------------------------------
-
+// Benchmark Pop
 static void BM_Pop(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -113,10 +92,7 @@ static void BM_Pop(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 6. Benchmark search() (random queries)
-// --------------------------------------------------------
-
+// Benchmark search 
 static void BM_Search(benchmark::State& state) {
     size_t count = state.range(0);
 
@@ -133,10 +109,9 @@ static void BM_Search(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 7. Benchmark remove(value)
-// --------------------------------------------------------
 
+
+// Benchmark remove(value)
 static void BM_RemoveValue(benchmark::State& state) {
     size_t count = state.range(0);
 
@@ -152,11 +127,7 @@ static void BM_RemoveValue(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 8. Mixed workload:
-//    40% push, 40% search, 20% pop
-// --------------------------------------------------------
-
+// Benchmark Mixed workload: 40% push, 40% search, 20% pop
 static void BM_MixedWorkload(benchmark::State& state) {
     Beap b;
 
@@ -178,9 +149,6 @@ static void BM_MixedWorkload(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// Register benchmarks
-// --------------------------------------------------------
 
 BENCHMARK(BM_Construct);
 
@@ -190,7 +158,7 @@ BENCHMARK(BM_PushSortedDesc)->Arg(1000)->Arg(5000)->Arg(10000);
 
 BENCHMARK(BM_Pop)->Arg(1000)->Arg(5000)->Arg(10000);
 
-BENCHMARK(BM_Search)->Arg(10000);
+BENCHMARK(BM_Search)->Arg(5000)->Arg(10000);
 
 BENCHMARK(BM_RemoveValue)->Arg(2000)->Arg(5000);
 
