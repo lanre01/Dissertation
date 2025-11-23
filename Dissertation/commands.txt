@@ -1,0 +1,3 @@
+Divert google benchmark result to csv
+./bin/bench_beap --benchmark_out=bench_beap.csv --benchmark_out_format=csv  --benchmark_display_aggregates_only=true
+./bin/bench_stdheap --benchmark_out=bench_heap.csv --benchmark_out_format=csv  --benchmark_display_aggregates_only=true
