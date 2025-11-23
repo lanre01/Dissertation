@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <random>
 #include <algorithm>
-#include <queue>       // for std::priority_queue
+#include <queue>       
 #include <vector>
 
 // Same RNG as Beap benchmark
@@ -15,10 +15,7 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-// --------------------------------------------------------
-// 1. Constructor Benchmark
-// --------------------------------------------------------
-
+// Benchmark heap construction
 static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
         std::priority_queue<int> pq;
@@ -26,17 +23,16 @@ static void BM_Construct(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 2. Benchmark push() with random data
-// --------------------------------------------------------
-
+// Benchmark pushing random data
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        std::priority_queue<int> pq;
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int> pq(v.begin(), v.end());
         state.ResumeTiming();
 
         for (int x : data)
@@ -44,10 +40,7 @@ static void BM_PushRandom(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 3. Benchmark push() with sorted ascending input
-// --------------------------------------------------------
-
+// Benchmark push ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -55,7 +48,12 @@ static void BM_PushSortedAsc(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        std::priority_queue<int> pq;
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int, std::vector<int>> pq(
+            std::less<int>(), 
+            std::move(v)
+        );
         state.ResumeTiming();
 
         for (int x : data) 
@@ -63,10 +61,7 @@ static void BM_PushSortedAsc(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 4. Benchmark push() with sorted descending input
-// --------------------------------------------------------
-
+// Benchmark push descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -74,7 +69,12 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        std::priority_queue<int> pq;
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int, std::vector<int>> pq(
+            std::less<int>(), 
+            std::move(v)
+        );
         state.ResumeTiming();
 
         for (int x : data) 
@@ -82,10 +82,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 5. Benchmark pop()
-// --------------------------------------------------------
-
+// Benchmark pop
 static void BM_Pop(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -100,99 +97,7 @@ static void BM_Pop(benchmark::State& state) {
     }
 }
 
-// --------------------------------------------------------
-// 6. Benchmark search() (simulated)
-// Priority queue cannot search efficiently.
-// We simulate the cost: scan a vector copy.
-// --------------------------------------------------------
 
-static void BM_Search(benchmark::State& state) {
-    size_t count = state.range(0);
-    auto data = generateRandomData(count);
-
-    std::priority_queue<int> pq;
-    for (int x : data) pq.push(x);
-
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
-
-    for (auto _ : state) {
-        int q = dist(rng);
-
-        // simulate linear search (closest comparable operation)
-        bool found = false;
-        auto tmp = data; // simulate scanning container
-        for (int x : tmp)
-            if (x == q) { found = true; break; }
-
-        benchmark::DoNotOptimize(found);
-    }
-}
-
-// --------------------------------------------------------
-// 7. Benchmark remove(value)
-// Priority queue has no fast remove(value).
-// Simulate by rebuilding a heap without that value.
-// --------------------------------------------------------
-
-static void BM_RemoveValue(benchmark::State& state) {
-    size_t count = state.range(0);
-    
-    for (auto _ : state) {
-        auto data = generateRandomData(count);
-
-        state.PauseTiming();
-        std::priority_queue<int> pq;
-        for (int x : data) pq.push(x);
-        state.ResumeTiming();
-
-        // remove each value by rebuilding heap (closest comparable cost)
-        for (int val : data) {
-            std::vector<int> tmp;
-            tmp.reserve(pq.size());
-
-            // extract all into tmp
-            while (!pq.empty()) {
-                int top = pq.top();
-                pq.pop();
-                if (top != val)
-                    tmp.push_back(top);
-            }
-
-            // rebuild heap
-            for (int x : tmp) pq.push(x);
-        }
-    }
-}
-
-// --------------------------------------------------------
-// 8. Mixed workload
-// --------------------------------------------------------
-
-static void BM_MixedWorkload(benchmark::State& state) {
-    std::priority_queue<int> pq;
-
-    std::uniform_int_distribution<int> valdist(1, 1'000'000);
-    std::uniform_int_distribution<int> opdist(1, 100);
-
-    for (auto _ : state) {
-        int op = opdist(rng);
-
-        if (op <= 40) {
-            pq.push(valdist(rng));
-        }
-        else if (op <= 80) {
-            if (!pq.empty())
-                benchmark::DoNotOptimize(pq.top());
-        }
-        else {
-            if (!pq.empty()) pq.pop();
-        }
-    }
-}
-
-// --------------------------------------------------------
-// Register benchmarks (EXACT SAME ARGS AS Beap)
-// --------------------------------------------------------
 
 BENCHMARK(BM_Construct);
 
@@ -201,10 +106,5 @@ BENCHMARK(BM_PushSortedAsc)->Arg(1000)->Arg(5000)->Arg(10000);
 BENCHMARK(BM_PushSortedDesc)->Arg(1000)->Arg(5000)->Arg(10000);
 
 BENCHMARK(BM_Pop)->Arg(1000)->Arg(5000)->Arg(10000);
-
-// Comparable but commented out to match your Beap setup
-//BENCHMARK(BM_Search)->Arg(10000);
-//BENCHMARK(BM_RemoveValue)->Arg(2000)->Arg(5000);
-//BENCHMARK(BM_MixedWorkload)->Arg(50000);
 
 BENCHMARK_MAIN();
