@@ -69,7 +69,7 @@ void measure_push_cost_per_operation()
     std::string filename = "push.csv";
     std::ofstream csvFile(filename);
 
-    csvFile << "beap, heap" << std::endl;
+    csvFile << "beap,heap" << std::endl;
     for(size_t i = 0; i < MAX_ELEMENT; i++)
     {
         csvFile << timings_beap[i] << ',' << timings_heap[i] << std::endl;
@@ -139,7 +139,7 @@ void measure_remove_min_cost_per_operation()
     std::string filename = "remove_min_cost.csv";
     std::ofstream csvFile(filename);
 
-    csvFile << "beap, heap" << std::endl;
+    csvFile << "beap,heap" << std::endl;
     for(size_t i = 0; i < MAX_ELEMENT; i++)
     {
         csvFile << timings_beap[i] << ',' << timings_heap[i] << std::endl;
