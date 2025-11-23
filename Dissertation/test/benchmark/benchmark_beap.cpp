@@ -12,20 +12,22 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-// --------------------------------------------------------
-// Fixture for benchmarks
-// --------------------------------------------------------
-
 class BeapFixture : public benchmark::Fixture {
 public:
     Beap b;
 
-    void SetUp(const ::benchmark::State&) override {
+    void SetUp(const ::benchmark::State& s) override {
         b = Beap();
+        b.container.reserve(s.range(0));
     }
 
     void TearDown(const ::benchmark::State&) override {}
 };
+
+void SetUp(const ::benchmark::State& s) {
+        Beap b;
+        b.container.reserve(s.range(0));
+}
 
 // --------------------------------------------------------
 // 1. Constructor Benchmark

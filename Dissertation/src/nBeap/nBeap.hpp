@@ -1,4 +1,5 @@
 #include <vector>
+#include <stdexcept>
 #include <concepts>
 
 template<typename T>
