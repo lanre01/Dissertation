@@ -22,17 +22,15 @@ public:
     nBeap<T, N> beap;
 
     void SetUp(const ::benchmark::State&) override {
-        // Ensure clean start
+    
         beap = nBeap<T, N>();
     }
 
     void TearDown(const ::benchmark::State&) override { }
 };
 
-// ----------------------------------------
-// 1. Benchmark constructor
-// ----------------------------------------
 
+//  Benchmark constructor
 template<typename T, int N>
 static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
@@ -41,10 +39,7 @@ static void BM_Construct(benchmark::State& state) {
     }
 }
 
-// ----------------------------------------
-// 2. Benchmark push() – random input
-// ----------------------------------------
-
+// Benchmark push() – random input
 template<typename T, int N>
 static void BM_PushRandom(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -62,10 +57,7 @@ static void BM_PushRandom(benchmark::State& state) {
     }
 }
 
-// ----------------------------------------
-// 3. Benchmark push() – sorted input (worst-case?)
-// ----------------------------------------
-
+// Benchmark push() – sorted input (worst-case?)
 template<typename T, int N>
 static void BM_PushSorted(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -84,10 +76,7 @@ static void BM_PushSorted(benchmark::State& state) {
     }
 }
 
-// ----------------------------------------
-// 4. Benchmark remove_min()
-// ----------------------------------------
-
+// Benchmark remove_min()
 template<typename T, int N>
 static void BM_RemoveMin(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -107,10 +96,7 @@ static void BM_RemoveMin(benchmark::State& state) {
     }
 }
 
-// ----------------------------------------
-// 5. Benchmark search()
-// ----------------------------------------
-
+// Benchmark search()
 template<typename T, int N>
 static void BM_Search(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -127,11 +113,7 @@ static void BM_Search(benchmark::State& state) {
     }
 }
 
-// ----------------------------------------
-// 6. Mixed workload benchmark
-//    push + search + remove_min
-// ----------------------------------------
-
+// Mixed workload benchmark - push + search + remove_min
 template<typename T, int N>
 static void BM_MixedWorkload(benchmark::State& state) {
     const size_t operations = state.range(0);
@@ -155,10 +137,6 @@ static void BM_MixedWorkload(benchmark::State& state) {
         }
     }
 }
-
-// ----------------------------------------
-// Register Benchmarks
-// ----------------------------------------
 
 #define REGISTER_BEAP_BENCH(T, N) \
 BENCHMARK_TEMPLATE(BM_Construct, T, N); \
