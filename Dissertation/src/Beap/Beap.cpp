@@ -1,17 +1,5 @@
 #include "Beap.hpp"
 
-Beap& Beap::operator=(Beap const& rhs)
-{
-    if (this == &rhs)
-    {
-        return *this;
-    }
-
-    container = rhs.container;
-    height = rhs.height;
-    size = rhs.size;
-    return *this;
-}
 
 void Beap::siftUp(const int pos, const int h)
 {
@@ -42,7 +30,7 @@ void Beap::siftUp(const int pos, const int h)
         //std::cout << "min child is " << container[minChildPos] << std::endl;
 
         // If no children or children are larger, we're done
-        if (minChildPos == -1 /* || newItem <= container[minChildPos]*/) {
+        if (minChildPos == -1) {
             break;
         }
 
@@ -112,8 +100,9 @@ std::pair<int, int> Beap::search(int value)
 
     if(start >= size)
     {
+        start = start - h;
         h--;
-        start = span(h).second;
+        //start = span(h).second;
     }
 
     int idx = start;
@@ -160,6 +149,7 @@ std::pair<int, int> Beap::search(int value)
         else if(value > container[idx])
         {
             auto children = getChildren(h, idx);
+            //std::pair<int, int> children()
             if(children.first >= size)
             {
                 idx--;
@@ -234,7 +224,7 @@ void Beap::remove(int value)
     siftUp(index, indexAndHeight.second);
 }
 
-inline std::pair<int, int> Beap::span(int h)
+inline const std::pair<int, int> Beap::span(int h)
 {
     int start = ((h * (h - 1)) / 2) + 1;
     int end = (h * (h + 1)) / 2;
@@ -246,11 +236,12 @@ inline std::pair<int, int> Beap::span(int h)
     */
 }
 
-std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex) {
+inline const std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex) {
     
     int parentHeight = childHeight - 1;
     std::pair<int, int> parentLevel = Beap::span(parentHeight);
-    std::pair<int, int> childLevel = Beap::span(childHeight);
+    std::pair<int, int> childLevel(parentLevel.second + 1, parentLevel.second + childHeight);
+    //std::pair<int, int> childLevel = Beap::span(childHeight);
     int numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
 
     if (childIndex == childLevel.first)
@@ -268,7 +259,7 @@ std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex
     return { secondParent - 1, secondParent};
 }
 
-std::pair<int, int> Beap::getChildren(int parentHeight, int index)
+inline const std::pair<int, int> Beap::getChildren(int parentHeight, int index)
 {
     std::pair<int,int> currentLevel = Beap::span(parentHeight);
     int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first + 1;
