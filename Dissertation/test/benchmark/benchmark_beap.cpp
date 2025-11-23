@@ -40,6 +40,8 @@ static void BM_PushRandom(benchmark::State& state) {
         for (int x : data)
             b.push(x);
     }
+    
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 
@@ -57,6 +59,9 @@ static void BM_PushSortedAsc(benchmark::State& state) {
         for (int x : data)
             b.push(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
+
 }
 
 
@@ -74,6 +79,8 @@ static void BM_PushSortedDesc(benchmark::State& state) {
         for (int x : data)
             b.push(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark Pop
@@ -82,13 +89,17 @@ static void BM_Pop(benchmark::State& state) {
     auto data = generateRandomData(count);
 
     for (auto _ : state) {
+        state.PauseTiming();
         Beap b;
         for (int x : data) b.push(x);
+        state.ResumeTiming();
 
         for (size_t i = 0; i < count; i++) {
             b.pop();
         }
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark search 
@@ -106,6 +117,8 @@ static void BM_Search(benchmark::State& state) {
         auto result = b.search(q);
         benchmark::DoNotOptimize(result);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 
@@ -124,6 +137,8 @@ static void BM_RemoveValue(benchmark::State& state) {
         for (int x : data)
             b.remove(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark Mixed workload: 40% push, 40% search, 20% pop

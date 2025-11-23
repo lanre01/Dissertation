@@ -88,9 +88,11 @@ static void BM_Pop(benchmark::State& state) {
     auto data = generateRandomData(count);
 
     for (auto _ : state) {
+        state.PauseTiming();
         std::priority_queue<int> pq;
         for (int x : data) pq.push(x);
-
+        state.ResumeTiming();
+        
         for (size_t i = 0; i < count; i++) {
             pq.pop();
         }
