@@ -38,6 +38,8 @@ static void BM_PushRandom(benchmark::State& state) {
         for (int x : data)
             pq.push(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark push ascending random data
@@ -59,6 +61,8 @@ static void BM_PushSortedAsc(benchmark::State& state) {
         for (int x : data) 
             pq.push(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark push descending random data 
@@ -80,6 +84,8 @@ static void BM_PushSortedDesc(benchmark::State& state) {
         for (int x : data) 
             pq.push(x);
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark pop
@@ -92,11 +98,13 @@ static void BM_Pop(benchmark::State& state) {
         std::priority_queue<int> pq;
         for (int x : data) pq.push(x);
         state.ResumeTiming();
-        
+
         for (size_t i = 0; i < count; i++) {
             pq.pop();
         }
     }
+
+    state.SetItemsProcessed(state.iterations() * count);
 }
 
 
