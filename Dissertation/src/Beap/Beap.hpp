@@ -13,10 +13,11 @@ public:
 	Beap() {
 		size = 0;
 		height = 0;
+		//container.reserve(10);
 	};
 
 	~Beap() {};
-	Beap& operator=(Beap const&);
+	Beap& operator=(const Beap&) = default;
 
 	
 
@@ -45,11 +46,11 @@ private:
 
 	void siftDown(const int startPos, const int pos, const int childHeight) ;
 
-	inline std::pair<int, int> span(int height);
+	inline const std::pair<int, int> span(int height);
 
-	std::pair<int, int> getParents(const int childHeight, const int child);
+	inline const std::pair<int, int> getParents(const int childHeight, const int child);
 
-	std::pair<int, int> getChildren(const int parentheight, const int index);
+	inline const std::pair<int, int> getChildren(const int parentheight, const int index);
 
 };
 

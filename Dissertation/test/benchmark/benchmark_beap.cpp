@@ -49,6 +49,7 @@ static void BM_PushRandom(benchmark::State& state) {
     for (auto _ : state) {
         state.PauseTiming();
         Beap b;
+        b.container.reserve(count);
         state.ResumeTiming();
 
         for (int x : data)
