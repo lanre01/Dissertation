@@ -152,8 +152,8 @@ void measure_remove_min_cost_per_operation()
 
 int main()
 {
-    measure_push_cost_per_operation();
-    measure_remove_min_cost_per_operation();
+    //measure_push_cost_per_operation();
+    //measure_remove_min_cost_per_operation();
     
     Beap beap = Beap();
 
