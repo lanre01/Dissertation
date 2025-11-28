@@ -1,12 +1,3 @@
-2025-11-27T23:11:31+00:00
-Running ./bin/bench_stdheap
-Run on (16 X 3992.5 MHz CPU s)
-CPU Caches:
-  L1 Data 32 KiB (x8)
-  L1 Instruction 32 KiB (x8)
-  L2 Unified 1024 KiB (x8)
-  L3 Unified 16384 KiB (x1)
-Load Average: 0.58, 0.38, 0.25
 name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
 "BM_Construct/256",74974288,8.75767,9.18273,ns,,,,,
 "BM_Construct/1024",27020250,24.6833,25.8816,ns,,,,,
