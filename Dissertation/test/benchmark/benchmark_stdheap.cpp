@@ -23,7 +23,7 @@ static void BM_Construct(benchmark::State& state) {
         v.reserve(count);
         benchmark::DoNotOptimize(v);
         std::priority_queue<int> pq(
-            std::less<int>(), 
+            std::greater<int>(),, 
             std::move(v)
         );
         benchmark::DoNotOptimize(pq);
@@ -39,7 +39,7 @@ static void BM_PushRandom(benchmark::State& state) {
         std::vector<int> v;
         v.reserve(count);
         std::priority_queue<int> pq(
-            std::less<int>(), 
+            std::greater<int>(),, 
             std::move(v)
         );
 
@@ -60,7 +60,7 @@ static void BM_PushSortedAsc(benchmark::State& state) {
         std::vector<int> v;
         v.reserve(count);
         std::priority_queue<int> pq(
-            std::less<int>(), 
+            std::greater<int>(), 
             std::move(v)
         );
 
@@ -81,7 +81,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
         std::vector<int> v;
         v.reserve(count);
         std::priority_queue<int> pq(
-            std::less<int>(), 
+            std::greater<int>(),, 
             std::move(v)
         );
 
@@ -102,7 +102,7 @@ static void BM_Pop(benchmark::State& state) {
         std::vector<int> v;
         v.reserve(count);
         std::priority_queue<int> pq(
-            std::less<int>(), 
+            std::greater<int>(),, 
             std::move(v)
         );
         for (int x : data) pq.push(x);
