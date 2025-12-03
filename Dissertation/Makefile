@@ -18,7 +18,8 @@ UNIT_TEST_SRCS := $(wildcard test/unit/*.cpp)
 # Benchmark sources (3 files total)
 BEAP_BENCH_SRC := test/benchmark/benchmark_beap.cpp
 NBEAP_BENCH_SRC := test/benchmark/benchmark_nbeap.cpp
-STDHEAP_BENCH_SRC := test/benchmark/benchmark_stdheap.cpp
+HEAP_BENCH_SRC := test/benchmark/benchmark_heap.cpp
+BST_BENCH_SRC := test/benchmark/benchmark_bst.cpp
 
 # Object files
 MAIN_OBJ := $(BUILD_DIR)/main.o
@@ -31,7 +32,8 @@ UNIT_TEST_OBJS := $(patsubst test/unit/%.cpp,$(BUILD_DIR)/test/unit/%.o,$(UNIT_T
 # Benchmark object files
 BEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_beap.o
 NBEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_nbeap.o
-STDHEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_stdheap.o
+HEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_heap.o
+BST_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_bst.o 
 
 ALL_OBJS := $(MAIN_OBJ) $(HEAP_OBJS) $(BEAP_OBJS) $(NBEAP_OBJS)
 
@@ -41,7 +43,8 @@ UNIT_TEST_TARGET := $(BIN_DIR)/unit_tests
 
 BEAP_BENCH_TARGET := $(BIN_DIR)/bench_beap
 NBEAP_BENCH_TARGET := $(BIN_DIR)/bench_nbeap
-STDHEAP_BENCH_TARGET := $(BIN_DIR)/bench_stdheap
+HEAP_BENCH_TARGET := $(BIN_DIR)/bench_heap
+BST_BENCH_TARGET := $(BIN_DIR)/bench_bst
 
 # Production code objects (without main)
 PRODUCTION_OBJS := $(filter-out $(BUILD_DIR)/main.o, $(ALL_OBJS))
@@ -67,8 +70,12 @@ $(BEAP_BENCH_TARGET): $(BEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 $(NBEAP_BENCH_TARGET): $(NBEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
 
-# std::priority_queue benchmark
-$(STDHEAP_BENCH_TARGET): $(STDHEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
+# heap benchmark
+$(HEAP_BENCH_TARGET): $(HEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
+
+# bst benchmark
+$(BST_BENCH_TARGET): $(BST_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread
 
 # ============================================================
@@ -97,7 +104,10 @@ $(BUILD_DIR)/test/benchmark/benchmark_beap.o: $(BEAP_BENCH_SRC) | $(BUILD_DIR)/t
 $(BUILD_DIR)/test/benchmark/benchmark_nbeap.o: $(NBEAP_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
-$(BUILD_DIR)/test/benchmark/benchmark_stdheap.o: $(STDHEAP_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
+$(BUILD_DIR)/test/benchmark/benchmark_heap.o: $(HEAP_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
+	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
+
+$(BUILD_DIR)/test/benchmark/benchmark_bst.o: $(BST_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
 # ============================================================
@@ -116,10 +126,13 @@ run-bench-beap: $(BEAP_BENCH_TARGET)
 run-bench-nbeap: $(NBEAP_BENCH_TARGET)
 	./$(NBEAP_BENCH_TARGET)
 
-run-bench-heap: $(STDHEAP_BENCH_TARGET)
-	./$(STDHEAP_BENCH_TARGET)
+run-bench-heap: $(HEAP_BENCH_TARGET)
+	./$(HEAP_BENCH_TARGET)
 
-run-bench-all: run-bench-beap run-bench-nbeap run-bench-heap
+run-bench-bst: $(BST_BENCH_TARGET)
+	./$(BST_BENCH_TARGET)
+
+run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap 
 
 # Debug build
 debug: CXXFLAGS += -g -DDEBUG
