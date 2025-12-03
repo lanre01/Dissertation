@@ -1,7 +1,9 @@
 #include <benchmark/benchmark.h>
 #include <random>
 #include <algorithm>
-#include "../../src/Beap/Beap.hpp"  
+#include <map>       
+#include <vector>
+
 
 static std::mt19937 rng(42);
 
@@ -12,14 +14,11 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-
-// Benchmark beap construction
-static void BM_Baseline(benchmark::State& state) {
-    size_t count = state.range(0);
+static void BM_Baseline(benchmark::State&) {
+   
     for (auto _ : state) {
-        Beap b;
-        b.container.reserve(count);
-        benchmark::DoNotOptimize(b);
+        std::map<int, int> m;
+        benchmark::DoNotOptimize(m);
     }
 }
 
@@ -29,15 +28,13 @@ static void BM_PushRandom(benchmark::State& state) {
     auto data = generateRandomData(count);
 
     for (auto _ : state) {
-        Beap b;
-        b.container.reserve(count);
-        for (int x : data)
-            b.push(x);
+        std::map<int, int> m;
+        for (int x : data) 
+            m[x] = x;
     }
     
     state.SetItemsProcessed(state.iterations() * count);
 }
-
 
 // Benchmark push ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
@@ -46,17 +43,15 @@ static void BM_PushSortedAsc(benchmark::State& state) {
     std::sort(data.begin(), data.end());
 
     for (auto _ : state) {
-        Beap b;
-        b.container.reserve(count);
-
-        for (int x : data)
-            b.push(x);
+        std::map<int, int> m;
+        
+        for (int x : data) 
+            m[x] = x;
     }
 
     state.SetItemsProcessed(state.iterations() * count);
 
 }
-
 
 // Benchmark push descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
@@ -65,17 +60,16 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     std::sort(data.begin(), data.end(), std::greater<int>());
 
     for (auto _ : state) {
-        Beap b;
-        b.container.reserve(count);
-
-        for (int x : data)
-            b.push(x);
+        std::map<int, int> m;
+        
+        for (int x : data) 
+            m[x] = x;
     }
 
     state.SetItemsProcessed(state.iterations() * count);
 }
 
-// Benchmark Pop
+// Benchmark minimum
 static void BM_Pop(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
@@ -83,62 +77,41 @@ static void BM_Pop(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        Beap b;
-        b.container.reserve(count);
-        for(auto d : data)
-            b.push(d);
+        std::map<int, int> m;
+        
+        for (int x : data) 
+            m[x] = x;
         state.ResumeTiming();
         
-        for (size_t i = 0; i < count; i++) {
-            auto t = b.pop();
-            benchmark::DoNotOptimize(t);
+        while(!m.empty()) {
+            benchmark::DoNotOptimize(m.erase(m.begin()));
         }
     }
 
     state.SetItemsProcessed(state.iterations() * count);
 }
 
-// Benchmark search 
-static void BM_Search(benchmark::State& state) {
+static void BM_Search(benchmark::State& state)
+{
     size_t count = state.range(0);
-
-    Beap b;
-    b.container.reserve(count);
+    std::map<int, int> m;
     auto data = generateRandomData(count);
-    for (int x : data) b.push(x);
+    for (int x : data) 
+        m[x] = x;
 
     std::uniform_int_distribution<int> dist(1, 1'000'000);
 
-    for (auto _ : state) {
+    for(auto _ : state)
+    {
         int q = dist(rng);
-        auto result = b.search(q);
+        auto result = m.find(q);
         benchmark::DoNotOptimize(result);
     }
 
     state.SetItemsProcessed(state.iterations() * count);
 }
 
-
-
-// Benchmark remove(value)
-static void BM_RemoveValue(benchmark::State& state) {
-    size_t count = state.range(0);
-    Beap b;
-    b.container.reserve(count);
-    auto data = generateRandomData(count);
-    for (int x : data) b.push(x);
-
-    for (auto _ : state) {
-        for (int x : data)
-            b.remove(x);
-    }
-
-    state.SetItemsProcessed(state.iterations() * count);
-}
-
-
-
-BENCHMARK(BM_Baseline)->RangeMultiplier(4)->Range(256, 1<<20); 
+BENCHMARK(BM_Baseline)->RangeMultiplier(4)->Range(256, 1<<20);
 
 BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20); 
@@ -147,8 +120,5 @@ BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20);
 BENCHMARK(BM_Pop)->RangeMultiplier(2)->Range(256, 1<<20); 
 
 BENCHMARK(BM_Search)->RangeMultiplier(4)->Range(256, 1<<20); 
-
-BENCHMARK(BM_RemoveValue)->RangeMultiplier(4)->Range(256, 1<<20); 
-
 
 BENCHMARK_MAIN();
