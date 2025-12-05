@@ -1,16 +1,20 @@
 #include "Beap.hpp"
 
+// In Beap.cpp
+template class Beap<int, std::less<int>>;
+template class Beap<int, std::greater<int>>;
 
-void Beap::siftUp(const int pos, const int h)
+template <typename T, typename Compare>
+void Beap<T, Compare>::siftUp(const size_t pos, const size_t h)
 {
-    if (container.empty())
+    if (empty())
     {
         return;
     }
 
-    int currentPos = pos;
-    int currentHeight = h;
-    int newItem = container[pos];
+    size_t currentPos = pos;
+    size_t currentHeight = h;
+    T newItem = container[pos];
 
     while (true)
     {
@@ -19,10 +23,10 @@ void Beap::siftUp(const int pos, const int h)
         int rightChild = children.second;
         //std::cout << "leftChild is " << container[leftChild] << "and rightChild is " << container[rightChild] << std::endl;
         // Find the smallest child
-        int minChildPos = -1;
+        size_t minChildPos = INVALID_INDEX;
         if (leftChild < size) {
             minChildPos = leftChild;
-            if (rightChild < size && container[rightChild] < container[leftChild]) {
+            if (rightChild < size && compare(container[leftChild], container[rightChild])) {
                 minChildPos = rightChild;
             }
         }
@@ -30,7 +34,7 @@ void Beap::siftUp(const int pos, const int h)
         //std::cout << "min child is " << container[minChildPos] << std::endl;
 
         // If no children or children are larger, we're done
-        if (minChildPos == -1) {
+        if (minChildPos == INVALID_INDEX) {
             break;
         }
 
@@ -44,7 +48,8 @@ void Beap::siftUp(const int pos, const int h)
     siftDown(pos, currentPos, currentHeight);
 }
 
-void Beap::siftDown(const int startPos, const int pos, const int childHeight) 
+template <typename T, typename Compare>
+void Beap<T, Compare>::siftDown(const size_t startPos, const size_t pos, const size_t childHeight) 
 {
     if (container.empty())
     {
@@ -52,16 +57,16 @@ void Beap::siftDown(const int startPos, const int pos, const int childHeight)
     }
     // siftDown(0, size-1, height);
     //std::cout << "pushing " << container[pos] << " from " << pos << " to " << startPos << std::endl;
-    int newItem = container[pos];
-    int currentPos = pos;
-    int currentHeight = childHeight;
+    T newItem = container[pos];
+    size_t currentPos = pos;
+    size_t currentHeight = childHeight;
 
     while (currentPos > startPos)
     {
-        std::pair<int, int> parents = getParents(currentHeight, currentPos);
+        std::pair<size_t, size_t> parents = getParents(currentHeight, currentPos);
         //std::cout << parents.first << ',' << parents.second << " at height " << childHeight << std::endl;
-        int maxParentPos = getMaxIndexIncontainer(parents.first, parents.second);
-        if (maxParentPos == -1 || newItem >= container[maxParentPos]) {
+        size_t maxParentPos = getMaxIndexIncontainer(parents.first, parents.second);
+        if (maxParentPos == INVALID_INDEX || compare(newItem, container[maxParentPos])) {
             break;
         }
 
@@ -73,30 +78,32 @@ void Beap::siftDown(const int startPos, const int pos, const int childHeight)
     container[currentPos] = newItem;
 }
 
-int Beap::getMaxIndexIncontainer(int index1, int index2)
+template <typename T, typename Compare>
+size_t Beap<T, Compare>::getMaxIndexIncontainer(size_t index1, size_t index2)
 {
     if (index2 == -1) return index1;
     if (index1 == -1) return index2;
 
-    return container[index1] > container[index2] ? index1 : index2;
+    return compare(container[index1], container[index2]) ? index1 : index2;
 }
 
-std::pair<int, int> Beap::search(int value)
+template <typename T, typename Compare>
+std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
 {
-    if(size <= 0 || value < container[0])
+    if(size <= 0 || compare(container[0], value))
     {
-        return {-1, -1};
+        return {INVALID_INDEX, INVALID_INDEX};
     }
 
-    int h = height;
-    std::pair<int, int> lastLevel = span(h);
-    int end = lastLevel.first;
+    size_t h = height;
+    std::pair<size_t, size_t> lastLevel = span(h);
+    size_t end = lastLevel.first;
     
     if(value == container[end])
     {
         return {end, h};
     }
-    int start = lastLevel.second;
+    size_t start = lastLevel.second;
 
     if(start >= size)
     {
@@ -105,7 +112,7 @@ std::pair<int, int> Beap::search(int value)
         //start = span(h).second;
     }
 
-    int idx = start;
+    size_t idx = start;
     
     while(true)
     {
@@ -133,15 +140,15 @@ std::pair<int, int> Beap::search(int value)
 
         if(idx == end)
         {
-            return {-1, -1};
+            return {INVALID_INDEX, INVALID_INDEX};
         }
 
         if(value < container[idx])
         {
-            std::pair<int, int> parents = getParents(h, idx);
-            if(parents.first <= -1)
+            std::pair<size_t, size_t> parents = getParents(h, idx);
+            if(parents.first == INVALID_INDEX)
             {
-                return {-1, -1};
+                return {INVALID_INDEX, INVALID_INDEX};
             }
             idx = parents.first;
             h--;
@@ -166,16 +173,17 @@ std::pair<int, int> Beap::search(int value)
     }
 }
 
-int Beap::pop()
+template <typename T, typename Compare>
+T Beap<T, Compare>::pop()
 {
     if(size <= 0)
     {
         throw std::out_of_range("cannot pop empty beap");
     }
-    int minValue = container[0];
+    T minValue = container[0];
     std::swap(container[0], container[size-1]);
     size--;
-    std::pair<int, int> currentLevel = Beap::span(height);
+    std::pair<size_t, size_t> currentLevel = Beap::span(height);
     if (size-1 < currentLevel.first)
     {
         height--;
@@ -186,10 +194,11 @@ int Beap::pop()
     return minValue;
 }
 
-void Beap::push(int value)
+template <typename T, typename Compare>
+void Beap<T, Compare>::push(T value)
 {
     size++;
-    std::pair<int,int> currentLevel = span(height);
+    std::pair<size_t, size_t> currentLevel = span(height);
     //std::cout << currentLevel.first << "," << currentLevel.second << std::endl;
     if (size - 1 > currentLevel.second)
     {
@@ -199,12 +208,13 @@ void Beap::push(int value)
     siftDown(0, size - 1, height);
 } 
 
-void Beap::remove(int value)
+template <typename T, typename Compare>
+void Beap<T, Compare>::remove(T value)
 {
-    std::pair<int,int> indexAndHeight = search(value);
-    int index = indexAndHeight.first;
+    std::pair<size_t, size_t> indexAndHeight = search(value);
+    size_t index = indexAndHeight.first;
 
-    if (index == -1) {
+    if (index == INVALID_INDEX) {
         return;
     }
 
@@ -224,7 +234,8 @@ void Beap::remove(int value)
     siftUp(index, indexAndHeight.second);
 }
 
-inline const std::pair<int, int> Beap::span(int h)
+template <typename T, typename Compare>
+inline const std::pair<size_t, size_t> Beap<T, Compare>::span(size_t h)
 {
     int start = ((h * (h - 1)) / 2) + 1;
     int end = (h * (h + 1)) / 2;
@@ -236,22 +247,23 @@ inline const std::pair<int, int> Beap::span(int h)
     */
 }
 
-inline const std::pair<int, int> Beap::getParents(const int childHeight, const int childIndex) {
+template <typename T, typename Compare>
+inline const std::pair<size_t, size_t> Beap<T, Compare>::getParents(const size_t childHeight, const size_t childIndex) {
     
-    int parentHeight = childHeight - 1;
-    std::pair<int, int> parentLevel = Beap::span(parentHeight);
-    std::pair<int, int> childLevel(parentLevel.second + 1, parentLevel.second + childHeight);
+    size_t parentHeight = childHeight - 1;
+    std::pair<size_t, size_t> parentLevel = Beap::span(parentHeight);
+    std::pair<size_t, size_t> childLevel(parentLevel.second + 1, parentLevel.second + childHeight);
     //std::pair<int, int> childLevel = Beap::span(childHeight);
-    int numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
+    size_t numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
 
     if (childIndex == childLevel.first)
     {
-        return {-1 ,  parentLevel.first};
+        return {INVALID_INDEX ,  parentLevel.first};
     }
 
     if (childIndex == childLevel.second)
     {
-        return {parentLevel.second, -1};
+        return {parentLevel.second, INVALID_INDEX};
     }
 
     int secondParent = childIndex - numberOfElementInTheLevel;
@@ -259,9 +271,10 @@ inline const std::pair<int, int> Beap::getParents(const int childHeight, const i
     return { secondParent - 1, secondParent};
 }
 
-inline const std::pair<int, int> Beap::getChildren(int parentHeight, int index)
+template <typename T, typename Compare>
+inline const std::pair<size_t, size_t> Beap<T, Compare>::getChildren(size_t parentHeight, size_t index)
 {
-    std::pair<int,int> currentLevel = Beap::span(parentHeight);
+    std::pair<size_t, size_t> currentLevel = Beap::span(parentHeight);
     int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first + 1;
 
     return { index + numberOfElementsInTheLevel, index + numberOfElementsInTheLevel + 1 };
