@@ -24,8 +24,8 @@ std::vector<int> generateRandomData(size_t n) {
 
 void measure_push_cost_per_operation()
 {
-    size_t MAX_ELEMENT = 1000;
-    Beap beap;
+    /*size_t MAX_ELEMENT = 1000;
+    Beap<int> beap;
     beap.container.reserve(MAX_ELEMENT);
     std::vector<int> v;
     v.reserve(MAX_ELEMENT);
@@ -76,13 +76,13 @@ void measure_push_cost_per_operation()
     }
 
     csvFile.close();
-    std::cout << "done" << std::endl;
+    std::cout << "done" << std::endl;*/
 }
 
 void measure_remove_min_cost_per_operation()
 {
-    size_t MAX_ELEMENT = 1000;
-    Beap beap;
+    /*size_t MAX_ELEMENT = 1000;
+    Beap<int> beap;
     beap.container.reserve(MAX_ELEMENT);
     std::vector<int> v;
     v.reserve(MAX_ELEMENT);
@@ -146,7 +146,7 @@ void measure_remove_min_cost_per_operation()
     }
 
     csvFile.close();
-    std::cout << "done" << std::endl;    
+    std::cout << "done" << std::endl;    */
 }
 
 
@@ -155,7 +155,7 @@ int main()
     //measure_push_cost_per_operation();
     //measure_remove_min_cost_per_operation();
     
-    Beap beap = Beap();
+    Beap<int> beap = Beap<int>();
 
     for (int i = 0; i < 100; i++) {
         beap.push(rand() % 1000);
