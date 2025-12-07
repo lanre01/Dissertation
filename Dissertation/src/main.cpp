@@ -9,7 +9,6 @@
 #include <queue>  
 #include <chrono>
 
-#include "Heap/Heap.hpp"
 #include "Beap/Beap.hpp"
 #include "nBeap/nBeap.hpp"
 
@@ -156,15 +155,31 @@ int main()
     //measure_remove_min_cost_per_operation();
     
     Beap<int> beap = Beap<int>();
-
-    for (int i = 0; i < 100; i++) {
-        beap.push(rand() % 1000);
+    int MAX_NUMBER = 10;
+    for (int i = 0; i < MAX_NUMBER; i++) {
+        auto t = rand() % MAX_NUMBER;
+        beap.push(t);
+        //std::cout << t << ",";
     }
-    std::cout << "started" << std::endl;
-    for (int i = 0; i < 100; i++) {
-        int target = rand() % 1000;
+    //std::cout << std::endl;
+
+    for(int i = 0; i < MAX_NUMBER; i++)
+    {
+        std::cout << beap.container[i] << ",";
+    }
+    std::cout << std::endl;
+
+    /*while(!beap.empty()) {
+        std::cout << "value = " << beap.pop() << std::endl;
+    }*/
+
+
+    std::cout << "start searching" << std::endl;
+    for (int i = 0; i < MAX_NUMBER; i++) {
+        int target = rand() % MAX_NUMBER;
         auto res = beap.search(target);
         std::cout << "Successfully searched target: " << target << " and result is " 
         << res.first << ", " << res.second << std::endl; 
     }
+   return 0;
 }

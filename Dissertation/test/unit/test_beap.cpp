@@ -3,11 +3,11 @@
 
 class BeapTest : public ::testing::Test {
 protected:
-    Beap beap;
+    Beap<int> beap;
     
-    void SetUp() override {
-        beap = Beap();
-    }
+    /*void SetUp() override {
+        beap = Beap<int>();
+    }*/
 };
 
 
@@ -58,6 +58,10 @@ TEST_F(BeapTest, PopSingleElement) {
     EXPECT_EQ(value, 42);
     EXPECT_EQ(beap.size, 0);
     EXPECT_EQ(beap.height, 0);
+
+    beap.push(3);
+    EXPECT_EQ(beap.size, 1);
+    EXPECT_EQ(beap.height, 1);
 }
 
 TEST_F(BeapTest, PopMaintainsBeapProperty) {

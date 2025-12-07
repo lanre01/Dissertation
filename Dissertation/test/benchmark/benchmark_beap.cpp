@@ -17,7 +17,7 @@ std::vector<int> generateRandomData(size_t n) {
 static void BM_Baseline(benchmark::State& state) {
     size_t count = state.range(0);
     for (auto _ : state) {
-        Beap b;
+        Beap<int> b;
         b.container.reserve(count);
         benchmark::DoNotOptimize(b);
     }
@@ -29,7 +29,7 @@ static void BM_PushRandom(benchmark::State& state) {
     auto data = generateRandomData(count);
 
     for (auto _ : state) {
-        Beap b;
+        Beap<int> b;
         b.container.reserve(count);
         for (int x : data)
             b.push(x);
@@ -46,7 +46,7 @@ static void BM_PushSortedAsc(benchmark::State& state) {
     std::sort(data.begin(), data.end());
 
     for (auto _ : state) {
-        Beap b;
+        Beap<int> b;
         b.container.reserve(count);
 
         for (int x : data)
@@ -65,7 +65,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     std::sort(data.begin(), data.end(), std::greater<int>());
 
     for (auto _ : state) {
-        Beap b;
+        Beap<int> b;
         b.container.reserve(count);
 
         for (int x : data)
@@ -83,7 +83,7 @@ static void BM_Pop(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        Beap b;
+        Beap<int> b;
         b.container.reserve(count);
         for(auto d : data)
             b.push(d);
@@ -102,7 +102,7 @@ static void BM_Pop(benchmark::State& state) {
 static void BM_Search(benchmark::State& state) {
     size_t count = state.range(0);
 
-    Beap b;
+    Beap<int> b;
     b.container.reserve(count);
     auto data = generateRandomData(count);
     for (int x : data) b.push(x);
@@ -123,7 +123,7 @@ static void BM_Search(benchmark::State& state) {
 // Benchmark remove(value)
 static void BM_RemoveValue(benchmark::State& state) {
     size_t count = state.range(0);
-    Beap b;
+    Beap<int> b;
     b.container.reserve(count);
     auto data = generateRandomData(count);
     for (int x : data) b.push(x);

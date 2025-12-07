@@ -14,7 +14,7 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-static void BM_Baseline(benchmark::State&) {
+static void BM_Baseline(benchmark::State& state) {
    
     for (auto _ : state) {
         std::map<int, int> m;

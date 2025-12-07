@@ -9,9 +9,9 @@ BIN_DIR := bin
 
 # Source files
 MAIN_SRC := $(SRC_DIR)/main.cpp
-HEAP_SRCS := $(wildcard $(SRC_DIR)/Heap/*.cpp)
-BEAP_SRCS := $(wildcard $(SRC_DIR)/Beap/*.cpp)
-NBEAP_SRCS := $(wildcard $(SRC_DIR)/nBeap/*.cpp)
+#HEAP_SRCS := $(wildcard $(SRC_DIR)/Heap/*.cpp)
+#BEAP_SRCS := $(wildcard $(SRC_DIR)/Beap/*.cpp)
+#NBEAP_SRCS := $(wildcard $(SRC_DIR)/nBeap/*.cpp)
 
 UNIT_TEST_SRCS := $(wildcard test/unit/*.cpp)
 
@@ -23,9 +23,9 @@ BST_BENCH_SRC := test/benchmark/benchmark_bst.cpp
 
 # Object files
 MAIN_OBJ := $(BUILD_DIR)/main.o
-HEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(HEAP_SRCS))
-BEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(BEAP_SRCS))
-NBEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(NBEAP_SRCS))
+#HEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(HEAP_SRCS))
+#BEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(BEAP_SRCS))
+#NBEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(NBEAP_SRCS))
 
 UNIT_TEST_OBJS := $(patsubst test/unit/%.cpp,$(BUILD_DIR)/test/unit/%.o,$(UNIT_TEST_SRCS))
 
@@ -35,7 +35,7 @@ NBEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_nbeap.o
 HEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_heap.o
 BST_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_bst.o 
 
-ALL_OBJS := $(MAIN_OBJ) $(HEAP_OBJS) $(BEAP_OBJS) $(NBEAP_OBJS)
+ALL_OBJS := $(MAIN_OBJ) # $(HEAP_OBJS) $(BEAP_OBJS) $(NBEAP_OBJS)
 
 # Executables
 TARGET := $(BIN_DIR)/dissertation
