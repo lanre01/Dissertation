@@ -4,10 +4,6 @@
 class BeapTest : public ::testing::Test {
 protected:
     Beap<int> beap;
-    
-    /*void SetUp() override {
-        beap = Beap<int>();
-    }*/
 };
 
 
