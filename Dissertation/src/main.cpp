@@ -170,17 +170,17 @@ int main()
     }
     std::cout << std::endl;
 
-    /*while(!beap.empty()) {
+    while(!beap.empty()) {
         std::cout << "value = " << beap.pop() << std::endl;
-    }*/
+    }
 
 
-    std::cout << "start searching" << std::endl;
+    /*std::cout << "start searching" << std::endl;
     for (int i = 0; i < MAX_NUMBER; i++) {
         int target = rand() % MAX_NUMBER;
         auto res = beap.search(target);
         std::cout << "Successfully searched target: " << target << " and result is " 
         << res.first << ", " << res.second << std::endl; 
-    }
+    }*/
    return 0;
 }
