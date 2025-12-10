@@ -80,9 +80,9 @@ void Beap<T, Compare>::siftUp(const size_t pos, const size_t h)
 
     while (true)
     {
-        std::pair<int, int> children = getChildren(currentHeight, currentPos);
-        int leftChild = children.first;
-        int rightChild = children.second;
+        std::pair<size_t, size_t> children = getChildren(currentHeight, currentPos);
+        size_t leftChild = children.first;
+        size_t rightChild = children.second;
         //std::cout << "leftChild is " << container[leftChild] << "and rightChild is " << container[rightChild] << std::endl;
         // Find the smallest child
         size_t minChildPos = INVALID_INDEX;
@@ -178,28 +178,6 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
     
     while(true)
     {
-        /*std::cout 
-            << "\n[SEARCH STEP]"
-            << " idx=" << idx
-            << " h=" << h
-            << " value=" << value
-            << " current=" << (idx >= 0 && idx < size ? std::to_string(container[idx]) : "OUT_OF_RANGE")
-            << " | level_span=" << span(h).first << "-" << span(h).second
-            << " | height=" << height
-            << " | size=" << size
-            << std::endl;*/
-        
-        #ifdef DEBUG
-        auto row = span(h);
-        if (idx < row.first || idx > row.second || idx < 0 || idx >= size) {
-            std::cerr << "[INVARIANT BROKEN] idx=" << idx
-                    << " h=" << h
-                    << " span=" << row.first << "-" << row.second
-                    << " size=" << size << std::endl;
-            throw std::logic_error("search left beap geometry");
-        }
-        #endif
-
         if(idx == end)
         {
             return {INVALID_INDEX, INVALID_INDEX};
@@ -288,7 +266,7 @@ void Beap<T, Compare>::remove(T value)
 
     std::swap(container[index], container[size-1]);
     size--;
-    std::pair<int,int> lastLevel = span(height);
+    std::pair<size_t,size_t> lastLevel = span(height);
     if (lastLevel.first >= size)
     {
         height--;
