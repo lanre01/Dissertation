@@ -8,19 +8,19 @@ protected:
 
 
 TEST_F(BeapTest, ConstructorInitializesCorrectly) {
-    EXPECT_EQ(beap.size, 0);
-    EXPECT_EQ(beap.height, 0);
-    EXPECT_TRUE(beap.container.empty());
+    EXPECT_EQ(beap.size(), 0);
+    EXPECT_EQ(beap.height(), 0);
+    EXPECT_TRUE(beap.empty());
 }
 
 
 TEST_F(BeapTest, InsertFirstElement) {
     beap.push(10);
     
-    EXPECT_EQ(beap.size, 1);
-    EXPECT_EQ(beap.height, 1);
-    EXPECT_EQ(beap.container.size(), 1);
-    EXPECT_EQ(beap.container[0], 10);
+    EXPECT_EQ(beap.size(), 1);
+    EXPECT_EQ(beap.height(), 1);
+    EXPECT_EQ(beap.size(), 1);
+    EXPECT_EQ(beap.pop(), 10);
 }
 
 TEST_F(BeapTest, InsertMultipleElementsMaintainsOrder) {
@@ -29,8 +29,8 @@ TEST_F(BeapTest, InsertMultipleElementsMaintainsOrder) {
     beap.push(15);
     beap.push(3);
     
-    EXPECT_EQ(beap.size, 4);
-    EXPECT_EQ(beap.container[0], 3);
+    EXPECT_EQ(beap.size(), 4);
+    EXPECT_EQ(beap.pop(), 3);
 }
 
 TEST_F(BeapTest, InsertDuplicateValues) {
@@ -38,8 +38,8 @@ TEST_F(BeapTest, InsertDuplicateValues) {
     beap.push(10);
     beap.push(5);
     
-    EXPECT_EQ(beap.size, 3);
-    EXPECT_EQ(beap.container[0], 5); 
+    EXPECT_EQ(beap.size(), 3);
+    EXPECT_EQ(beap.pop(), 5); 
 }
 
 
@@ -52,12 +52,12 @@ TEST_F(BeapTest, PopSingleElement) {
     int value = beap.pop();
     
     EXPECT_EQ(value, 42);
-    EXPECT_EQ(beap.size, 0);
-    EXPECT_EQ(beap.height, 0);
+    EXPECT_EQ(beap.size(), 0);
+    EXPECT_EQ(beap.height(), 0);
 
     beap.push(3);
-    EXPECT_EQ(beap.size, 1);
-    EXPECT_EQ(beap.height, 1);
+    EXPECT_EQ(beap.size(), 1);
+    EXPECT_EQ(beap.height(), 1);
 }
 
 TEST_F(BeapTest, PopMaintainsBeapProperty) {
@@ -71,8 +71,8 @@ TEST_F(BeapTest, PopMaintainsBeapProperty) {
     int min = beap.pop();
    
     EXPECT_EQ(min, 3);
-    EXPECT_EQ(beap.size, 5);
-    EXPECT_EQ(beap.container[0], 5);
+    EXPECT_EQ(beap.size(), 5);
+    EXPECT_EQ(beap.pop(), 5);
 }
 
 TEST_F(BeapTest, SearchInEmptyBeap) {
@@ -88,7 +88,7 @@ TEST_F(BeapTest, SearchExistingElement) {
     
     std::pair<int, int> result = beap.search(5);
     EXPECT_NE(result.first, -1); 
-    EXPECT_EQ(beap.container[result.first], 5); 
+    EXPECT_EQ(beap.getContainer()[result.first], 5); 
 }
 
 TEST_F(BeapTest, SearchNonExistingElement) {
@@ -111,22 +111,22 @@ TEST_F(BeapTest, RemoveExistingElement) {
     beap.push(15);
     beap.push(3);
     beap.push(7);
-    int initialSize = beap.size;
+    int initialSize = beap.size();
     beap.remove(5);
-    EXPECT_EQ(beap.size, initialSize - 1);
-    EXPECT_EQ(beap.container[0], 3); 
-    EXPECT_EQ(beap.container[1], 10);
+    EXPECT_EQ(beap.size(), initialSize - 1);
+    EXPECT_EQ(beap.getContainer()[0], 3); 
+    EXPECT_EQ(beap.getContainer()[1], 10);
     beap.remove(7);
-    EXPECT_EQ(beap.container[2], 15);
+    EXPECT_EQ(beap.getContainer()[2], 15);
 }
 
 TEST_F(BeapTest, RemoveNonExistingElement) {
     beap.push(10);
     beap.push(5);
     
-    int initialSize = beap.size;
+    int initialSize = beap.size();
     beap.remove(99);
-    EXPECT_EQ(beap.size, initialSize); 
+    EXPECT_EQ(beap.size(), initialSize); 
 }
 
 
@@ -146,8 +146,8 @@ TEST_F(BeapTest, MultipleOperationsSequence) {
     beap.remove(20);
     
     // Final state should be valid
-    EXPECT_EQ(beap.size, 2);
-    EXPECT_EQ(beap.container[0], 25);
+    EXPECT_EQ(beap.size(), 2);
+    EXPECT_EQ(beap.getContainer()[0], 25);
 }
 
 TEST_F(BeapTest, LargeNumberOfInsertions) {
@@ -157,7 +157,7 @@ TEST_F(BeapTest, LargeNumberOfInsertions) {
         beap.push(i);
     }
     
-    EXPECT_EQ(beap.size, NUM_ELEMENTS);
+    EXPECT_EQ(beap.size(), NUM_ELEMENTS);
     
     // Should pop in sorted order (min first)
     for (int i = 1; i <= NUM_ELEMENTS; ++i) {
@@ -194,7 +194,7 @@ TEST_F(BeapTest, StressTest) {
     }
     
     int prev = beap.pop();
-    while (beap.size > 0) {
+    while (beap.size() > 0) {
         int current = beap.pop();
         EXPECT_GE(current, prev); // Should be non-decreasing
         prev = current;
