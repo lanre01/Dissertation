@@ -163,9 +163,10 @@ int main()
     }
     //std::cout << std::endl;
 
+    auto container = beap.getContainer();
     for(int i = 0; i < MAX_NUMBER; i++)
     {
-        std::cout << beap.container[i] << ",";
+        std::cout << container[i] << ",";
     }
     std::cout << std::endl;
 

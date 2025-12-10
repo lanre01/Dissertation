@@ -8,20 +8,13 @@ template <typename T, typename Compare = std::greater<T>>
 class Beap
 {
 public:
-	std::vector<int> container;
-	size_t size;
-	size_t height;
-	Compare compare;
-	
-	
-	Beap(): size(0), height(0), compare(Compare()){};
+	Beap(): _size(0), _height(0), compare(Compare()){};
 
-	Beap(Compare c): size(0), height(0), compare(c){};
+	Beap(Compare c): _size(0), _height(0), compare(c){};
 
 	~Beap() {};
-	Beap& operator=(const Beap&) = default;
 
-	
+	Beap& operator=(const Beap&) = default;
 
 	size_t getMaxIndexIncontainer(size_t index1, size_t index2);
 
@@ -32,6 +25,10 @@ public:
 	void push(T value);
 
 	void remove(T value);
+
+    size_t height() {return _height;}
+
+    size_t size() {return _size;}
 
 	size_t capacity() {return container.capacity();}
 
@@ -44,17 +41,23 @@ public:
 		for (T val : container) {
 			std::cout << val << " ";
 		}
-		std::cout << " | size=" << size << " height=" << height << std::endl;
+		std::cout << " | size=" << _size << " height=" << _height << std::endl;
 		std::cout.flush();
 	}
 
+    const std::vector<T> getContainer() {return container;}
+
 private:
+    size_t _size;
+	size_t _height;
+    std::vector<int> container;
+    Compare compare;
 
 	void siftUp(const size_t pos, const size_t h);
 
 	void siftDown(const size_t startPos, const size_t pos, const size_t childHeight) ;
 
-	inline const std::pair<size_t, size_t> span(size_t height);
+	inline const std::pair<size_t, size_t> span(size_t _height);
 
 	inline const std::pair<size_t, size_t> getParents(const size_t childHeight, const size_t child);
 
@@ -86,9 +89,9 @@ void Beap<T, Compare>::siftUp(const size_t pos, const size_t h)
         //std::cout << "leftChild is " << container[leftChild] << "and rightChild is " << container[rightChild] << std::endl;
         // Find the smallest child
         size_t minChildPos = INVALID_INDEX;
-        if (leftChild < size) {
+        if (leftChild < _size) {
             minChildPos = leftChild;
-            if (rightChild < size && compare(container[leftChild], container[rightChild])) {
+            if (rightChild < _size && compare(container[leftChild], container[rightChild])) {
                 minChildPos = rightChild;
             }
         }
@@ -113,11 +116,11 @@ void Beap<T, Compare>::siftUp(const size_t pos, const size_t h)
 template <typename T, typename Compare>
 void Beap<T, Compare>::siftDown(const size_t startPos, const size_t pos, const size_t childHeight) 
 {
-    if (container.empty() || size == 1)
+    if (container.empty() || _size == 1)
     {
         return;
     }
-    // siftDown(0, size-1, height);
+    // siftDown(0, _size-1, height);
     //std::cout << "pushing " << container[pos] << " from " << pos << " to " << startPos << std::endl;
     T newItem = container[pos];
     size_t currentPos = pos;
@@ -152,12 +155,12 @@ size_t Beap<T, Compare>::getMaxIndexIncontainer(size_t index1, size_t index2)
 template <typename T, typename Compare>
 std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
 {
-    if(size <= 0 || compare(container[0], value))
+    if(_size <= 0 || compare(container[0], value))
     {
         return {INVALID_INDEX, INVALID_INDEX};
     }
 
-    size_t h = height;
+    size_t h = _height;
     std::pair<size_t, size_t> lastLevel = span(h);
     size_t end = lastLevel.first;
     
@@ -167,7 +170,7 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
     }
     size_t start = lastLevel.second;
 
-    if(start >= size)
+    if(start >= _size)
     {
         start = start - h;
         h--;
@@ -197,7 +200,7 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
         {
             auto children = getChildren(h, idx);
             //std::pair<int, int> children()
-            if(children.first >= size)
+            if(children.first >= _size)
             {
                 idx--;
             }
@@ -216,23 +219,23 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
 template <typename T, typename Compare>
 T Beap<T, Compare>::pop()
 {
-    if(size <= 0)
+    if(_size <= 0)
     {
         throw std::out_of_range("cannot pop empty beap");
     }
     T minValue = container[0];
-    std::swap(container[0], container[size-1]);
-    size--;
-	container.resize(size);
-	if(size <= 0)
+    std::swap(container[0], container[_size-1]);
+    _size--;
+	container.resize(_size);
+	if(_size <= 0)
 	{
-		height = 0;
+		_height = 0;
 		return minValue;
 	}
-    std::pair<size_t, size_t> currentLevel = Beap::span(height);
-    if (size-1 < currentLevel.first)
+    std::pair<size_t, size_t> currentLevel = Beap::span(_height);
+    if (_size-1 < currentLevel.first)
     {
-        height--;
+        _height--;
     }
     
     
@@ -243,15 +246,15 @@ T Beap<T, Compare>::pop()
 template <typename T, typename Compare>
 void Beap<T, Compare>::push(T value)
 {
-    size++;
-    std::pair<size_t, size_t> currentLevel = span(height);
-    //std::cout << "in push " <<  currentLevel.first << "," << currentLevel.second << "," << height << std::endl;
-    if (currentLevel.second == INVALID_INDEX || size - 1 > currentLevel.second)
+    _size++;
+    std::pair<size_t, size_t> currentLevel = span(_height);
+    //std::cout << "in push " <<  currentLevel.first << "," << currentLevel.second << "," << _height << std::endl;
+    if (currentLevel.second == INVALID_INDEX || _size - 1 > currentLevel.second)
     {
-        height++;
+        _height++;
     }
     container.push_back(value);
-    siftDown(0, size - 1, height);
+    siftDown(0, _size - 1, _height);
 } 
 
 template <typename T, typename Compare>
@@ -264,15 +267,15 @@ void Beap<T, Compare>::remove(T value)
         return;
     }
 
-    std::swap(container[index], container[size-1]);
-    size--;
-    std::pair<size_t,size_t> lastLevel = span(height);
-    if (lastLevel.first >= size)
+    std::swap(container[index], container[_size-1]);
+    _size--;
+    std::pair<size_t,size_t> lastLevel = span(_height);
+    if (lastLevel.first >= _size)
     {
-        height--;
+        _height--;
     }
-    container.resize(size);
-    if (index+1 == size)
+    container.resize(_size);
+    if (index+1 == _size)
     {
         // removing the last element in the vector.
         return;

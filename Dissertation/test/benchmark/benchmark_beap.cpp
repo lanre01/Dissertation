@@ -18,7 +18,7 @@ static void BM_Baseline(benchmark::State& state) {
     size_t count = state.range(0);
     for (auto _ : state) {
         Beap<int> b;
-        b.container.reserve(count);
+        b.reserve(count);
         benchmark::DoNotOptimize(b);
     }
 }
@@ -30,7 +30,7 @@ static void BM_PushRandom(benchmark::State& state) {
 
     for (auto _ : state) {
         Beap<int> b;
-        b.container.reserve(count);
+        b.reserve(count);
         for (int x : data)
             b.push(x);
     }
@@ -47,7 +47,7 @@ static void BM_PushSortedAsc(benchmark::State& state) {
 
     for (auto _ : state) {
         Beap<int> b;
-        b.container.reserve(count);
+        b.reserve(count);
 
         for (int x : data)
             b.push(x);
@@ -66,7 +66,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 
     for (auto _ : state) {
         Beap<int> b;
-        b.container.reserve(count);
+        b.reserve(count);
 
         for (int x : data)
             b.push(x);
@@ -84,7 +84,7 @@ static void BM_Pop(benchmark::State& state) {
     for (auto _ : state) {
         state.PauseTiming();
         Beap<int> b;
-        b.container.reserve(count);
+        b.reserve(count);
         for(auto d : data)
             b.push(d);
         state.ResumeTiming();
@@ -103,7 +103,7 @@ static void BM_Search(benchmark::State& state) {
     size_t count = state.range(0);
 
     Beap<int> b;
-    b.container.reserve(count);
+    b.reserve(count);
     auto data = generateRandomData(count);
     for (int x : data) b.push(x);
 
@@ -124,7 +124,7 @@ static void BM_Search(benchmark::State& state) {
 static void BM_RemoveValue(benchmark::State& state) {
     size_t count = state.range(0);
     Beap<int> b;
-    b.container.reserve(count);
+    b.reserve(count);
     auto data = generateRandomData(count);
     for (int x : data) b.push(x);
 
