@@ -126,12 +126,13 @@ static void BM_RemoveValue(benchmark::State& state) {
     Beap<int> b;
     b.reserve(count);
     auto data = generateRandomData(count);
-    for (int x : data) b.push(x);
-
+    for (auto x : data) b.push(x);
+    b.printState("Push");
     for (auto _ : state) {
-        for (int x : data)
+        for (auto x : data)
             b.remove(x);
     }
+    b.printState("Remove");
 
     state.SetItemsProcessed(state.iterations() * count);
 }

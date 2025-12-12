@@ -52,7 +52,7 @@ public:
 private:
     size_t _size;
 	size_t _height;
-    std::vector<int> container;
+    std::vector<T> container;
     Compare compare;
     std::pair<size_t, size_t> _span{0,0}; // ideally -1 should be used here, but cannot have -1 with size_t
 
@@ -334,31 +334,53 @@ void Beap<T, Compare>::push(T value)
 template <typename T, typename Compare>
 void Beap<T, Compare>::remove(T value)
 {
-    std::pair<size_t, size_t> indexAndHeight = search(value);
-    //std::cout << "Searched for: " << value << "and result is: " << indexAndHeight.first << "," << indexAndHeight.second << std::endl;
-    size_t index = indexAndHeight.first;
-
-    if (index == INVALID_INDEX) {
+    auto result = search(value);
+    // value does not exist in the beap
+    if(result.first == INVALID_INDEX)
+    {
+        /*std::cout << "Search failed for " << value 
+                  << " | size=" << _size 
+                  << " height=" << _height
+                  << " span=(" << _span.first << "," << _span.second << ")\n";*/
         return;
     }
 
-    auto unused = std::exchange(container[index], container[_size-1]);
+    auto prevElem = std::exchange(container[result.first], container[_size - 1]);
+
+    // decrement the size and resize the container
     _size--;
-    std::pair<size_t,size_t> lastLevel = span(_height);
-    if (lastLevel.first >= _size)
-    {
-        _height--;
-        _span = parentSpan(_span.first, _height);
-        lastLevel = _span;
-    }
     container.resize(_size);
-    if (index+1 == _size)
-    {
-        // removing the last element in the vector.
-        _span = {0,0};
+
+    if (_size == 0) {
+        _height = 0;
+        _span = {0, 0};
         return;
     }
-    siftUp(index, indexAndHeight.second, lastLevel);
+
+    // check if we just deleted the only element in a level
+    if(_size - 1 < _span.first )
+    {
+        /*std::cout << "Searching for " << value
+                  << " found at " << result.first  
+                  << " | size=" << _size 
+                  << " height=" << _height
+                  << " span=(" << _span.first << "," << _span.second << ")\n";*/
+
+        _height--;
+        _span = parentSpan(_span.first, _height); // update global span
+    }
+
+    // if the last element in the vector was removed, no need to siftUp
+    if(result.first >= _size)
+    {
+        return;
+    }
+
+    if(compare(value, container[result.first]))
+        siftDown(0, result.first, result.second, span(result.second));
+
+    siftUp(result.first, result.second, span(result.second));
+    
 }
 
 template <typename T, typename Compare>

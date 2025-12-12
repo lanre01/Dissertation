@@ -1,5 +1,17 @@
 #include <gtest/gtest.h>
 #include "../../src/Beap/Beap.hpp"  
+#include <random>
+#include <algorithm>
+
+static std::mt19937 rng(42);
+
+std::vector<int> generateRandomData(size_t n) {
+    std::uniform_int_distribution<int> dist(1, 1'000'000);
+    std::vector<int> v(n);
+    for (auto& x : v) x = dist(rng);
+    return v;
+}
+
 
 class BeapTest : public ::testing::Test {
 protected:
@@ -102,13 +114,28 @@ TEST_F(BeapTest, SearchNonExistingElement) {
     EXPECT_EQ(result.second, INVALID_INDEX);
 }
 
+TEST_F(BeapTest, SearchManyExistingElement)
+{
+    size_t MAX_NUMBER = 1000;
+    for(size_t i = 1; i <= MAX_NUMBER; i++)
+    {
+        beap.push(i);
+    }
+
+    for(size_t i = MAX_NUMBER; i > 0; i--)
+    {
+        EXPECT_NE(beap.search(i).first, INVALID_INDEX);
+    }
+    
+}
+
 
 TEST_F(BeapTest, RemoveFromEmptyBeap) {
     EXPECT_NO_THROW(beap.remove(10)); 
 }
 
 TEST_F(BeapTest, RemoveExistingElement) {
-    beap.push(10);
+    /*beap.push(10);
     beap.push(5);
     beap.push(15);
     beap.push(3);
@@ -121,8 +148,20 @@ TEST_F(BeapTest, RemoveExistingElement) {
     for(size_t i = 0; i < initialSize; i++)
     {
         EXPECT_NE(beap.pop(), 5);
+    }*/
+    size_t MAX_NUMBER = 10000;
+    auto data = generateRandomData(MAX_NUMBER);
+    for (int x : data) beap.push(x);
+
+    std::cout << "Beap size is " << beap.size() << std::endl;
+    //b.printState("Pushes");
+    for (int x : data) {
+        beap.remove(x);
+        //b.printState("REMOVING");
     }
-    
+
+    EXPECT_EQ(beap.empty(), true);
+    beap.printState("Removing");
 }
 
 TEST_F(BeapTest, RemoveNonExistingElement) {

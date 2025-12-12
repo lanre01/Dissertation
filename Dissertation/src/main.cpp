@@ -154,9 +154,9 @@ int main()
     //measure_push_cost_per_operation();
     //measure_remove_min_cost_per_operation();
     
-    Beap<int> beap = Beap<int>();
-    int MAX_NUMBER = 10;
-    for (int i = 0; i < MAX_NUMBER; i++) {
+    //Beap<int> beap = Beap<int>();
+    int MAX_NUMBER = 100000;
+    /*for (int i = 0; i < MAX_NUMBER; i++) {
         auto t = rand() % MAX_NUMBER;
         beap.push(t);
         //std::cout << t << ",";
@@ -182,5 +182,18 @@ int main()
         std::cout << "Successfully searched target: " << target << " and result is " 
         << res.first << ", " << res.second << std::endl; 
     }*/
-   return 0;
+
+    Beap<int> b;
+    b.reserve(MAX_NUMBER);
+    auto data = generateRandomData(MAX_NUMBER);
+    for (int x : data) b.push(x);
+
+    //b.printState("Pushes");
+    for (int x : data) {
+        b.remove(x);
+        //b.printState("REMOVING");
+    }
+
+    b.printState("REMOVING");
+    return 0;
 }
