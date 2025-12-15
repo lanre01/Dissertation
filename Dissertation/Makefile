@@ -110,6 +110,20 @@ $(BUILD_DIR)/test/benchmark/benchmark_heap.o: $(HEAP_BENCH_SRC) | $(BUILD_DIR)/t
 $(BUILD_DIR)/test/benchmark/benchmark_bst.o: $(BST_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
+
+# Build unit test
+tests: $(UNIT_TEST_TARGET)
+
+# Build benchmarks
+bench-beap: $(BEAP_BENCH_TARGET)
+
+bench-heap: $(HEAP_BENCH_TARGET)
+
+bench-nbeap: $(NBEAP_BENCH_TARGET)
+
+bench-bst: $(BST_BENCH_TARGET)
+
+
 # ============================================================
 # Run commands
 # ============================================================
@@ -167,4 +181,5 @@ $(BUILD_DIR)/test/unit: | $(BUILD_DIR)/test
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 
-.PHONY: all clean run debug run-unit-tests run-bench-beap run-bench-nbeap run-bench-heap run-bench-all
+.PHONY: all clean run debug run-unit-tests run-bench-beap run-bench-nbeap run-bench-heap run-bench-all bench-beap bench-heap bench-bst bench-nbeap
+
