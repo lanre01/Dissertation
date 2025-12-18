@@ -207,8 +207,13 @@ size_t Beap<T, Compare>::getMaxIndexIncontainer(size_t index1, size_t index2)
 {
     if (index2 == INVALID_INDEX) return index1;
     if (index1 == INVALID_INDEX) return index2;
-
-    return compare(container[index1], container[index2]) ? index1 : index2;
+    int diff = index2 - index1;
+    
+    auto result = index1 + (diff * !compare(container[index1], container[index2]));
+    //std::cout << "Comparing " << index1 << "," << index2 << "with difference " <<
+        //diff << "and compare result " << !!compare(index1, index2) << " final result " << result << std::endl;
+    return result;
+    //return compare(container[index1], container[index2]) ? index1 : index2;
 }
 
 template <typename T, typename Compare>
