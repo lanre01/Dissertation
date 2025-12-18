@@ -120,18 +120,23 @@ static void BM_Search(benchmark::State& state) {
 
 
 
+
 // Benchmark remove(value)
 static void BM_RemoveValue(benchmark::State& state) {
     size_t count = state.range(0);
     Beap<int> b;
-    b.container.reserve(count);
-    auto data = generateRandomData(count);
-    for (int x : data) b.push(x);
-
+    b.reserve(count);
+    
     for (auto _ : state) {
-        for (int x : data)
+        state.PauseTiming();
+        auto data = generateRandomData(count);
+        for (auto x : data) b.push(x);
+        state.ResumeTiming();
+
+        for (auto x : data)
             b.remove(x);
     }
+    
 
     state.SetItemsProcessed(state.iterations() * count);
 }
