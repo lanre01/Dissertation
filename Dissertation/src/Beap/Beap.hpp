@@ -380,10 +380,12 @@ void Beap<T, Compare>::remove(T value)
     {
         return;
     }
-    if(compare(value, container[index]))
-        siftDown(0, index, indexAndHeight.second);
-        
-    siftUp(index, indexAndHeight.second);
+
+    if(compare(value, container[result.first]))
+        siftDown(0, result.first, result.second, span(result.second));
+
+    siftUp(result.first, result.second, span(result.second));
+    
 }
 
 template <typename T, typename Compare>

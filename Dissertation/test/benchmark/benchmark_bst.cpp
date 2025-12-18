@@ -111,6 +111,30 @@ static void BM_Search(benchmark::State& state)
     state.SetItemsProcessed(state.iterations() * count);
 }
 
+
+// Benchmark remove(value)
+static void BM_RemoveValue(benchmark::State& state) {
+    size_t count = state.range(0);
+    std::map<int, int> m;    
+    auto data = generateRandomData(count);
+
+    for (auto _ : state) {
+        state.PauseTiming();
+        for (auto x : data) 
+            m[x] = x;
+        state.ResumeTiming();
+
+        for (auto x : data){
+            auto t = m.erase(x);
+            benchmark::DoNotOptimize(t);
+    
+        }
+    }
+
+    state.SetItemsProcessed(state.iterations() * count);
+}
+
+
 BENCHMARK(BM_Baseline)->RangeMultiplier(4)->Range(256, 1<<20);
 
 BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20); 
@@ -120,5 +144,8 @@ BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20);
 BENCHMARK(BM_Pop)->RangeMultiplier(2)->Range(256, 1<<20); 
 
 BENCHMARK(BM_Search)->RangeMultiplier(4)->Range(256, 1<<20); 
+
+BENCHMARK(BM_RemoveValue)->RangeMultiplier(4)->Range(256, 1<<20); 
+
 
 BENCHMARK_MAIN();
