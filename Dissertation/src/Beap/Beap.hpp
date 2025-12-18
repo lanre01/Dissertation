@@ -277,6 +277,9 @@ void Beap<T, Compare>::remove(T value)
         // removing the last element in the vector.
         return;
     }
+    if(compare(value, container[index]))
+        siftDown(0, index, indexAndHeight.second);
+        
     siftUp(index, indexAndHeight.second);
 }
 
