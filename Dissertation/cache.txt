@@ -1,0 +1,231 @@
+ Performance counter stats for './bin/bench_beap --benchmark_filter=BM_PushRandom':
+
+          12016.95 msec task-clock:u                     #    1.002 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+              6266      page-faults:u                    #  521.430 /sec
+       57772330868      cycles:u                         #    4.808 GHz                         (46.07%)
+        5318773160      stalled-cycles-frontend:u        #    9.21% frontend cycles idle        (46.08%)
+      173548879539      instructions:u                   #    3.00  insn per cycle
+                                                  #    0.03  stalled cycles per insn     (46.11%)
+       41341812713      branches:u                       #    3.440 G/sec                       (46.14%)
+         654886590      branch-misses:u                  #    1.58% of all branches             (46.17%)
+       24049698222      L1-dcache-loads:u                #    2.001 G/sec                       (46.20%)
+         587051862      L1-dcache-load-misses:u          #    2.44% of all L1-dcache accesses   (46.23%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+           3745406      L1-icache-loads:u                #  311.677 K/sec                       (46.22%)
+             31907      L1-icache-load-misses:u          #    0.85% of all L1-icache accesses   (46.22%)
+         468421931      dTLB-loads:u                     #   38.980 M/sec                       (46.19%)
+             81679      dTLB-load-misses:u               #    0.02% of all dTLB cache accesses  (46.16%)
+             30737      iTLB-loads:u                     #    2.558 K/sec                       (46.13%)
+              3275      iTLB-load-misses:u               #   10.65% of all iTLB cache accesses  (46.09%)
+
+      11.995726150 seconds time elapsed
+
+      11.992851000 seconds user
+       0.024049000 seconds sys
+
+ Performance counter stats for './bin/bench_heap --benchmark_filter=BM_PushRandom':
+
+          12532.96 msec task-clock:u                     #    1.003 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+             13942      page-faults:u                    #    1.112 K/sec
+       59123116747      cycles:u                         #    4.717 GHz                         (42.84%)
+       18219578255      stalled-cycles-frontend:u        #   30.82% frontend cycles idle        (42.87%)
+      153217344032      instructions:u                   #    2.59  insn per cycle
+                                                  #    0.12  stalled cycles per insn     (42.89%)
+       32422744571      branches:u                       #    2.587 G/sec                       (42.90%)
+         783394484      branch-misses:u                  #    2.42% of all branches             (42.89%)
+       31265118483      L1-dcache-loads:u                #    2.495 G/sec                       (42.90%)
+         325115232      L1-dcache-load-misses:u          #    1.04% of all L1-dcache accesses   (42.88%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+           7479765      L1-icache-loads:u                #  596.808 K/sec                       (42.85%)
+             73362      L1-icache-load-misses:u          #    0.98% of all L1-icache accesses   (42.84%)
+           2480715      dTLB-loads:u                     #  197.935 K/sec                       (42.83%)
+            245981      dTLB-load-misses:u               #    9.92% of all dTLB cache accesses  (42.83%)
+             76331      iTLB-loads:u                     #    6.090 K/sec                       (42.83%)
+            150305      iTLB-load-misses:u               #  196.91% of all iTLB cache accesses  (42.83%)
+         298940727      L1-dcache-prefetches:u           #   23.852 M/sec                       (42.83%)
+   <not supported>      L1-dcache-prefetch-misses:u
+
+      12.501148765 seconds time elapsed
+
+      12.485305000 seconds user
+       0.048128000 seconds sys
+
+
+
+Performance counter stats for './bin/bench_bst --benchmark_filter=BM_PushRandom':
+
+          10931.24 msec task-clock:u                     #    1.009 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+             14429      page-faults:u                    #    1.320 K/sec
+       54430445816      cycles:u                         #    4.979 GHz                         (42.81%)
+        3515273519      stalled-cycles-frontend:u        #    6.46% frontend cycles idle        (42.85%)
+       96501797796      instructions:u                   #    1.77  insn per cycle
+                                                  #    0.04  stalled cycles per insn     (42.88%)
+       19017209522      branches:u                       #    1.740 G/sec                       (42.92%)
+         208731805      branch-misses:u                  #    1.10% of all branches             (42.95%)
+       34207858896      L1-dcache-loads:u                #    3.129 G/sec                       (42.95%)
+        1254022309      L1-dcache-load-misses:u          #    3.67% of all L1-dcache accesses   (42.93%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+          26707382      L1-icache-loads:u                #    2.443 M/sec                       (42.89%)
+            189322      L1-icache-load-misses:u          #    0.71% of all L1-icache accesses   (42.86%)
+         550970535      dTLB-loads:u                     #   50.403 M/sec                       (42.82%)
+          11501989      dTLB-load-misses:u               #    2.09% of all dTLB cache accesses  (42.78%)
+             95672      iTLB-loads:u                     #    8.752 K/sec                       (42.79%)
+              4558      iTLB-load-misses:u               #    4.76% of all iTLB cache accesses  (42.78%)
+         230305578      L1-dcache-prefetches:u           #   21.069 M/sec                       (42.78%)
+   <not supported>      L1-dcache-prefetch-misses:u
+
+      10.831720559 seconds time elapsed
+
+      10.892223000 seconds user
+       0.040386000 seconds sys
+
+
+       Important Metrics
+       Heap
+34207858896      L1-dcache-loads:u                #    3.129 G/sec                       (42.95%)
+1254022309      L1-dcache-load-misses:u          #    3.67% of all L1-dcache accesses   (42.93%)
+
+
+ Performance counter stats for './bin/bench_heap --benchmark_filter=BM_Pop':
+
+          16759.85 msec task-clock:u                     #    1.013 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+             12854      page-faults:u                    #  766.952 /sec
+       76814383962      cycles:u                         #    4.583 GHz                         (42.82%)
+        6411164335      stalled-cycles-frontend:u        #    8.35% frontend cycles idle        (42.85%)
+      339442233311      instructions:u                   #    4.42  insn per cycle
+                                                  #    0.02  stalled cycles per insn     (42.87%)
+       75081687908      branches:u                       #    4.480 G/sec                       (42.89%)
+         508275007      branch-misses:u                  #    0.68% of all branches             (42.90%)
+       75210578800      L1-dcache-loads:u                #    4.488 G/sec                       (42.91%)
+         156947938      L1-dcache-load-misses:u          #    0.21% of all L1-dcache accesses   (42.91%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+         116742715      L1-icache-loads:u                #    6.966 M/sec                       (42.88%)
+            120723      L1-icache-load-misses:u          #    0.10% of all L1-icache accesses   (42.86%)
+           1834943      dTLB-loads:u                     #  109.484 K/sec                       (42.84%)
+            127459      dTLB-load-misses:u               #    6.95% of all dTLB cache accesses  (42.83%)
+            101330      iTLB-loads:u                     #    6.046 K/sec                       (42.81%)
+           5409214      iTLB-load-misses:u               # 5338.22% of all iTLB cache accesses  (42.81%)
+         145942693      L1-dcache-prefetches:u           #    8.708 M/sec                       (42.82%)
+   <not supported>      L1-dcache-prefetch-misses:u
+
+      16.542607453 seconds time elapsed
+
+      15.815554000 seconds user
+       0.944393000 seconds sys
+
+
+ Performance counter stats for './bin/bench_beap --benchmark_filter=BM_Pop':
+
+          21834.11 msec task-clock:u                     #    1.015 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+              5271      page-faults:u                    #  241.411 /sec
+      105676537853      cycles:u                         #    4.840 GHz                         (42.84%)
+       15135898615      stalled-cycles-frontend:u        #   14.32% frontend cycles idle        (42.84%)
+      285581912174      instructions:u                   #    2.70  insn per cycle
+                                                  #    0.05  stalled cycles per insn     (42.84%)
+       57951355510      branches:u                       #    2.654 G/sec                       (42.84%)
+        1967096373      branch-misses:u                  #    3.39% of all branches             (42.84%)
+       63486971888      L1-dcache-loads:u                #    2.908 G/sec                       (42.86%)
+        4079828462      L1-dcache-load-misses:u          #    6.43% of all L1-dcache accesses   (42.87%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+          53674287      L1-icache-loads:u                #    2.458 M/sec                       (42.87%)
+            361896      L1-icache-load-misses:u          #    0.67% of all L1-icache accesses   (42.87%)
+        1087299256      dTLB-loads:u                     #   49.798 M/sec                       (42.87%)
+            548470      dTLB-load-misses:u               #    0.05% of all dTLB cache accesses  (42.87%)
+             96348      iTLB-loads:u                     #    4.413 K/sec                       (42.87%)
+           2180604      iTLB-load-misses:u               # 2263.26% of all iTLB cache accesses  (42.87%)
+         917182928      L1-dcache-prefetches:u           #   42.007 M/sec                       (42.85%)
+   <not supported>      L1-dcache-prefetch-misses:u
+
+      21.502520061 seconds time elapsed
+
+      21.447642000 seconds user
+       0.385968000 seconds sys
+
+
+
+ Performance counter stats for './bin/bench_bst --benchmark_filter=BM_Pop':
+
+          71238.20 msec task-clock:u                     #    1.019 CPUs utilized
+                 0      context-switches:u               #    0.000 /sec
+                 0      cpu-migrations:u                 #    0.000 /sec
+             10924      page-faults:u                    #  153.345 /sec
+      355047038933      cycles:u                         #    4.984 GHz                         (42.85%)
+       26329785370      stalled-cycles-frontend:u        #    7.42% frontend cycles idle        (42.86%)
+      428693446125      instructions:u                   #    1.21  insn per cycle
+                                                  #    0.06  stalled cycles per insn     (42.86%)
+       91518138505      branches:u                       #    1.285 G/sec                       (42.87%)
+        1624225131      branch-misses:u                  #    1.77% of all branches             (42.87%)
+      174885589398      L1-dcache-loads:u                #    2.455 G/sec                       (42.87%)
+        7461304139      L1-dcache-load-misses:u          #    4.27% of all L1-dcache accesses   (42.86%)
+   <not supported>      LLC-loads:u
+   <not supported>      LLC-load-misses:u
+         263055867      L1-icache-loads:u                #    3.693 M/sec                       (42.86%)
+           1172960      L1-icache-load-misses:u          #    0.45% of all L1-icache accesses   (42.85%)
+        4446855910      dTLB-loads:u                     #   62.422 M/sec                       (42.85%)
+         179218470      dTLB-load-misses:u               #    4.03% of all dTLB cache accesses  (42.85%)
+            390169      iTLB-loads:u                     #    5.477 K/sec                       (42.85%)
+           2303340      iTLB-load-misses:u               #  590.34% of all iTLB cache accesses  (42.85%)
+        1440242436      L1-dcache-prefetches:u           #   20.217 M/sec                       (42.85%)
+   <not supported>      L1-dcache-prefetch-misses:u
+
+      69.906149199 seconds time elapsed
+
+      70.666482000 seconds user
+       0.570712000 seconds sys
+
+
+
+Results for Cache Misses
+Pop 
+DS    | L1 cache miss (%)
+--------------------------
+heap  |  0.21%
+beap  |  6.43%
+bst   |  4.27%
+
+
+Push 
+DS    | L1 cache miss (%)
+--------------------------
+heap  |  1.04%
+beap  |  2.44%
+bst   |  3.67%
+
+
+Results for Branch Misses
+Pop 
+DS    | L1 cache miss (%)
+--------------------------
+heap  |  0.68% 
+beap  |  3.39%
+bst   |  1.77%
+
+
+Push 
+DS    | L1 cache miss (%)
+--------------------------
+heap  |  2.42%
+beap  |  1.58%
+bst   |  1.10%
+
+
+Detailed Cache Misses for Heap and Beap 
+Push 
+DS   | 256  | 512   | 1024  | 2048  | 4096  | 8192  | 16384 |
+Beap | 0%   | 0%    | 0.01  | 0.01  | 0.03  | 0.07  | 4.05  | 
+Heap | 0.0% | 0.01% | 0.01% | 0.04% | 0.17% | 0.31% | 0.32% |

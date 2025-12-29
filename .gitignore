@@ -46,3 +46,6 @@
 bin/
 # user specific files
 *.user
+
+
+perf.data*

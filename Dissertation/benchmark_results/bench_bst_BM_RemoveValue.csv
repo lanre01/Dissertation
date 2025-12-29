@@ -1,0 +1,8 @@
+name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
+"BM_RemoveValue/256",119774,5430.61,5514.38,ns,,4.64241e+07,,,
+"BM_RemoveValue/1024",30786,22848.5,22984.5,ns,,4.45518e+07,,,
+"BM_RemoveValue/4096",2570,260806,262302,ns,,1.56156e+07,,,
+"BM_RemoveValue/16384",489,1.43673e+06,1.44491e+06,ns,,1.13391e+07,,,
+"BM_RemoveValue/65536",91,7.81757e+06,7.8621e+06,ns,,8.33569e+06,,,
+"BM_RemoveValue/262144",10,5.03645e+07,5.15249e+07,ns,,5.08771e+06,,,
+"BM_RemoveValue/1048576",2,2.62406e+08,2.69922e+08,ns,,3.88473e+06,,,

@@ -21,7 +21,7 @@ protected:
 
 TEST_F(BeapTest, ConstructorInitializesCorrectly) {
     EXPECT_EQ(beap.size(), 0);
-    EXPECT_EQ(beap.height(), 0);
+    EXPECT_EQ(beap.height(), -1);
     EXPECT_TRUE(beap.empty());
 }
 
@@ -30,7 +30,7 @@ TEST_F(BeapTest, InsertFirstElement) {
     beap.push(10);
     
     EXPECT_EQ(beap.size(), 1);
-    EXPECT_EQ(beap.height(), 1);
+    EXPECT_EQ(beap.height(), 0);
     EXPECT_EQ(beap.size(), 1);
     EXPECT_EQ(beap.pop(), 10);
 }
@@ -65,11 +65,11 @@ TEST_F(BeapTest, PopSingleElement) {
     
     EXPECT_EQ(value, 42);
     EXPECT_EQ(beap.size(), 0);
-    EXPECT_EQ(beap.height(), 0);
+    EXPECT_EQ(beap.height(), -1);
 
     beap.push(3);
     EXPECT_EQ(beap.size(), 1);
-    EXPECT_EQ(beap.height(), 1);
+    EXPECT_EQ(beap.height(), 0);
 }
 
 TEST_F(BeapTest, PopMaintainsBeapProperty) {
@@ -135,20 +135,6 @@ TEST_F(BeapTest, RemoveFromEmptyBeap) {
 }
 
 TEST_F(BeapTest, RemoveExistingElement) {
-    /*beap.push(10);
-    beap.push(5);
-    beap.push(15);
-    beap.push(3);
-    beap.push(7);
-    size_t initialSize = beap.size();
-    beap.remove(5);
-    initialSize--;
-    EXPECT_EQ(beap.size(), initialSize);
-
-    for(size_t i = 0; i < initialSize; i++)
-    {
-        EXPECT_NE(beap.pop(), 5);
-    }*/
     size_t MAX_NUMBER = 10000;
     auto data = generateRandomData(MAX_NUMBER);
     for (int x : data) beap.push(x);

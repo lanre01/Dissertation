@@ -1,0 +1,25 @@
+{"beap":
+[
+{"counter-value" : "12397.981948", "unit" : "msec", "event" : "task-clock:u", "event-runtime" : 12397981948, "pcnt-running" : 100.00, "metric-value" : "0.999866", "metric-unit" : "CPUs utilized"},
+{"counter-value" : "0.000000", "unit" : "", "event" : "context-switches:u", "event-runtime" : 12397981948, "pcnt-running" : 100.00, "metric-value" : "0.000000", "metric-unit" : "/sec"},
+{"counter-value" : "0.000000", "unit" : "", "event" : "cpu-migrations:u", "event-runtime" : 12397981948, "pcnt-running" : 100.00, "metric-value" : "0.000000", "metric-unit" : "/sec"},
+{"counter-value" : "6487.000000", "unit" : "", "event" : "page-faults:u", "event-runtime" : 12397981948, "pcnt-running" : 100.00, "metric-value" : "523.230315", "metric-unit" : "/sec"},
+{"counter-value" : "60700784907.000000", "unit" : "", "event" : "cycles:u", "event-runtime" : 5713540754, "pcnt-running" : 46.00, "metric-value" : "4.896021", "metric-unit" : "GHz"},
+{"counter-value" : "5695158233.000000", "unit" : "", "event" : "stalled-cycles-frontend:u", "event-runtime" : 5717560297, "pcnt-running" : 46.00, "metric-value" : "9.382347", "metric-unit" : "frontend cycles idle"},
+{"counter-value" : "181484424694.000000", "unit" : "", "event" : "instructions:u", "event-runtime" : 5721988201, "pcnt-running" : 46.00, "metric-value" : "2.989820", "metric-unit" : "insn per cycle"},
+{"metric-value" : "0.031381", "metric-unit" : "stalled cycles per insn"},
+{"counter-value" : "43263136462.000000", "unit" : "", "event" : "branches:u", "event-runtime" : 5726022386, "pcnt-running" : 46.00, "metric-value" : "3.489531", "metric-unit" : "G/sec"},
+{"counter-value" : "696622523.000000", "unit" : "", "event" : "branch-misses:u", "event-runtime" : 5729959179, "pcnt-running" : 46.00, "metric-value" : "1.610199", "metric-unit" : "of all branches"},
+{"counter-value" : "25042739873.000000", "unit" : "", "event" : "L1-dcache-loads:u", "event-runtime" : 5733747453, "pcnt-running" : 46.00, "metric-value" : "2.019905", "metric-unit" : "G/sec"},
+{"counter-value" : "627991208.000000", "unit" : "", "event" : "L1-dcache-load-misses:u", "event-runtime" : 5732309881, "pcnt-running" : 46.00, "metric-value" : "2.507678", "metric-unit" : "of all L1-dcache accesses"},
+{"counter-value" : "<not supported>", "unit" : "", "event" : "LLC-loads:u", "event-runtime" : 0, "pcnt-running" : 100.00, "metric-value" : "0.000000", "metric-unit" : ""},
+{"counter-value" : "<not supported>", "unit" : "", "event" : "LLC-load-misses:u", "event-runtime" : 0, "pcnt-running" : 100.00, "metric-value" : "0.000000", "metric-unit" : ""},
+{"counter-value" : "3824453.000000", "unit" : "", "event" : "L1-icache-loads:u", "event-runtime" : 5728569646, "pcnt-running" : 46.00, "metric-value" : "308.473832", "metric-unit" : "K/sec"},
+{"counter-value" : "34396.000000", "unit" : "", "event" : "L1-icache-load-misses:u", "event-runtime" : 5724228440, "pcnt-running" : 46.00, "metric-value" : "0.899370", "metric-unit" : "of all L1-icache accesses"},
+{"counter-value" : "472785643.000000", "unit" : "", "event" : "dTLB-loads:u", "event-runtime" : 5720152040, "pcnt-running" : 46.00, "metric-value" : "38.134081", "metric-unit" : "M/sec"},
+{"counter-value" : "70693.000000", "unit" : "", "event" : "dTLB-load-misses:u", "event-runtime" : 5716027315, "pcnt-running" : 46.00, "metric-value" : "0.014952", "metric-unit" : "of all dTLB cache accesses"},
+{"counter-value" : "30532.000000", "unit" : "", "event" : "iTLB-loads:u", "event-runtime" : 5712027383, "pcnt-running" : 46.00, "metric-value" : "2.462659", "metric-unit" : "K/sec"},
+{"counter-value" : "3577.000000", "unit" : "", "event" : "iTLB-load-misses:u", "event-runtime" : 5711758713, "pcnt-running" : 46.00, "metric-value" : "11.715577", "metric-unit" : "of all iTLB cache accesses"}
+],
+"heap": []
+}

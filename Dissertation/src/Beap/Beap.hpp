@@ -28,7 +28,7 @@ public:
 
 	void remove(T value);
 
-    size_t height() {return _height;}
+    size_t height() {return _height-1;}
 
     size_t size() {return _size;}
 
@@ -324,15 +324,19 @@ template <typename T, typename Compare>
 void Beap<T, Compare>::push(T value)
 {
     _size++;
-    std::pair<size_t, size_t> currentLevel = span(_height);
+    //std::pair<size_t, size_t> currentLevel = span(_height);
     //std::cout << "in push " <<  currentLevel.first << "," << currentLevel.second << "," << _height << std::endl;
-    if (currentLevel.second == INVALID_INDEX || _size - 1 > currentLevel.second)
+    if (_size == 1 || _size - 1 > _span.second)
     {
         _height++;
         if(_size > 1) // no need to update the span for the first element inserted
             _span = childSpan(_span.second, _height);
     }
     container.push_back(value);
+    if(_size <= 1)
+    {
+        return;
+    }
     siftDown(0, _size - 1, _height);
 } 
 

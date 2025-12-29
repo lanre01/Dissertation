@@ -1,0 +1,39 @@
+2025-12-19T09:04:32+00:00
+Running ./bin/bench_beap
+Run on (16 X 3992.5 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1024 KiB (x8)
+  L3 Unified 16384 KiB (x1)
+Load Average: 0.49, 0.19, 0.10
+--------------------------------------------------------------------------------
+Benchmark                      Time             CPU   Iterations UserCounters...
+--------------------------------------------------------------------------------
+BM_PushRandom/256           2935 ns         2933 ns       246127 items_per_second=87.2768M/s
+BM_PushRandom/512           8133 ns         8131 ns        91177 items_per_second=62.9677M/s
+BM_PushRandom/1024         24526 ns        24532 ns        27833 items_per_second=41.742M/s
+BM_PushRandom/2048         64483 ns        64522 ns        11026 items_per_second=31.741M/s
+BM_PushRandom/4096        300915 ns       301266 ns         2293 items_per_second=13.596M/s
+BM_PushRandom/8192        801730 ns       802900 ns          867 items_per_second=10.203M/s
+BM_PushRandom/16384      2192074 ns      2198551 ns          320 items_per_second=7.45218M/s
+BM_PushRandom/32768      6532653 ns      6565958 ns          114 items_per_second=4.99059M/s
+BM_PushRandom/65536     18107011 ns     18204162 ns           38 items_per_second=3.60006M/s
+BM_PushRandom/131072    49128650 ns     49404730 ns           13 items_per_second=2.65303M/s
+BM_PushRandom/262144   139965438 ns    140776902 ns            5 items_per_second=1.86212M/s
+BM_PushRandom/524288   404051760 ns    406485606 ns            2 items_per_second=1.28981M/s
+BM_PushRandom/1048576 1187064254 ns   1193101636 ns            1 items_per_second=878.866k/s
+12074.47-dmsec-dtask-clock:u-d12074473810-d100.00-d1.003-dCPUs utilized
+0-d-dcontext-switches:u-d12074473810-d100.00-d0.000-d/sec
+0-d-dcpu-migrations:u-d12074473810-d100.00-d0.000-d/sec
+6264-d-dpage-faults:u-d12074473810-d100.00-d518.780-d/sec
+57846006353-d-dcycles:u-d10349367861-d85.00-d4.791-dGHz
+5550757474-d-dstalled-cycles-frontend:u-d10349200828-d85.00-d9.60-dfrontend cycles idle
+171093233780-d-dinstructions:u-d10349573724-d85.00-d2.96-dinsn per cycle
+-d-d-d-d-d0.03-dstalled cycles per insn
+40815223840-d-dbranches:u-d10348821610-d85.00-d3.380-dG/sec
+677721868-d-dbranch-misses:u-d10349983633-d85.00-d1.66-dof all branches
+23797189810-d-dL1-dcache-loads:u-d10349397786-d85.00-d1.971-dG/sec
+598003631-d-dL1-dcache-load-misses:u-d10350497418-d85.00-d2.51-dof all L1-dcache accesses
+<not supported>-d-dLLC-loads:u-d0-d100.00-d-d
+<not supported>-d-dLLC-load-misses:u-d0-d100.00-d-d
