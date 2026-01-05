@@ -22,7 +22,7 @@ TEST_F(nBeapTest, InsertSingleElement)
     nbeap.insert(10);
 
     EXPECT_EQ(nbeap.size(), 1);
-    EXPECT_EQ(nbeap.height(), 1);
+    EXPECT_EQ(nbeap.height(), 0);
 }
 
 TEST_F(nBeapTest, InsertMultipleElements)
