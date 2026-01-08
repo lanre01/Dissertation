@@ -459,7 +459,7 @@ inline const std::pair<size_t, size_t> Beap<T, Compare>::getParents(
         return {parentLevel.second, INVALID_INDEX};
     }
 
-    int secondParent = childIndex - numberOfElementInTheLevel;
+    auto secondParent = childIndex - numberOfElementInTheLevel;
 
     return { secondParent - 1, secondParent};
 }

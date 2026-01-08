@@ -1,6 +1,12 @@
 # Compiler and flags
 CXX := clang++
-CXXFLAGS := -std=c++20 -Wall -Wextra -O2 -I./src
+# CXXFLAGS := -std=c++20 -Wall -Wextra -O2 -I./src
+
+CXXFLAGS_BASE := -std=c++20 -Wall -Wextra -I./src
+CXXFLAGS_RELEASE := $(CXXFLAGS_BASE) -O2
+CXXFLAGS_DEBUG := $(CXXFLAGS_BASE) -O0 -g -ggdb3 -fno-omit-frame-pointer -DDEBUG
+
+CXXFLAGS := $(CXXFLAGS_RELEASE)
 
 # Directories
 SRC_DIR := src
@@ -154,8 +160,29 @@ run-bench-bst: $(BST_BENCH_TARGET)
 run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap 
 
 # Debug build
-debug: CXXFLAGS += -g -DDEBUG
-debug: $(TARGET)
+#debug: CXXFLAGS += -g -DDEBUG
+#debug: $(TARGET)
+
+
+debug: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug: clean $(TARGET)
+
+debug-tests: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-tests: clean $(UNIT_TEST_TARGET)
+
+debug-bench-beap: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-bench-beap: clean $(BEAP_BENCH_TARGET)
+
+debug-bench-nbeap: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-bench-nbeap: clean $(NBEAP_BENCH_TARGET)
+
+debug-bench-heap: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-bench-heap: clean $(HEAP_BENCH_TARGET)
+
+debug-bench-bst: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-bench-bst: clean $(BST_BENCH_TARGET)
+
+
 
 # Directory creation
 $(BIN_DIR):
