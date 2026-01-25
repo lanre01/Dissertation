@@ -32,10 +32,12 @@ int main()
 
     //Beap<int> b;
     nBeap<int, 2> nbeap;
+    nBeap<int, 3> nbeap3;
     //b.reserve(MAX_NUMBER);
     auto data = generateRandomData(MAX_NUMBER);
 
     nbeap.insert(54);
+    nbeap3.insert(54);
 
     const int STRESS_COUNT = 10;
     

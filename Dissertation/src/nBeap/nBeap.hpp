@@ -183,10 +183,7 @@ private:
     
     void siftDown(uint64_t startPos, unsigned int h, std::pair<uint64_t, uint64_t> levelInterval = {0,0});
     void bubbleUp(uint64_t index, uint64_t endIndex, unsigned int h, std::pair<uint64_t, uint64_t> levelInterval);
-
-    std::pair<uint64_t, uint64_t> getChildren(uint64_t parentIndex, unsigned int parentHeight);
-    std::pair<uint64_t, uint64_t> getParents(uint64_t childIndex, unsigned int childHeight);
-
+    
     std::optional<uint64_t> getMinOrMaxParentIndex(
         uint64_t currentPos, unsigned int childHeight, std::pair<uint64_t, uint64_t> levelInterval
     );
@@ -194,9 +191,18 @@ private:
         uint64_t currentPos, unsigned int childHeight, std::pair<uint64_t, uint64_t> levelInterval
     );
 
-    std::pair<uint64_t, uint64_t> getDMinus1Level(uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval);
+    std::optional<uint64_t> getOtherChildren(
+        uint64_t currentPos, unsigned int parentHeight, 
+        std::pair<uint64_t, uint64_t> levelInterval
+    );
 
-    uint64_t getNumberOfElementInNextLevel(unsigned int currHeight, uint64_t numOfElemCurrLevel, int offsetDim);
+    std::pair<uint64_t, uint64_t> getNMinusOffsetLevel(
+        uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval, uint64_t offset = 1
+    );
+
+    inline uint64_t getNumberOfElementInNextLevel(
+        unsigned int currHeight, uint64_t numOfElemCurrLevel, int offsetDim
+    );
 
     inline uint64_t getNumberOfElementInNextLevel(unsigned int currHeight, uint64_t numOfElemCurrLevel)
     {
@@ -248,26 +254,7 @@ private:
     }
 
 
-
-    inline uint64_t getNumOfElemInFirstInnerLayer(unsigned int currHeight, uint64_t numOfElemCurrLevle)
-    {
-        if(currHeight <= 3)
-            return 0;
-        
-        uint64_t temp = (currHeight + N - 2) * (currHeight + N - 3) * (currHeight + N - 4);
-
-        return temp / (currHeight - 3);
-    }
-
-
-    std::pair<uint64_t, uint64_t> getChildrenLayers(unsigned int parentLayer, std::pair<uint64_t, uint64_t> childLayer);
 };
-
-template<Comparable T, size_t N, typename Compare>
-std::optional<std::pair<uint64_t, unsigned int>> _search(T val)
-{
-    return std::nullopt; 
-}
 
 template <Comparable T, size_t N, typename Compare>
 inline std::optional<std::pair<uint64_t, unsigned int>> nBeap<T, N, Compare>::_search(T val)
@@ -327,10 +314,11 @@ void nBeap<T, N, Compare>::siftDown(
 
 }
 
-template <Comparable T, size_t N, typename Compare>
+template<Comparable T, size_t N, typename Compare>
 void nBeap<T, N, Compare>::bubbleUp(
     uint64_t toIndex, uint64_t fromIndex, 
-    unsigned int h, std::pair<uint64_t, uint64_t> levelInterval)
+    unsigned int h, std::pair<uint64_t, uint64_t> levelInterval
+)
 {
     auto currentPos = fromIndex;
     auto currentHeight = h;
@@ -356,18 +344,6 @@ void nBeap<T, N, Compare>::bubbleUp(
     container[currentPos] = std::move(val);
 }
 
-template<Comparable T, size_t N, typename Compare>
-inline std::pair<uint64_t, uint64_t> getChildren(uint64_t parentIndex, unsigned int parentHeight)
-{
-    return {0, 0}; 
-}
-
-template<Comparable T, size_t N, typename Compare>
-inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getParents(uint64_t childIndex, unsigned int childHeight)
-{
-    return {0, 0}; 
-}
-
 template <Comparable T, size_t N, typename Compare>
 inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
     uint64_t currentPos, 
@@ -379,7 +355,6 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
 
     if constexpr (N <= 2) 
     { 
-        // code only generated when N == 2 
         if(currentPos == levelInterval.first)
         {
             return previousInterval.first;
@@ -425,11 +400,11 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
 )
 {
     
-    auto numberOfElementInTheLevel = 
-        getNumberOfElementInNextLevel(parentHeight, levelInterval.second - levelInterval.first + 1);
 
     if constexpr (N <= 2) 
     {
+        auto numberOfElementInTheLevel = 
+            getNumberOfElementInNextLevel(parentHeight, levelInterval.second - levelInterval.first + 1);
         auto child2 = currentPos + numberOfElementInTheLevel;
         auto child1 = child2 - 1;
         if(child1 >= _size)
@@ -450,13 +425,13 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
     } 
     else 
     {
-        // Steps
-        // Get the level and boundary in the layer
-        // first child is idx + layerSize
-        // second child = idx in the next layer
-        // third child = 
-
-        // case first element in the level
+        /*
+        An N-Dimensional beap is just layers of N-1 Dimensional beap
+        By looking at each layer of the N-Dimensional Beap, some patterns 
+        emerge. Each node in the parent layer connects to a node in 
+        the height of its sublayer in the children layer and connects to N-1
+        nodes in the height + 1 of its sublayer.  
+        */
         if(currentPos == levelInterval.first)
         {
             auto minChild = levelInterval.second + 1;
@@ -465,17 +440,16 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
                 return std::nullopt;
             }
 
-            for(auto i = 2; i <= N; i++)
+            auto maxNumOfChildren = N - 1;
+            auto nextChild = levelInterval.second + 2;
+            while (maxNumOfChildren > 0 && nextChild < _size)
             {
-                auto nextChild = levelInterval.second + i;
-                if(nextChild >= _size)
-                {
-                    return minChild;
-                }
-
                 minChild = minChild + (nextChild - minChild) * 
                             !compare(container[nextChild], container[minChild]);
+                nextChild++;
+                maxNumOfChildren--;
             }
+            
             return minChild;
         }
 
@@ -486,66 +460,70 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
         if(child1 >= _size)
             return std::nullopt;
 
-        // Steps
-        // calculate the parents index in the level
-        auto parentIdInLevel = currentPos - levelInterval.first + 1;   
-        // calculate the parent index in its layer level
-        std::pair<uint64_t, uint64_t> parentLayerInterval = 
-                    getDMinus1Level(parentIdInLevel, levelInterval); 
-        auto parentIdInLayer = parentIdInLevel - parentLayerInterval.first + 1;
-        // child2 = parent index in its layer + the end of the layer
-        auto nextChild = parentLayerInterval.second +  parentIdInLayer;
-        if(nextChild >= _size)
-        {
-            return child1;
-        }
+        // Get the min/max child in the next sublayer in the children's layer
+        auto minChildRest = getOtherChildren(currentPos, parentHeight, levelInterval).value_or(child1);
 
-        auto minChild = child1 + (nextChild - child1) * !compare(container[nextChild], container[child1]);
-        // while loop to find the other children
-        // set max children in the next leyer to N - 1; i = 1
-        // while i < parent index in its layer
-        //  add max no of children to nextChild
-        //  i++
-        int i = 1;
-        auto maxNumOfChildren = N - 2;
-        while((i < parentIdInLayer) && (maxNumOfChildren > 0)) // need to update this
-        {
-            nextChild +=maxNumOfChildren;
-            if(nextChild >= _size)
-            {
-                return minChild;
-            }
-            
-            minChild = minChild + (nextChild - minChild) * !compare(container[nextChild], container[minChild]);
-            maxNumOfChildren--;
-            i++;
-        }
-
-        if(maxNumOfChildren <= 0)
-            return minChild;
-        
-        while(maxNumOfChildren > 0)
-        {
-            nextChild++;
-            if(nextChild >= _size)
-            {
-                return minChild;
-            }
-
-            minChild = minChild + (nextChild - minChild) * !compare(container[nextChild], container[minChild]);
-            maxNumOfChildren--;
-        }
-
-        return minChild;
+        return child1 + (minChildRest - child1) * !compare(container[minChildRest], container[child1]);
     }
     
     
 }
 
-// returns the layer interval of the parent
 template <Comparable T, size_t N, typename Compare>
-inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getDMinus1Level(
-    uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval
+std::optional<uint64_t> nBeap<T, N, Compare>::getOtherChildren(
+    uint64_t currentPos, unsigned int parentHeight, 
+    std::pair<uint64_t, uint64_t> levelInterval
+)
+{
+    auto maxNumOfChildren = N-1; 
+    auto levelSize = levelInterval.second - levelInterval.first + 1; 
+    auto levelIndex = currentPos - levelInterval.first + 1;
+    auto innerLayer = getNMinusOffsetLevel(levelIndex, levelInterval);
+
+    auto innerLevelIndex = levelIndex - innerLayer.first + 1;
+    auto innerLayerSize = innerLayer.second - innerLayer.first + 1;
+
+    auto minOrMaxChild = currentPos + levelSize + innerLayerSize;
+    maxNumOfChildren--;
+
+    if(minOrMaxChild >= _size)
+    {
+        return std::nullopt;
+    }
+
+    if(innerLevelIndex == 1)
+    {
+        auto nextChild = minOrMaxChild + 1;
+        
+        while(maxNumOfChildren > 0 && nextChild < _size)
+        {
+            minOrMaxChild = minOrMaxChild + (nextChild - minOrMaxChild) * !compare(container[nextChild], container[minOrMaxChild]);
+            nextChild++;
+            maxNumOfChildren--;
+        }
+
+        return minOrMaxChild;
+    }
+
+    auto innerInnerLayer = getNMinusOffsetLevel(innerLevelIndex, innerLayer, 2);
+    auto innerInnerLayerSize = innerInnerLayer.second - innerInnerLayer.first + 1;
+
+    auto nextChild = minOrMaxChild + innerInnerLayerSize;
+
+    while(maxNumOfChildren > 0 && nextChild < _size)
+    {
+        minOrMaxChild = minOrMaxChild + (nextChild - minOrMaxChild) * !compare(container[nextChild], container[minOrMaxChild]);
+        nextChild++;
+        maxNumOfChildren--;
+    }
+
+    return minOrMaxChild;
+}
+
+
+template <Comparable T, size_t N, typename Compare>
+inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getNMinusOffsetLevel(
+    uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval, uint64_t offset
 ) 
 {
 
@@ -560,7 +538,7 @@ inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getDMinus1Level(
     uint64_t maxInterval = levelInterval.second - levelInterval.first + 1;
     while(cumm <= maxInterval) 
     {
-        l = getNumberOfElementInNextLevel(h, l, 1);
+        l = getNumberOfElementInNextLevel(h, l, offset);
         prevCumm = cumm;
         cumm += l;
         h++;
@@ -578,35 +556,13 @@ inline uint64_t nBeap<T, N, Compare>::getNumberOfElementInNextLevel(
     unsigned int currHeight, uint64_t numOfElemCurrLevel, int offsetDim
 )
 {
-    return (numOfElemCurrLevel * (currHeight + (N - offsetDim) - 1 )) / currHeight;
-}
-
-template <Comparable T, size_t N, typename Compare>
-inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getChildrenLayers(
-    unsigned int parentLayer, std::pair<uint64_t, uint64_t> childLayer
-)
-{
-    if(parentLayer == 1)
+    switch (N-offsetDim)
     {
-        return {childLayer.first, childLayer.first};
+    case 1:
+        return 1;
+    case 2:
+        return numOfElemCurrLevel++;
+    default:
+        return (numOfElemCurrLevel * (currHeight + (N - offsetDim) - 1 )) / currHeight;
     }
-
-    if(parentLayer == 2)
-    {
-        auto firstChild = childLayer.first + 1;
-        return {firstChild, firstChild+1};
-    }
-
-    unsigned int h = 3;
-    std::pair<uint64_t, uint64_t> currChildLevel = {4, 6};
-    while(h <= parentLayer)
-    {
-        // Doing this right now since we know for 2d beap the number of
-        // elements in each level just increases by one.
-        h++;
-        currChildLevel.first = currChildLevel.second + 1;
-        currChildLevel.second =  currChildLevel.second + h;
-    }
-
-    return currChildLevel;
 }
