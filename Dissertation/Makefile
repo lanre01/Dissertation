@@ -17,7 +17,7 @@ BIN_DIR := bin
 MAIN_SRC := $(SRC_DIR)/main.cpp
 #HEAP_SRCS := $(wildcard $(SRC_DIR)/Heap/*.cpp)
 #BEAP_SRCS := $(wildcard $(SRC_DIR)/Beap/*.cpp)
-#NBEAP_SRCS := $(wildcard $(SRC_DIR)/nBeap/*.cpp)
+#NBEAP_SRCS := $(wildcard $(SRC_DIR)/NBeap/*.cpp)
 
 UNIT_TEST_SRCS := $(wildcard test/unit/*.cpp)
 
@@ -72,7 +72,7 @@ $(UNIT_TEST_TARGET): $(UNIT_TEST_OBJS) $(PRODUCTION_OBJS) | $(BIN_DIR)
 $(BEAP_BENCH_TARGET): $(BEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
 
-# nBeap benchmark
+# NBeap benchmark
 $(NBEAP_BENCH_TARGET): $(NBEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
 
@@ -94,7 +94,7 @@ $(BUILD_DIR)/Heap/%.o: $(SRC_DIR)/Heap/%.cpp | $(BUILD_DIR)/Heap
 $(BUILD_DIR)/Beap/%.o: $(SRC_DIR)/Beap/%.cpp | $(BUILD_DIR)/Beap
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/nBeap/%.o: $(SRC_DIR)/nBeap/%.cpp | $(BUILD_DIR)/nBeap
+$(BUILD_DIR)/NBeap/%.o: $(SRC_DIR)/NBeap/%.cpp | $(BUILD_DIR)/NBeap
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/test/unit/%.o: test/unit/%.cpp | $(BUILD_DIR)/test/unit
@@ -143,7 +143,7 @@ run-beap-tests: $(UNIT_TEST_TARGET)
 	./$(UNIT_TEST_TARGET) --gtest_filter=BeapTest.*
 
 run-nbeap-tests: $(UNIT_TEST_TARGET)
-	./$(UNIT_TEST_TARGET) --gtest_filter=nBeapTest.*
+	./$(UNIT_TEST_TARGET) --gtest_filter=NBeap*.*
 
 run-bench-beap: $(BEAP_BENCH_TARGET)
 	./$(BEAP_BENCH_TARGET)
@@ -197,8 +197,8 @@ $(BUILD_DIR)/Heap: | $(BUILD_DIR)
 $(BUILD_DIR)/Beap: | $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/Beap
 
-$(BUILD_DIR)/nBeap: | $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/nBeap
+$(BUILD_DIR)/NBeap: | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/NBeap
 
 $(BUILD_DIR)/test:
 	mkdir -p $(BUILD_DIR)/test

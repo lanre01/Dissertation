@@ -10,7 +10,7 @@
 #include <chrono>
 
 #include "Beap/Beap.hpp"
-#include "nBeap/nBeap.hpp"
+#include "NBeap/NBeap.hpp"
 
 static std::mt19937 rng(42);
 
@@ -27,22 +27,22 @@ std::vector<int> generateRandomData(size_t n) {
 
 int main()
 {
-    int MAX_NUMBER = 100;
+    int MAX_NUMBER = 35;
 
-    nBeap<int, 10> nbeap;
+    NBeap<int, 4> nbeap;
     auto data = generateRandomData(MAX_NUMBER);
 
     //nbeap.insert(54);
     
     
-    const int STRESS_COUNT = 10000;
+    const int STRESS_COUNT = 35;
     
 
     for (int i = 0; i < STRESS_COUNT; ++i) {
-        nbeap.insert(rand() % 1000);
+        nbeap.insert(rand() % STRESS_COUNT);
     }
 
-    //nbeap.printState("After insertion");
+    nbeap.printState("After insertion");
 
     int prev = nbeap.extract_min();
     while (nbeap.size() > 0) {
@@ -53,7 +53,6 @@ int main()
             nbeap.printState("After violation");
         } // Should be non-decreasing
         prev = current;
-        
     }
 
 

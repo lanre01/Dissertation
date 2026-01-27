@@ -15,10 +15,10 @@ concept Comparable = requires(T a, T b) {
 };
 
 template<Comparable T, size_t N, typename Compare = std::greater<T>>
-class nBeap
+class NBeap
 {
 public:
-    nBeap(Compare c) 
+    NBeap(Compare c) 
     : _height(0)
     , _size(0)
     , compare(c)
@@ -26,7 +26,7 @@ public:
     , _levelSize(0)
     {}
 
-    nBeap() 
+    NBeap() 
     : _height(0)
     , _size(0)
     , compare(Compare())
@@ -34,10 +34,10 @@ public:
     , _levelSize(0)
     {}
 
-    ~nBeap() = default;
+    ~NBeap() = default;
 
 
-    nBeap& operator=(const nBeap&) = default;
+    NBeap& operator=(const NBeap&) = default;
 
     T extract_min() {
 
@@ -48,8 +48,8 @@ public:
         }
 
         _size--;
-        auto minElem = std::exchange(container[0], container[_size]);
-        container.resize(_size);
+        auto minElem = std::exchange(_container[0], _container[_size]);
+        _container.resize(_size);
 
         // if we just extracted the last element
         if(_size == 0)
@@ -75,7 +75,7 @@ public:
 
     void insert(T val)
     {
-        container.push_back(std::move(val));
+        _container.push_back(std::move(val));
 
         if(_size == 0)
         {
@@ -108,10 +108,10 @@ public:
         }
 
         auto resVal = res.value();
-        std::swap(container[resVal.first], container[_size - 1]);
+        std::swap(_container[resVal.first], _container[_size - 1]);
 
         _size--;
-        container.resize(_size);
+        _container.resize(_size);
 
         if(_size == 0)
         {
@@ -132,7 +132,7 @@ public:
 
         auto selected_parent_optional = getMinOrMaxParentIndex(resVal.first, resVal.second, li);
         if(!selected_parent_optional.has_value() || 
-            compare(container[selected_parent_optional.value()], container[resVal.first])
+            compare(_container[selected_parent_optional.value()], _container[resVal.first])
         )
         {
             bubbleUp(resVal.first, 0, resVal.second, li);
@@ -154,7 +154,7 @@ public:
 
     void printState(const std::string& operation) {
     	std::cout << "After " << operation << ": ";
-		for (T val : container) {
+		for (T val : _container) {
 			std::cout << val << " ";
 		}
 		std::cout << " | size=" << _size << " height=" << _height << " levelSize=" << _levelSize << std::endl;
@@ -166,11 +166,10 @@ public:
 private:
     unsigned int _height;
     uint64_t _size;
-    std::vector<T> container;
+    std::vector<T> _container;
     Compare compare;
     std::pair<uint64_t, uint64_t> _interval;
     uint64_t _levelSize;
-    const size_t SECOND_LAYER_START = 3;
 
     struct Vec { std::array<unsigned int, N> data; };
 
@@ -267,13 +266,13 @@ private:
 };
 
 template <Comparable T, size_t N, typename Compare>
-inline std::optional<std::pair<uint64_t, unsigned int>> nBeap<T, N, Compare>::_search(T val)
+inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_search(T val)
 {
     return std::optional<std::pair<uint64_t, unsigned int>>();
 }
 
 template <Comparable T, size_t N, typename Compare>
-std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::span(
+std::pair<uint64_t, uint64_t> NBeap<T, N, Compare>::span(
     unsigned int preferredHeight,
     std::pair<uint64_t, uint64_t> knownHeightInterval,
     unsigned int knownHeight)
@@ -297,74 +296,79 @@ std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::span(
 }
 
 template<Comparable T, size_t N, typename Compare>
-void nBeap<T, N, Compare>::siftDown(
+void NBeap<T, N, Compare>::siftDown(
     uint64_t startPos, unsigned int h, std::pair<uint64_t, uint64_t> levelInterval
 )
 {
-    T val = std::move(container[startPos]);
+    T val = std::move(_container[startPos]);
     auto currPos = startPos;
 
     while(h < _height)
     {
         std::optional<uint64_t> selected_child_index = getMinOrMaxChildIndex(currPos, h, levelInterval);
         
-        if(!selected_child_index.has_value() || compare(container[selected_child_index.value()], val))
+        if(!selected_child_index.has_value() || compare(_container[selected_child_index.value()], val))
         {
             break;
         }
 
-        //std::cout << container[selected_child_index.value()] << std::endl;
-        container[currPos] = std::move(container[selected_child_index.value()]);
+        //std::cout << _container[selected_child_index.value()] << std::endl;
+        _container[currPos] = std::move(_container[selected_child_index.value()]);
         currPos = selected_child_index.value();
         levelInterval = getNextLevelInterval(h, levelInterval);
         h++;
     }
 
-    container[currPos] = std::move(val);
+    _container[currPos] = std::move(val);
 
 }
 
 template<Comparable T, size_t N, typename Compare>
-void nBeap<T, N, Compare>::bubbleUp(
+void NBeap<T, N, Compare>::bubbleUp(
     uint64_t toIndex, uint64_t fromIndex, 
     unsigned int h, std::pair<uint64_t, uint64_t> levelInterval
 )
 {
     auto currentPos = fromIndex;
     auto currentHeight = h;
-    T val = std::move(container[fromIndex]);
+    T val = std::move(_container[fromIndex]);
     
     while (currentPos > toIndex)
     {
-        std::optional<uint64_t> selected_parent_index = 
+        std::optional<uint64_t> bestParentOpt = 
             getMinOrMaxParentIndex(currentPos, currentHeight, levelInterval);
 
-        if(!selected_parent_index.has_value() || compare(val, container[selected_parent_index.value()]))
+        if(!bestParentOpt.has_value() || compare(val, _container[bestParentOpt.value()]))
         {
             break;
         }
-        container[currentPos] = std::move(container[selected_parent_index.value()]);
+        _container[currentPos] = std::move(_container[bestParentOpt.value()]);
         
         levelInterval = getPreviousLevelInterval(currentHeight, levelInterval);
-        currentPos = selected_parent_index.value();
+        currentPos = bestParentOpt.value();
         currentHeight--;
         
     }
 
-    container[currentPos] = std::move(val);
+    _container[currentPos] = std::move(val);
 }
 
 template <Comparable T, size_t N, typename Compare>
-inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
+inline std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxParentIndex(
     uint64_t currentPos, 
     unsigned int childHeight,
     std::pair<uint64_t, uint64_t> levelInterval
 )
 {
-    auto parentsInterval = getPreviousLevelInterval(childHeight, levelInterval);
-
-    if constexpr (N <= 2) 
+    
+    if constexpr (N == 1)
+    {
+        return currentPos - 1;
+    }
+    else if constexpr (N == 2) 
     { 
+        auto parentsInterval = getPreviousLevelInterval(childHeight, levelInterval);
+
         if(currentPos == levelInterval.first)
         {
             return parentsInterval.first;
@@ -380,10 +384,12 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
         auto parent1 = parent2 - 1;
         
         // the index of parent1 is guaranteed to be greater than the index of parent2 by just 1
-        return parent1 + !compare(container[parent1], container[parent2]);
+        return parent1 + !compare(_container[parent1], _container[parent2]);
     } 
     else 
     {
+        auto parentsInterval = getPreviousLevelInterval(childHeight, levelInterval);
+
         if(currentPos == levelInterval.first)
         {
             return parentsInterval.first;
@@ -401,31 +407,32 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
         }
 
         //auto childIndex = currentPos - levelInterval.first + 1;
-        auto firstParent = currentPos - parentsLevelSize;
-        if(firstParent > parentsInterval.second)
+        auto bestParent = currentPos - parentsLevelSize;
+        if(bestParent > parentsInterval.second)
         {
             //std::cout << "For index: " << currentPos << ", ";
-            return getMinOrMaxInRemainingParents(firstParent, parentsInterval, 1);
+            return getMinOrMaxInRemainingParents(bestParent, parentsInterval, 1);
         }
 
         
 
-        //std::cout << "For index: " << currentPos << ", " <<"First parent: " << firstParent << ", ";
+        //std::cout << "For index: " << currentPos << ", " <<"First parent: " << bestParent << ", ";
 
-        //auto minOtherParent = getOtherParents(currentPos, levelInterval, parentsLevelSize, 1).value_or(firstParent);
+        //auto bestParentFromRest = getOtherParents(currentPos, levelInterval, parentsLevelSize, 1).value_or(bestParent);
         
-        auto minOtherParent = getMinOrMaxInRemainingParents(firstParent, parentsInterval, 1).value_or(firstParent);
+        auto bestParentFromRest = 
+            getMinOrMaxInRemainingParents(bestParent, parentsInterval, 1).value_or(bestParent);
 
         //std::cout << std::endl;
-        return minOtherParent + (firstParent - minOtherParent) * 
-                        !compare(container[minOtherParent], container[firstParent]);
+        return bestParentFromRest + (bestParent - bestParentFromRest) * 
+                        !compare(_container[bestParentFromRest], _container[bestParent]);
         
     }
     
 }
 
 template <Comparable T, size_t N, typename Compare>
-std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInRemainingParents(
+std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxInRemainingParents(
     uint64_t currentPos, std::pair<uint64_t, uint64_t> parentsInterval, uint64_t dOffset
 )
 {
@@ -478,7 +485,7 @@ std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInRemainingParents(
 
 
     return minOrMaxParentRest + (parent1 - minOrMaxParentRest) * 
-                !compare(container[minOrMaxParentRest], container[parent1]); 
+                !compare(_container[minOrMaxParentRest], _container[parent1]); 
 }
 
 
@@ -486,15 +493,22 @@ std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInRemainingParents(
 
 
 template <Comparable T, size_t N, typename Compare>
-inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
+inline std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxChildIndex(
     uint64_t currentPos, 
     unsigned int parentHeight, 
     std::pair<uint64_t, uint64_t> levelInterval
 )
 {
     
+    if constexpr (N == 1)
+    {
+        auto child = currentPos + 1;
+        if (child >= _size)
+            return std::nullopt;
 
-    if constexpr (N <= 2) 
+        return child;
+    }
+    else if constexpr (N == 2) 
     {
         auto numberOfElementInTheLevel = 
             getNumberOfElementInNextLevel(parentHeight, levelInterval.second - levelInterval.first + 1);
@@ -514,7 +528,7 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
         }
 
         // the index of child1 is guaranteed to be greater than the index of child2 by just 1
-        return child1 + !compare(container[child2], container[child1]);
+        return child1 + !compare(_container[child2], _container[child1]);
     } 
     else 
     {
@@ -540,7 +554,7 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
             {
                 //std::cout << "Next Child: " << nextChild << ", ";
                 minChild = minChild + (nextChild - minChild) * 
-                            !compare(container[nextChild], container[minChild]);
+                            !compare(_container[nextChild], _container[minChild]);
                 nextChild++;
                 maxNumOfChildren--;
             }
@@ -550,17 +564,14 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
 
 
         auto levelSize = levelInterval.second - levelInterval.first + 1;
-
         auto minChild =  currentPos + levelSize;
         if(minChild >= _size)
             return std::nullopt;
-        //std::cout << "For index: " << currentPos << " First Child: " << minChild << ", ";
-        // Get the min/max child in the next sublayer in the children's layer
+        
         auto minChildRest = getMinOrMaxInOtherChildren(currentPos, minChild, levelInterval, N - 1, 1)
                                 .value_or(minChild);
-        //std::cout << std::endl;
 
-        return minChild + (minChildRest - minChild) * !compare(container[minChildRest], container[minChild]);
+        return minChild + (minChildRest - minChild) * !compare(_container[minChildRest], _container[minChild]);
     }
     
     
@@ -568,70 +579,52 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
 
 
 template <Comparable T, size_t N, typename Compare>
-std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInOtherChildren(
+std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxInOtherChildren(
     uint64_t parentId, uint64_t currentPos,  std::pair<uint64_t, uint64_t> levelInterval, 
     uint64_t maxNumOfChildren, uint64_t dOffset
 )
 {
-    // Main idea is to continuously get inner level
-    // new child = inner level size + current position
-    // recurse with inner level, offset + 1, 
-    // conditions:
-    // N - offset <= 0 break
-    // new child >= size
-    // i need to store the actuall index in the level
-    //auto levelSize = levelInterval.second - levelInterval.first + 1; 
-    //auto levelIndex = currentPos - levelInterval.first + 1;
-    
-    auto innerLayer = getNMinusOffsetLevel(parentId, levelInterval, dOffset); // need to update this to just use 
-
-    //auto innerLevelIndex = levelIndex - innerLayer.first + 1;
+    auto innerLayer = getNMinusOffsetLevel(parentId, levelInterval, dOffset);
     auto innerLayerSize = innerLayer.second - innerLayer.first + 1;
-    //std::cout << " InnerLayerSize: " << innerLayerSize << "; ";
 
-    auto minOrMaxChild = currentPos + innerLayerSize;
-    maxNumOfChildren--;
-
-    if(minOrMaxChild >= _size)
+    auto bestChild = currentPos + innerLayerSize;
+    if(bestChild >= _size)
     {
-        //std::cout << "Last Child should have been: " << minOrMaxChild << ", but out of range";
         return std::nullopt;
     }
 
-    /*if(innerLevelIndex == 1)
+    maxNumOfChildren--;
+
+    uint64_t currentOffset = dOffset + 1;
+    auto currentChild = bestChild;
+    
+    while(maxNumOfChildren > 0)
     {
-        auto nextChild = minOrMaxChild + 1;
+        innerLayer = getNMinusOffsetLevel(parentId, innerLayer, currentOffset);
+        innerLayerSize = innerLayer.second - innerLayer.first + 1;
         
-        while(maxNumOfChildren > 0 && nextChild < _size)
+        currentChild += innerLayerSize;
+
+        if(currentChild >= _size)
         {
-            minOrMaxChild = minOrMaxChild + (nextChild - minOrMaxChild) * !compare(container[nextChild], container[minOrMaxChild]);
-            nextChild++;
-            maxNumOfChildren--;
+            break;
         }
 
-        return minOrMaxChild;
-    }*/
+        bestChild = bestChild + (currentChild - bestChild) * 
+                    !compare(_container[currentChild], _container[bestChild]);
 
-    if(N - dOffset - 1 <= 0 )
-    {
-        //std::cout << "Last Child: " << minOrMaxChild << ", less than N child available ";
-        return minOrMaxChild;
+        maxNumOfChildren--;
+        currentOffset++;
     }
 
-    //std::cout << "Next Child: " << minOrMaxChild << ", ";
-    auto minChildRest = 
-        getMinOrMaxInOtherChildren(parentId, minOrMaxChild, innerLayer, maxNumOfChildren, dOffset+1)
-            .value_or(minOrMaxChild);
-
-    return minOrMaxChild + (minChildRest - minOrMaxChild) * !compare(container[minChildRest], container[minOrMaxChild]);
-       
+    return bestChild;
 }
 
 
 
 
 template <Comparable T, size_t N, typename Compare>
-inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getNMinusOffsetLevel(
+inline std::pair<uint64_t, uint64_t> NBeap<T, N, Compare>::getNMinusOffsetLevel(
     uint64_t parentIdx, std::pair<uint64_t, uint64_t> levelInterval, uint64_t offset
 ) 
 {
@@ -659,7 +652,7 @@ inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getNMinusOffsetLevel(
 }
 
 template <Comparable T, size_t N, typename Compare>
-inline std::array<uint64_t, 3> nBeap<T, N, Compare>::getNMinusOffsetLevelWithParentLevel(
+inline std::array<uint64_t, 3> NBeap<T, N, Compare>::getNMinusOffsetLevelWithParentLevel(
     uint64_t parentLevelStart, uint64_t currentPos, uint64_t offset
 ) 
 {
@@ -692,7 +685,7 @@ inline std::array<uint64_t, 3> nBeap<T, N, Compare>::getNMinusOffsetLevelWithPar
 
 
 template <Comparable T, size_t N, typename Compare>
-inline uint64_t nBeap<T, N, Compare>::getNumberOfElementInNextLevel(
+inline uint64_t NBeap<T, N, Compare>::getNumberOfElementInNextLevel(
     unsigned int currHeight, uint64_t numOfElemCurrLevel, int offsetDim
 )
 {
