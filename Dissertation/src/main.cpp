@@ -39,13 +39,15 @@ int main()
     //nbeap.insert(54);
     
     
-    const int STRESS_COUNT = 10;
+    const int STRESS_COUNT = 35;
     
     for (int i = 0; i < STRESS_COUNT; ++i) {
         nbeap4.insert(rand() % 1000);
+        
     }
-    nbeap4.insert(54);
     nbeap4.printState("After insertion");
+    //nbeap4.insert(54);
+    /*nbeap4.printState("After insertion");
     std::vector<int> vec;
     int prev = nbeap4.extract_min();
     vec.push_back(prev);
@@ -65,7 +67,7 @@ int main()
         std::cout << v << ",";
     }
     std::cout << std::endl;
-
+    */
 
     /*for (int i = 0; i < STRESS_COUNT; ++i) {
         nbeap.insert(rand() % 1000);

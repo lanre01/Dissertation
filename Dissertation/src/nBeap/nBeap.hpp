@@ -256,18 +256,17 @@ private:
         return {currLevInt.second + 1, currLevInt.second + l};
     }
 
-    std::optional<uint64_t> getOtherChildrenP(
+    std::optional<uint64_t> getMinOrMaxInOtherChildren(
         uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval, 
         uint64_t maxNumOfChildren, uint64_t dOffset
     );
 
-    std::optional<uint64_t> getOtherParents(
-        uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval,
-        uint64_t parentsLevelSize, uint64_t dOffset
-    );
-
     inline std::array<uint64_t, 3> getNMinusOffsetLevelWithParentLevel(
-        uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval, uint64_t offset
+        uint64_t prevLevelStart, uint64_t currentPos, uint64_t offset
+    ); 
+
+    std::optional<uint64_t> getMinOrMaxInRemainingParents(
+        uint64_t currentPos, std::pair<uint64_t, uint64_t> parentsInterval, uint64_t dOffset
     );
     
 };
@@ -400,25 +399,29 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
             return parentsInterval.second;
         }
 
-        /*
-        Steps:
-           1    3   6
-        1    3    6    10
-
-        - check if there exist a child on the same level above
-        */
-
         auto parentsLevelSize = parentsInterval.second - parentsInterval.first + 1;
-        auto childIndex = currentPos - levelInterval.first + 1;
-        if(childIndex > parentsLevelSize)
+        if(parentsLevelSize == 1)
         {
-            return getOtherParents(currentPos, levelInterval, parentsLevelSize, 1);
+            return parentsInterval.first;
         }
 
+        //auto childIndex = currentPos - levelInterval.first + 1;
         auto firstParent = currentPos - parentsLevelSize;
+        if(firstParent > parentsInterval.second)
+        {
+            std::cout << "For index: " << currentPos << ", ";
+            return getMinOrMaxInRemainingParents(firstParent, parentsInterval, 1);
+        }
 
-        auto minOtherParent = getOtherParents(currentPos, levelInterval, parentsLevelSize, 1).value_or(firstParent);
+        
 
+        std::cout << "For index: " << currentPos << ", " <<"First parent: " << firstParent << ", ";
+
+        //auto minOtherParent = getOtherParents(currentPos, levelInterval, parentsLevelSize, 1).value_or(firstParent);
+        
+        auto minOtherParent = getMinOrMaxInRemainingParents(firstParent, parentsInterval, 1).value_or(firstParent);
+
+        std::cout << std::endl;
         return minOtherParent + (firstParent - minOtherParent) * 
                         !compare(container[minOtherParent], container[firstParent]);
         
@@ -427,54 +430,63 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxParentIndex(
 }
 
 template <Comparable T, size_t N, typename Compare>
-std::optional<uint64_t> nBeap<T, N, Compare>::getOtherParents(
-    uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval,
-    uint64_t parentsLevelSize, uint64_t dOffset
+std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInRemainingParents(
+    uint64_t currentPos, std::pair<uint64_t, uint64_t> parentsInterval, uint64_t dOffset
 )
 {
-
-    // get the inner level
-    auto levelIndex = currentPos - levelInterval.first + 1;
-    auto levelSize = levelInterval.second - levelInterval.first + 1;
-
-    if(levelIndex >= levelSize)  // when we go past the parent's block
+    if(N-dOffset <= 0)
     {
         return std::nullopt;
     }
 
-    auto res = getNMinusOffsetLevelWithParentLevel(levelIndex, levelInterval, dOffset);
+    // Conditions
+    // Do no go past 1 dimension
+    // if the parent1 is not upto any value in the parent layer, continue recursion
+    // get the inner level
+    auto res = getNMinusOffsetLevelWithParentLevel(parentsInterval.first, currentPos, dOffset); // need to change this function
     auto innerLevel = std::pair{res[1]+1, res[2]};
+    auto levelIndex = currentPos - innerLevel.first + 1;
     // get the previous inner level
-    
     auto prevInnerLevel = std::pair{res[0], res[1]};
-    auto innerLevelSize = innerLevel.second - innerLevel.first + 1;
-
-    // calculate new current Pos
     auto prevInnerLevelSize = prevInnerLevel.second - prevInnerLevel.first + 1;
-    auto innerLevelIndex = levelIndex - innerLevel.first + 1;
-    //int newCurrPos = innerLevelIndex - prevInnerLevelSize;
 
-    auto parent = currentPos - parentsLevelSize - prevInnerLevelSize;
-
-    if(N - dOffset - 1 <= 0)
+    if(currentPos == innerLevel.first)
     {
-        return parent;
+        //std::cout << "Last Parent: " << prevInnerLevel.first << ", "; 
+        return prevInnerLevel.first;
     }
 
-    if(innerLevelIndex > prevInnerLevelSize)
+    if(currentPos == innerLevel.second)
     {
-        return getOtherParents(currentPos - parentsLevelSize, innerLevel, prevInnerLevelSize, dOffset+1);
-    }
-
-    auto minOrMAxParent = getOtherParents(currentPos - parentsLevelSize, innerLevel, prevInnerLevelSize, dOffset+1).value_or(parent);
-
-    if(compare(container[parent], container[minOrMAxParent]))
-    {
-        return parent;
+        //std::cout << "Last Parent: " << prevInnerLevel.second << ", "; 
+        return prevInnerLevel.second;
     }
     
-    return minOrMAxParent;
+    if(prevInnerLevelSize == 1)
+    {
+        // Avoids unnecessary recursion
+        auto parent = currentPos - levelIndex;
+        //std::cout << "Last Parent: " << parent << ", "; 
+        return  parent;
+    }
+
+    auto parent1 = currentPos - prevInnerLevelSize;
+
+    if(parent1 > prevInnerLevel.second)
+    {
+        return getMinOrMaxInRemainingParents(parent1, prevInnerLevel, dOffset+1);
+    }
+
+    //std::cout << "Another Parent: " << parent1 << ", "; 
+    auto minOrMaxParentRest = getMinOrMaxInRemainingParents(parent1, prevInnerLevel, dOffset+1)
+                                    .value_or(parent1);
+
+
+    return minOrMaxParentRest + (parent1 - minOrMaxParentRest) * 
+                !compare(container[minOrMaxParentRest], container[parent1]); 
 }
+
+
 
 
 
@@ -547,7 +559,7 @@ inline std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxChildIndex(
             return std::nullopt;
 
         // Get the min/max child in the next sublayer in the children's layer
-        auto minChildRest = getOtherChildrenP(currentPos, levelInterval, N - 1, 1)
+        auto minChildRest = getMinOrMaxInOtherChildren(currentPos, levelInterval, N - 1, 1)
                                 .value_or(child1);
         
         return child1 + (minChildRest - child1) * !compare(container[minChildRest], container[child1]);
@@ -610,7 +622,7 @@ std::optional<uint64_t> nBeap<T, N, Compare>::getOtherChildren(
 
 
 template <Comparable T, size_t N, typename Compare>
-std::optional<uint64_t> nBeap<T, N, Compare>::getOtherChildrenP(
+std::optional<uint64_t> nBeap<T, N, Compare>::getMinOrMaxInOtherChildren(
     uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval, 
     uint64_t maxNumOfChildren, uint64_t dOffset
 )
@@ -646,7 +658,7 @@ std::optional<uint64_t> nBeap<T, N, Compare>::getOtherChildrenP(
     }
 
     auto minChildRest = 
-        getOtherChildrenP(currentPos + levelSize, innerLayer, maxNumOfChildren, dOffset+1)
+        getMinOrMaxInOtherChildren(currentPos + levelSize, innerLayer, maxNumOfChildren, dOffset+1)
             .value_or(minOrMaxChild);
 
     return minOrMaxChild + (minChildRest - minOrMaxChild) * !compare(container[minChildRest], container[minOrMaxChild]);
@@ -688,33 +700,33 @@ inline std::pair<uint64_t, uint64_t> nBeap<T, N, Compare>::getNMinusOffsetLevel(
 
 template <Comparable T, size_t N, typename Compare>
 inline std::array<uint64_t, 3> nBeap<T, N, Compare>::getNMinusOffsetLevelWithParentLevel(
-    uint64_t levelIndex, std::pair<uint64_t, uint64_t> levelInterval, uint64_t offset
+    uint64_t parentLevelStart, uint64_t currentPos, uint64_t offset
 ) 
 {
 
-    if(levelIndex == 1) // should not happen because this is already accounted for up
+    if(currentPos == parentLevelStart) // should not happen because this is already accounted for up
     {
-        return {0, 0, 1};
+        return {parentLevelStart-1, parentLevelStart-1, parentLevelStart};
     }
 
     // Possible optimisation here is to start searching
     // from the back since most element should be at the last level
-    uint64_t curretHeight = 1, numOfElementInLevel = 1, curLevelEnd = 1, prevLevelEnd = 0, prevLevelStart = 0;
-    uint64_t levelSize = levelInterval.second - levelInterval.first + 1; // can replace levelInterval with the level size acc
-    while(curLevelEnd <= levelSize) 
+    uint64_t curretHeight = 1, numOfElementInLevel = 1, curLevelEnd = parentLevelStart, 
+    prevLevelEnd = parentLevelStart-1, prevLevelStart = parentLevelStart;
+    while(true) 
     {
         numOfElementInLevel = getNumberOfElementInNextLevel(curretHeight, numOfElementInLevel, offset);
         prevLevelStart = prevLevelEnd + 1;
         prevLevelEnd = curLevelEnd;
         curLevelEnd += numOfElementInLevel;
         curretHeight++;
-        if(levelIndex <= curLevelEnd)
+        if(currentPos <= curLevelEnd)
         {
             return {prevLevelStart, prevLevelEnd, curLevelEnd};
         }
     }
 
-    return {prevLevelStart, prevLevelEnd, curLevelEnd};
+    //return {prevLevelStart, prevLevelEnd, curLevelEnd};
 }
 
 
