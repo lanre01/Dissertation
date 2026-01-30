@@ -49,3 +49,5 @@ bin/
 
 
 perf.data*
+
+.vscode/
