@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 #include <random>
-#include "../../src/nBeap/nBeap.hpp"    
+#include "../../src/NBeap/NBeap.hpp"    
 
 static std::mt19937 rng(42);
 
@@ -15,11 +15,11 @@ std::vector<T> generateRandomData(size_t size) {
 template<typename T, int N>
 class BeapFixture : public benchmark::Fixture {
 public:
-    nBeap<T, N> beap;
+    NBeap<T, N> beap;
 
     void SetUp(const ::benchmark::State&) override {
     
-        beap = nBeap<T, N>();
+        beap = NBeap<T, N>();
     }
 
     void TearDown(const ::benchmark::State&) override { }
@@ -30,7 +30,7 @@ public:
 template<typename T, int N>
 static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
-        nBeap<T, N> b;
+        NBeap<T, N> b;
         //benchmark::DoNotOptimize(b);
     }
 }
@@ -43,7 +43,7 @@ static void BM_PushRandom(benchmark::State& state) {
     
     for (auto _ : state) {
         state.PauseTiming();
-        nBeap<T, N> b;   // fresh beap
+        NBeap<T, N> b;   // fresh beap
         state.ResumeTiming();
         
         for (auto& x : data)
@@ -62,7 +62,7 @@ static void BM_PushSorted(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        nBeap<T, N> b;
+        NBeap<T, N> b;
         state.ResumeTiming();
 
         for (auto& x : data)
@@ -72,7 +72,7 @@ static void BM_PushSorted(benchmark::State& state) {
     }
 }
 
-// Benchmark extract_min()
+// Benchmark extract()
 template<typename T, int N>
 static void BM_RemoveMin(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -80,12 +80,12 @@ static void BM_RemoveMin(benchmark::State& state) {
 
     for (auto _ : state) {
         state.PauseTiming();
-        nBeap<T, N> b;
+        NBeap<T, N> b;
         for (auto& x : data) b.insert(x);
         state.ResumeTiming();
 
         for (size_t i = 0; i < count; ++i) {
-            b.extract_min();
+            b.extract();
         }
 
         //benchmark::DoNotOptimize(b);
@@ -98,7 +98,7 @@ static void BM_Search(benchmark::State& state) {
     const size_t count = state.range(0);
     auto data = generateRandomData<T>(count);
 
-    nBeap<T, N> b;
+    NBeap<T, N> b;
     for (auto& x : data) b.insert(x);
 
     std::uniform_int_distribution<T> dist(1, 1'000'000);

@@ -27,9 +27,10 @@ std::vector<int> generateRandomData(size_t n) {
 
 int main()
 {
-    int MAX_NUMBER = 35;
+    NBeap<int, 2> nbeap;
+    /*int MAX_NUMBER = 35;
 
-    NBeap<int, 4> nbeap;
+    
     auto data = generateRandomData(MAX_NUMBER);
 
     //nbeap.insert(54);
@@ -44,15 +45,30 @@ int main()
 
     nbeap.printState("After insertion");
 
-    int prev = nbeap.extract_min();
+    int prev = nbeap.extract();
     while (nbeap.size() > 0) {
-        int current = nbeap.extract_min();
+        int current = nbeap.extract();
         if(current < prev)
         {
             std::cout << "Beap property violated, current=" << current << " previous=" << prev << std::endl;
             nbeap.printState("After violation");
         } // Should be non-decreasing
         prev = current;
+    }*/
+
+    size_t MAX_NUMBER = 35;
+    for(size_t i = 1; i <= MAX_NUMBER; i++)
+    {
+        nbeap.insert(i);
+    }
+
+    nbeap.printState("After Insertion");
+    for(size_t i = MAX_NUMBER; i > 0; i--)
+    {
+        if(!nbeap.search(i))
+        {
+            std::cout << "Val is: " << i << std::endl;
+        }
     }
 
 

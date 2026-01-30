@@ -36,9 +36,9 @@ TYPED_TEST(NBeapStressTest, StressTestMultipleDimensions) {
         this->nbeap.insert(dist(rng));
     }
 
-    int prev = this->nbeap.extract_min();
+    int prev = this->nbeap.extract();
     while (this->nbeap.size() > 0) {
-        int current = this->nbeap.extract_min();
+        int current = this->nbeap.extract();
         EXPECT_GE(current, prev) << "Failed for N=" << TestFixture::N;
         prev = current;
     }
@@ -47,7 +47,7 @@ TYPED_TEST(NBeapStressTest, StressTestMultipleDimensions) {
 
 class NBeapTest : public ::testing::Test {
 protected:
-    NBeap<int, 3> nbeap;
+    NBeap<int, 2> nbeap;
 };
 
 TEST_F(NBeapTest, ConstructorInitializesCorrectly) {
@@ -85,16 +85,16 @@ TEST_F(NBeapTest, InsertDuplicateValues) {
     nbeap.insert(5);
 
     EXPECT_EQ(nbeap.size(), 5);
-    EXPECT_EQ(nbeap.extract_min(), 5);
+    EXPECT_EQ(nbeap.extract(), 5);
 }
 
 TEST_F(NBeapTest, PopFromEmptyBeap) {
-    EXPECT_THROW(nbeap.extract_min(), std::out_of_range);
+    EXPECT_THROW(nbeap.extract(), std::out_of_range);
 }
 
 TEST_F(NBeapTest, PopSingleElement) {
     nbeap.insert(42);
-    int value = nbeap.extract_min();
+    int value = nbeap.extract();
 
     EXPECT_EQ(value, 42);
     EXPECT_EQ(nbeap.size(), 0);
@@ -109,9 +109,50 @@ TEST_F(NBeapTest, PopMaintainsBeapProperty) {
     nbeap.insert(7);
     nbeap.insert(30);
 
-    EXPECT_EQ(nbeap.extract_min(), 3);
+    EXPECT_EQ(nbeap.extract(), 3);
     EXPECT_EQ(nbeap.size(), 5);
-    EXPECT_EQ(nbeap.extract_min(), 5);
-    EXPECT_EQ(nbeap.extract_min(), 7);
-    EXPECT_EQ(nbeap.extract_min(), 10);
+    EXPECT_EQ(nbeap.extract(), 5);
+    EXPECT_EQ(nbeap.extract(), 7);
+    EXPECT_EQ(nbeap.extract(), 10);
+}
+
+TEST_F(NBeapTest, SearchInEmptyBeap) {
+    auto result = nbeap.search(10);
+    EXPECT_FALSE(result);
+}
+
+TEST_F(NBeapTest, SearchExistingElement) {
+    nbeap.insert(10);
+    nbeap.insert(5);
+    nbeap.insert(15);
+    nbeap.insert(3);
+    nbeap.insert(7);
+    
+    auto result = nbeap.search(5);
+    EXPECT_TRUE(result); 
+    //EXPECT_EQ(5, result.value()[0]); 
+}
+
+TEST_F(NBeapTest, SearchNonExistingElement) {
+    nbeap.insert(10);
+    nbeap.insert(5);
+    
+    auto result = nbeap.search(99);
+    EXPECT_FALSE(result);
+}
+
+TEST_F(NBeapTest, SearchManyExistingElement)
+{
+    size_t MAX_NUMBER = 1000;
+    for(size_t i = 1; i <= MAX_NUMBER; i++)
+    {
+        nbeap.insert(i);
+    }
+
+    //nbeap.printState("After Insertion");
+    for(size_t i = MAX_NUMBER; i > 0; i--)
+    {
+        EXPECT_TRUE(nbeap.search(i));
+    }
+    
 }
