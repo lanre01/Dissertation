@@ -47,7 +47,7 @@ TYPED_TEST(NBeapStressTest, StressTestMultipleDimensions) {
 
 class NBeapTest : public ::testing::Test {
 protected:
-    NBeap<int, 2> nbeap;
+    NBeap<int, 3> nbeap;
 };
 
 TEST_F(NBeapTest, ConstructorInitializesCorrectly) {

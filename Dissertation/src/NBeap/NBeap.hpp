@@ -160,7 +160,7 @@ public:
             return _search2D(val).has_value();
         }
         else {
-            return _searchND(val).has_value();
+            return _searchND(val, _interval.first, _height, _interval).has_value();
         }
 
     };
@@ -354,70 +354,19 @@ private:
     {
         return p.second - p.first + 1;
     }
+
+    std::optional<std::pair<uint64_t, unsigned int>> _searchND(
+        T val, uint64_t currPos, unsigned int currHeight, 
+        std::pair<uint64_t, uint64_t> levelInterval
+    );
+
+    std::pair<uint64_t, size_t> getFirstUniqueChildPos(
+        uint64_t parentIdx, uint64_t firstChildPos, size_t maxNumberOfChildren,
+        std::pair<uint64_t, uint64_t> levelInterval
+    );
     
 };
 
- 
-/*template <Comparable T, size_t N, typename Compare>
-inline std::optional<std::pair<uint64_t, unsigned int>> 
-NBeap<T, N, Compare>::_search(T val, uint64_t from, unsigned int h, std::pair<uint64_t, uint64_t> levelInterval)
-{
-    if(from >= _size)
-    {
-        return std::nullopt;
-    }
-    
-    if(compare(_container[from], val))
-    {
-
-        auto parentLevel = getPreviousLevelInterval(h, levelInterval);
-        auto parentSize = parentLevel.second - parentLevel.first + 1;
-        auto parentId = from - parentSize;
-
-        if(parentId > parentLevel.second)
-        {
-            return std::nullopt; // we must terminate here as the other children in the same level must have been considered or ignored
-        }
-
-        return _search(val, parentId, h-1, parentLevel);
-    }
-
-    else if(compare(val, _container[from])){
-
-        // basically, we want to search the second, third ... children recursively
-        // we also want to make sure we only search every node at most once. 
-        // I need to update the function call to carry notion the max number of kids to search.
-        // This essentially means an element can only be found once if there are no duplicates.
-        // use depth first search 
-
-        /*
-        cases:
-        Going up: 
-            last sublayer -> end search
-            otherwise, go up
-        
-        Going down:
-            In the last level:
-                last sublayer in the last level -> end search
-                other sublayers -> jump to other sublayer in the front
-            
-
-
-        
-        */
-
-/*
-
-        return std::optional<std::pair<uint64_t, unsigned int>>();
-    }
-
-    else{
-
-        return {from, h};
-    }
-
-    
-}*/
 
 template <Comparable T, size_t N, typename Compare>
 std::pair<uint64_t, uint64_t> NBeap<T, N, Compare>::span(
@@ -453,9 +402,12 @@ void NBeap<T, N, Compare>::siftDown(
 
     while(h < _height)
     {
-        std::optional<uint64_t> selected_child_index = getMinOrMaxChildIndex(currPos, h, levelInterval);
+        std::optional<uint64_t> selected_child_index = 
+                getMinOrMaxChildIndex(currPos, h, levelInterval);
         
-        if(!selected_child_index.has_value() || compare(_container[selected_child_index.value()], val))
+        if(!selected_child_index.has_value()         || 
+            compare(_container[selected_child_index.value()], val)
+        )
         {
             break;
         }
@@ -725,7 +677,7 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxChildIndex(
 }
 
 template <Comparable T, size_t N, typename Compare>
-inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND(
+std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND(
     T val, uint64_t currPos, unsigned int currHeight, 
     std::pair<uint64_t, uint64_t> levelInterval
 ) 
@@ -754,11 +706,11 @@ inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_s
         // get the children
         // but we also want to avoid serching a node multiple times
 
-        //auto childrenLevel = getNextLevelInterval(currHeight, levelInterval);
+    
         auto firstChild = currPos + INTERVALSIZE(levelInterval);
         //auto maxNumberOfChildren = N - 1;
         auto firstUniqueChildPosAndMaxNumOfChildren = 
-            getFirstUniqueChildPos(currPos, firstChild, levelInterval, N-1);
+            getFirstUniqueChildPos(currPos, firstChild, N-1, levelInterval);
 
         if(firstChild >= _size || firstUniqueChildPosAndMaxNumOfChildren.first >= _size)
         {
@@ -774,7 +726,7 @@ inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_s
                 }
 
                 auto res = _searchND(val, parentSibling, currHeight, levelInterval);
-                if(res.has_value)
+                if(res.has_value())
                 {
                     return res;
                 }
@@ -782,13 +734,11 @@ inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_s
                 maxSibling--;
 
             }
-            
-
-            // go to the unique siblings if no child
-            // it must exit from here actually
         }
         else 
         {
+            auto childrenLevel = getNextLevelInterval(currHeight, levelInterval);
+            auto childPos = firstUniqueChildPosAndMaxNumOfChildren.first;
             auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
 
             while(maxNumberOfChildren > 0)
@@ -809,52 +759,6 @@ inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_s
         }
 
         return std::nullopt;
-
-
-        //auto innerLevel = getNMinusOffsetLevel(currPos, levelInterval, 1);
-        //auto childPos = firstChild;
-        
-        
-        // i want to store the number of children to skip
-        // What i expect here is childPos should have the next child to searhc
-        // maxNumberOfChildren should contain the remianing children to search
-        /*childPos += INTERVALSIZE(innerLevel);
-        auto offset = 2;
-        while(innerLevel.first != currPos)
-        {
-            innerLevel = getNMinusOffsetLevel(currPos, innerLevel, offset);
-            childPos += INTERVALSIZE(innerLevel);
-            maxNumberOfChildren--;
-            offset++;
-        }
-
-        bool hasOtherChildren = false;
-        // should search the children one by one
-        while(maxNumberOfChildren > 0)
-        {
-            if(childPos >= _size)
-            {
-                break;
-            }
-            hasOtherChildren = true;
-            auto res = _searchND(val, childPos, currHeight + 1, childrenLevel);
-            if(res.has_value())
-            {
-                return res;
-            }
-            childPos++;
-            maxNumberOfChildren--;
-        }
-        // we also want to jump to sibling in case there are no children
-        
-        if(!hasOtherChildren)
-        {
-            // go to the unique siblings if no other children
-        }*/
-
-
-        
-
     }
 
     else
@@ -864,17 +768,18 @@ inline std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_s
 
 }
 
-std::pair<uint64_t, uint64_t> getFirstUniqueChildPos(
-    uint64_t parentIdx, uint64_t firstChildPos, uint64_t maxNumberOfChildren,
+template <Comparable T, size_t N, typename Compare>
+std::pair<uint64_t, size_t> NBeap<T, N, Compare>::getFirstUniqueChildPos(
+    uint64_t parentIdx, uint64_t firstChildPos, size_t maxNumberOfChildren,
     std::pair<uint64_t, uint64_t> levelInterval
 )
 {
-    auto innerLevel = getNMinusOffsetLevel(parentIdx, levelInterval, 1)
+    auto innerLevel = getNMinusOffsetLevel(parentIdx, levelInterval, 1);
     auto nextchildPos = firstChildPos + INTERVALSIZE(innerLevel);
     auto offset = 2;
-    while(innerLevel.first != currPos)
+    while(innerLevel.first != parentIdx)
     {
-        innerLevel = getNMinusOffsetLevel(currPos, innerLevel, offset);
+        innerLevel = getNMinusOffsetLevel(parentIdx, innerLevel, offset);
         nextchildPos += INTERVALSIZE(innerLevel);
         maxNumberOfChildren--;
         offset++;
