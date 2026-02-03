@@ -1,0 +1,11 @@
+2026-02-03T18:34:48+00:00
+Running ./bin/bench_beap
+Run on (16 X 3992.51 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1024 KiB (x8)
+  L3 Unified 16384 KiB (x1)
+Load Average: 0.20, 0.07, 0.06
+name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
+"BM_Baseline/256",86257934,7.6126,8.00203,ns,,,,,

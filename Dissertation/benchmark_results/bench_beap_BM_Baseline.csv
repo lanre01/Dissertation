@@ -1,8 +1,0 @@
-name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
-"BM_Baseline/256",86271881,7.13012,7.77822,ns,,,,,
-"BM_Baseline/1024",49109931,12.6373,13.786,ns,,,,,
-"BM_Baseline/4096",49443765,13.1515,13.957,ns,,,,,
-"BM_Baseline/16384",44212157,15.4866,15.4864,ns,,,,,
-"BM_Baseline/65536",47347725,14.519,14.519,ns,,,,,
-"BM_Baseline/262144",46535220,14.5231,14.5231,ns,,,,,
-"BM_Baseline/1048576",47418797,14.0012,14.5062,ns,,,,,

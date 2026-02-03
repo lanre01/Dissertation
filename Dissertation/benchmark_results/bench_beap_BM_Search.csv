@@ -1,8 +1,0 @@
-name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
-"BM_Search/256",16549512,40.4141,44.0875,ns,,5.80664e+09,,,
-"BM_Search/1024",9571450,68.3222,74.5312,ns,,1.37392e+10,,,
-"BM_Search/4096",4001085,162.179,176.92,ns,,2.31517e+10,,,
-"BM_Search/16384",1234359,518.302,556.435,ns,,2.94446e+10,,,
-"BM_Search/65536",585865,1209.36,1209.36,ns,,5.41908e+10,,,
-"BM_Search/262144",291779,2392.22,2392.18,ns,,1.09584e+11,,,
-"BM_Search/1048576",182333,3884.21,3884.24,ns,,2.69956e+11,,,
