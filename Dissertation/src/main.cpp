@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -56,20 +54,24 @@ int main()
         prev = current;
     }*/
 
-    size_t MAX_NUMBER = 35;
-    for(size_t i = 1; i <= MAX_NUMBER; i++)
+    size_t MAX_NUMBER = 10000;
+    auto data = generateRandomData(MAX_NUMBER);
+    for(auto x : data)
     {
-        nbeap.insert(i);
+        nbeap.insert(x);
     }
 
-    nbeap.printState("After Insertion");
-    for(size_t i = MAX_NUMBER; i > 0; i--)
+    //nbeap.printState("After Insertion");
+    for(auto x : data)
     {
-        if(!nbeap.search(i))
+        if(!nbeap.search(x))
         {
-            std::cout << "Val is: " << i << std::endl;
+            std::cout << "Val is: " << x << std::endl;
+            //nbeap.printState("Search error";)
         }
     }
+
+    //nbeap.printState("Search error");
 
 
     std::cout << "end" << std::endl;

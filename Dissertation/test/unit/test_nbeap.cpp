@@ -1,16 +1,17 @@
 #include <gtest/gtest.h>
 #include "../../src/NBeap/NBeap.hpp"
-#include <random>
+#include "test_utils.hpp"
 #include <type_traits>
 
+
 template <typename DimTag>
-class NBeapStressTest : public ::testing::Test {
+class NBeapTestMultipleDim : public ::testing::Test {
 protected:
     static constexpr size_t N = DimTag::value;
     NBeap<int, N> nbeap;
 };
 
-using StressDims = ::testing::Types<
+using DIMS = ::testing::Types<
     std::integral_constant<size_t, 1>,
     std::integral_constant<size_t, 2>,
     std::integral_constant<size_t, 3>,
@@ -23,13 +24,27 @@ using StressDims = ::testing::Types<
     std::integral_constant<size_t, 10>
 >;
 
-TYPED_TEST_SUITE(NBeapStressTest, StressDims);
+TYPED_TEST_SUITE(NBeapTestMultipleDim, DIMS);
 
-TYPED_TEST(NBeapStressTest, StressTestMultipleDimensions) {
+TYPED_TEST(NBeapTestMultipleDim, SearchInMultipleDimensions) {
+    
+    const int MAX_NUMBER = 1000;
+
+    auto data = generateRandomData(MAX_NUMBER);
+
+    for(auto x : data) this->nbeap.insert(x);
+
+    for(auto x : data)
+    {
+        EXPECT_TRUE(this->nbeap.search(x));
+    }
+}
+
+
+TYPED_TEST(NBeapTestMultipleDim, MultipleInsertionAndExtraction) {
     
     const int STRESS_COUNT = 1000;
 
-    std::mt19937 rng(12345);
     std::uniform_int_distribution<int> dist(0, 999);
 
     for (int i = 0; i < STRESS_COUNT; ++i) {
@@ -42,6 +57,11 @@ TYPED_TEST(NBeapStressTest, StressTestMultipleDimensions) {
         EXPECT_GE(current, prev) << "Failed for N=" << TestFixture::N;
         prev = current;
     }
+}
+
+TYPED_TEST(NBeapTestMultipleDim, MultipleRemoveOperations)
+{
+
 }
 
 
@@ -130,7 +150,6 @@ TEST_F(NBeapTest, SearchExistingElement) {
     
     auto result = nbeap.search(5);
     EXPECT_TRUE(result); 
-    //EXPECT_EQ(5, result.value()[0]); 
 }
 
 TEST_F(NBeapTest, SearchNonExistingElement) {
@@ -155,4 +174,14 @@ TEST_F(NBeapTest, SearchManyExistingElement)
         EXPECT_TRUE(nbeap.search(i));
     }
     
+}
+
+TEST_F(NBeapTest, NegativeNumbers) {
+    nbeap.insert(-5);
+    nbeap.insert(-10);
+    nbeap.insert(0);
+    
+    EXPECT_EQ(nbeap.extract(), -10);
+    EXPECT_EQ(nbeap.extract(), -5);
+    EXPECT_EQ(nbeap.extract(), 0);
 }

@@ -170,10 +170,30 @@ public:
     bool empty() {return _size == 0; }
 
     void printState(const std::string& operation) {
-    	std::cout << "After " << operation << ": ";
-		for (T val : _container) {
+    	std::cout << "After " << operation << ": " << std::endl;
+        uint64_t i = 0;
+        unsigned int h = 1;
+        uint64_t n = 1;
+        while(i < _size)
+        {
+            for (uint64_t k = 0; k < n; k++)
+            {
+                if(i+k >= _size)
+                {
+                    break;
+                }
+                std::cout << _container[i+k] << " ";
+            }
+            std::cout << std::endl;
+
+            i+=n;
+            n = getNumberOfElementInNextLevel(h, n);
+            h++;
+        }
+
+		/*for (T val : _container) {
 			std::cout << val << " ";
-		}
+		}*/
 		std::cout << " | size=" << _size << " height=" << _height << " levelSize=" << _levelSize << std::endl;
         std::cout << " | intervals=" << _interval.first << "," << _interval.second << std::endl;
 		std::cout.flush();
@@ -245,6 +265,8 @@ private:
     {
         auto currPos = _interval.first;
         auto h = _height;
+
+
         while(1)
         {
             if (currPos >= _size)
@@ -256,16 +278,25 @@ private:
             if (compare(_container[currPos], val))
             {
                 currPos = currPos - h + 1;
-                h--;
+                h -= 1;
                 //if(currPos >)  need to consider when we get to left most node and we 
                 // need to go up, search should terminate
             }
             else if (compare(val, _container[currPos]))
             {
-                auto newPos = currPos + h + 1;
+                auto newPos = currPos + h + 1; 
                 if (newPos >= _size)
                 {
-                    currPos++;
+                    currPos += 1;
+                    // case when we reach the last element in the last level
+                    // if the last level is not fully occupied, we want to jump to 
+                    // the parent's level to ensure the last two levels are fully explored
+                    if(currPos >= _size)
+                    {
+                        currPos = currPos - h + 1;
+                        h--;
+                    }
+                    
                 }
                 else {
                     currPos = newPos;
@@ -350,14 +381,14 @@ private:
         uint64_t currentPos, std::pair<uint64_t, uint64_t> parentsInterval, uint64_t dOffset
     );
 
-    inline uint64_t INTERVALSIZE(std::pair<uint64_t, uint64_t>& p)
+    inline uint64_t INTERVALSIZE(const std::pair<uint64_t, uint64_t>& p)
     {
         return p.second - p.first + 1;
     }
 
     std::optional<std::pair<uint64_t, unsigned int>> _searchND(
-        T val, uint64_t currPos, unsigned int currHeight, 
-        std::pair<uint64_t, uint64_t> levelInterval
+        T val, const uint64_t currPos, const unsigned int currHeight, 
+        const std::pair<uint64_t, uint64_t> levelInterval
     );
 
     std::pair<uint64_t, size_t> getFirstUniqueChildPos(
@@ -678,8 +709,8 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getMinOrMaxChildIndex(
 
 template <Comparable T, size_t N, typename Compare>
 std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND(
-    T val, uint64_t currPos, unsigned int currHeight, 
-    std::pair<uint64_t, uint64_t> levelInterval
+    T val, const uint64_t currPos, const unsigned int currHeight, 
+    const std::pair<uint64_t, uint64_t> levelInterval
 ) 
 {
     
@@ -692,12 +723,12 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
     if(compare(_container[currPos], val))
     {
         auto parentLevel = getPreviousLevelInterval(currHeight, levelInterval);
-        currPos -= INTERVALSIZE(parentLevel);
-        if(currPos >= levelInterval.first)
+        auto newPos = currPos - INTERVALSIZE(parentLevel);
+        if(newPos >= levelInterval.first)
         {
             return std::nullopt;
         } 
-        return _searchND(val, currPos, currHeight - 1, parentLevel);
+        return _searchND(val, newPos, currHeight - 1, parentLevel);
     }
     else if(compare(val, _container[currPos]))
     {
@@ -722,14 +753,29 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
             {
                 if(parentSibling >= _size)
                 {
-                    return std::nullopt;
+                    // Actually we want to go the grandparent
+                    auto grandParentLevel = getPreviousLevelInterval(currHeight, levelInterval);
+                    auto grandParent = parentSibling - INTERVALSIZE(grandParentLevel);
+                    if(grandParent >= levelInterval.first) // only going to happen if the last level is not full
+                    {
+                        return std::nullopt;
+                    } 
+
+                    auto res = _searchND(val, grandParent, currHeight - 1, grandParentLevel);
+                    if(res.has_value())
+                    {
+                        return res;
+                    }
+                }
+                else {
+                    auto res = _searchND(val, parentSibling, currHeight, levelInterval);
+                    if(res.has_value())
+                    {
+                        return res;
+                    }
                 }
 
-                auto res = _searchND(val, parentSibling, currHeight, levelInterval);
-                if(res.has_value())
-                {
-                    return res;
-                }
+                
                 parentSibling++;
                 maxSibling--;
 
@@ -745,14 +791,31 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
             {
                 if(childPos >= _size)
                 {
-                    break;
+                    // should i be breaking here?
+                    // we should actually be going to that childs parent
+                    // instead of break
+                    //auto grandParentLevel = getPreviousLevelInterval(currHeight, levelInterval);
+                    auto sibling = childPos - INTERVALSIZE(levelInterval);
+                    if(sibling >= levelInterval.second) // only going to happen if the last level is not full
+                    {
+                        return std::nullopt;
+                    } 
+
+                    auto res = _searchND(val, sibling, currHeight, levelInterval);
+                    if(res.has_value())
+                    {
+                        return res;
+                    }
+                }
+                else {
+                    auto res = _searchND(val, childPos, currHeight + 1, childrenLevel);
+                    if(res.has_value())
+                    {
+                        return res;
+                    }
                 }
 
-                auto res = _searchND(val, childPos, currHeight + 1, childrenLevel);
-                if(res.has_value())
-                {
-                    return res;
-                }
+                
                 childPos++;
                 maxNumberOfChildren--;
             }

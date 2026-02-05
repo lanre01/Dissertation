@@ -1,16 +1,8 @@
 #include <gtest/gtest.h>
 #include "../../src/Beap/Beap.hpp"  
-#include <random>
-#include <algorithm>
+#include "test_utils.hpp"
 
-static std::mt19937 rng(42);
 
-std::vector<int> generateRandomData(size_t n) {
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
-    std::vector<int> v(n);
-    for (auto& x : v) x = dist(rng);
-    return v;
-}
 
 
 class BeapTest : public ::testing::Test {
@@ -181,7 +173,7 @@ TEST_F(BeapTest, MultipleOperationsSequence) {
 }
 
 TEST_F(BeapTest, LargeNumberOfInsertions) {
-    const int NUM_ELEMENTS = 10;
+    const int NUM_ELEMENTS = 10000;
     
     for (int i = NUM_ELEMENTS; i > 0; --i) {
         beap.push(i);
