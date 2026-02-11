@@ -29,13 +29,15 @@ public:
 //  Benchmark constructor
 template<typename T, int N>
 static void BM_Construct(benchmark::State& state) {
+    const size_t count = state.range(0);
     for (auto _ : state) {
         NBeap<T, N> b;
-        //benchmark::DoNotOptimize(b);
+        b.reserve(count);
+        benchmark::DoNotOptimize(b);
     }
 }
 
-// Benchmark insert() – random input
+// Random input
 template<typename T, int N>
 static void BM_PushRandom(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -43,7 +45,8 @@ static void BM_PushRandom(benchmark::State& state) {
     
     for (auto _ : state) {
         state.PauseTiming();
-        NBeap<T, N> b;   // fresh beap
+        NBeap<T, N> b;  
+        b.reserve(count);
         state.ResumeTiming();
         
         for (auto& x : data)
@@ -52,8 +55,8 @@ static void BM_PushRandom(benchmark::State& state) {
         //benchmark::DoNotOptimize(b);
     }
 }
-/*
-// Benchmark insert() – sorted input (worst-case?)
+
+// Sorted input - best case for minNBeap
 template<typename T, int N>
 static void BM_PushSorted(benchmark::State& state) {
     const size_t count = state.range(0);
@@ -63,6 +66,26 @@ static void BM_PushSorted(benchmark::State& state) {
     for (auto _ : state) {
         state.PauseTiming();
         NBeap<T, N> b;
+        b.reserve(count);
+        state.ResumeTiming();
+
+        for (auto& x : data)
+            b.insert(x);
+
+        //benchmark::DoNotOptimize(b);
+    }
+}
+
+template<typename T, int N>
+static void BM_PushSortedDesc(benchmark::State& state) {
+    const size_t count = state.range(0);
+    auto data = generateRandomData<T>(count);
+    std::sort(data.begin(), data.end(), std::greater<int>());
+
+    for (auto _ : state) {
+        state.PauseTiming();
+        NBeap<T, N> b;
+        b.reserve(count);
         state.ResumeTiming();
 
         for (auto& x : data)
@@ -74,13 +97,14 @@ static void BM_PushSorted(benchmark::State& state) {
 
 // Benchmark extract()
 template<typename T, int N>
-static void BM_RemoveMin(benchmark::State& state) {
+static void BM_Extract(benchmark::State& state) {
     const size_t count = state.range(0);
     auto data = generateRandomData<T>(count);
 
     for (auto _ : state) {
         state.PauseTiming();
         NBeap<T, N> b;
+        b.reserve(count);
         for (auto& x : data) b.insert(x);
         state.ResumeTiming();
 
@@ -110,16 +134,23 @@ static void BM_Search(benchmark::State& state) {
 }
 
 
-*/
-#define REGISTER_BEAP_BENCH(T, N) \
-BENCHMARK_TEMPLATE(BM_Construct, T, N);\
-BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->Range(256, 1<<20); 
-//BENCHMARK_TEMPLATE(BM_PushSorted, T, N)->Arg(1000)->Arg(10000)->Arg(50000); \
-//BENCHMARK_TEMPLATE(BM_RemoveMin, T, N)->Arg(1000)->Arg(10000); \
-//BENCHMARK_TEMPLATE(BM_Search, T, N)->Arg(10000);
 
-// Benchmark for int and N=2,3 (you can add more)
-REGISTER_BEAP_BENCH(int, 1)
+#define REGISTER_BEAP_BENCH(T, N) \
+BENCHMARK_TEMPLATE(BM_Construct, T, N)->RangeMultiplier(4)->Range(256, 1<<20);\
+BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSorted, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(2)->Range(256, 1<<20);
+
+#define REGISTER_SHORTER_BEAP_BENCH(T, N) \
+BENCHMARK_TEMPLATE(BM_Construct, T, N)->RangeMultiplier(4)->Range(256, 1<<20);\
+BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSorted, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(4)->Range(256, 1<<20);
+
+
+REGISTER_SHORTER_BEAP_BENCH(int, 1)
 REGISTER_BEAP_BENCH(int, 2)
 REGISTER_BEAP_BENCH(int, 3)
 REGISTER_BEAP_BENCH(int, 4)

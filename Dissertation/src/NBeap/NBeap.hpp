@@ -38,6 +38,10 @@ public:
 
 
     NBeap& operator=(const NBeap&) = default;
+    void reserve(size_t count)
+    {
+        _container.reserve(count);
+    }
 
     T extract() {
 
@@ -100,14 +104,19 @@ public:
 
     void remove(T val)
     {
-        auto res = _search(val);
+        std::cout << "Trying to delete " << val << std::endl;
+        //printState("Before Searching");
+        auto res = _searchHelper(val);
 
         if(!res.has_value())
         {
+            std::cout << "Can not find " << val << std::endl;
+            printState("Remove Operation");
             return;
         }
 
         auto resVal = res.value();
+        //std::cout << "Swapping " << val << " with " << _container[_size - 1] << std::endl;  
         std::swap(_container[resVal.first], _container[_size - 1]);
 
         _size--;
@@ -128,17 +137,17 @@ public:
             _interval.first -= _levelSize;
             _height--;
         }
-        auto li = span(resVal.second);
 
-        auto selected_parent_optional = getMinOrMaxParentIndex(resVal.first, resVal.second, li);
-        if(!selected_parent_optional.has_value() || 
-            compare(_container[selected_parent_optional.value()], _container[resVal.first])
-        )
+        auto li = span(resVal.second, _interval, _height);
+
+        //std::cout << "Height=" << resVal.second << " Interval=" << li.first << "," << li.second << std::endl;
+
+        //auto bestParentOpt = getMinOrMaxParentIndex(resVal.first, resVal.second, li);
+        if(compare(val, _container[resVal.first]))
         {
-            bubbleUp(resVal.first, 0, resVal.second, li);
-            return;
+            bubbleUp(0, resVal.first, resVal.second, li);
         }
-
+        
 
         siftDown(resVal.first, resVal.second, li);
 
@@ -207,6 +216,7 @@ private:
     Compare compare;
     std::pair<uint64_t, uint64_t> _interval;
     uint64_t _levelSize;
+    std::pair<uint64_t, uint64_t> searchInterval{0,0};
 
     struct Vec { std::array<unsigned int, N> data; };
 
@@ -254,6 +264,8 @@ private:
                 return std::nullopt;
             }
             else{
+                searchInterval.first = h;
+                searchInterval.second = h;
                 return std::make_pair(from, h);
             }
         }
@@ -265,7 +277,6 @@ private:
     {
         auto currPos = _interval.first;
         auto h = _height;
-
 
         while(1)
         {
@@ -315,6 +326,22 @@ private:
     }
 
     std::optional<std::pair<uint64_t, unsigned int>>_searchND(T val);
+
+    std::optional<std::pair<uint64_t, unsigned int>> _searchHelper(T val)
+    {
+        if constexpr (N == 1)
+        {
+            return _search1D(val);
+        }
+        else if constexpr (N == 2)
+        {
+            return _search2D(val);
+        }
+        else {
+            return _searchND(val, _interval.first, _height, _interval);
+        }
+
+    }
 
     inline uint64_t getNumberOfElementInNextLevel(unsigned int currHeight, uint64_t numOfElemCurrLevel)
     {
@@ -410,12 +437,12 @@ std::pair<uint64_t, uint64_t> NBeap<T, N, Compare>::span(
         return knownHeightInterval;
     }
 
-    //std::pair<uint64_t, uint64_t> resInterval;
+    
 
     while(knownHeight > preferredHeight)
     {
         auto prevLevelElems = 
-            getNumOfElemInPrevLevel(knownHeight, knownHeightInterval.second - knownHeightInterval.first + 1);
+            getNumOfElemInPrevLevel(knownHeight, INTERVALSIZE(knownHeightInterval));
         knownHeightInterval.second = knownHeightInterval.first - 1;
         knownHeightInterval.first -= prevLevelElems; 
         knownHeight--;
@@ -796,7 +823,7 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
                     // instead of break
                     //auto grandParentLevel = getPreviousLevelInterval(currHeight, levelInterval);
                     auto sibling = childPos - INTERVALSIZE(levelInterval);
-                    if(sibling >= levelInterval.second) // only going to happen if the last level is not full
+                    if(sibling > levelInterval.second) // only going to happen if the last level is not full
                     {
                         return std::nullopt;
                     } 

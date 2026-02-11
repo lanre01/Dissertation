@@ -43,11 +43,11 @@ TYPED_TEST(NBeapTestMultipleDim, SearchInMultipleDimensions) {
 
 TYPED_TEST(NBeapTestMultipleDim, MultipleInsertionAndExtraction) {
     
-    const int STRESS_COUNT = 1000;
+    const int MAX_NUMBER = 1000;
 
     std::uniform_int_distribution<int> dist(0, 999);
 
-    for (int i = 0; i < STRESS_COUNT; ++i) {
+    for (int i = 0; i < MAX_NUMBER; ++i) {
         this->nbeap.insert(dist(rng));
     }
 
@@ -61,7 +61,20 @@ TYPED_TEST(NBeapTestMultipleDim, MultipleInsertionAndExtraction) {
 
 TYPED_TEST(NBeapTestMultipleDim, MultipleRemoveOperations)
 {
+    const int MAX_NUMBER = 1000;
+    auto data = generateRandomData(MAX_NUMBER);
+    
+    for(auto d : data)
+    {
+        this->nbeap.insert(d);
+    }
 
+    for(auto d : data)
+    {
+        this->nbeap.remove(d);
+    }
+
+    EXPECT_EQ(0, this->nbeap.size());
 }
 
 

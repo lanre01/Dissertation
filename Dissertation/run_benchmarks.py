@@ -96,7 +96,7 @@ class BenchmarkRunner():
         for N in range(lowerBoundary, upperBoundary+1):
             pattern = rf"^BM_.*<[^>]*,[[:space:]]*{N}>($|/)"
             print("--benchmark_filter=", pattern)
-            self.nbeapDim = N 
+            self.nbeapDim = N # setting this here to be used to name the output file
             self.run(bench, pattern)
         
 
@@ -109,6 +109,5 @@ if __name__ == "__main__":
         br.run(sys.argv[1], "")
     elif argSize > 1:
         br.runRange(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
-        pass 
     else:
         br.runAll()
