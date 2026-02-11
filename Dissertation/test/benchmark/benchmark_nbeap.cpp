@@ -58,7 +58,7 @@ static void BM_PushRandom(benchmark::State& state) {
 
 // Sorted input - best case for minNBeap
 template<typename T, int N>
-static void BM_PushSorted(benchmark::State& state) {
+static void BM_PushSortedAsc(benchmark::State& state) {
     const size_t count = state.range(0);
     auto data = generateRandomData<T>(count);
     std::sort(data.begin(), data.end());
@@ -138,14 +138,16 @@ static void BM_Search(benchmark::State& state) {
 #define REGISTER_BEAP_BENCH(T, N) \
 BENCHMARK_TEMPLATE(BM_Construct, T, N)->RangeMultiplier(4)->Range(256, 1<<20);\
 BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
-BENCHMARK_TEMPLATE(BM_PushSorted, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSortedAsc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSortedDesc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(2)->Range(256, 1<<20);
 
 #define REGISTER_SHORTER_BEAP_BENCH(T, N) \
 BENCHMARK_TEMPLATE(BM_Construct, T, N)->RangeMultiplier(4)->Range(256, 1<<20);\
 BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
-BENCHMARK_TEMPLATE(BM_PushSorted, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSortedAsc, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_PushSortedDesc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(4)->Range(256, 1<<20);
 

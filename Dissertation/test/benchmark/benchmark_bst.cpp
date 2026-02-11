@@ -14,7 +14,7 @@ std::vector<int> generateRandomData(size_t n) {
     return v;
 }
 
-static void BM_Baseline(benchmark::State& state) {
+static void BM_Construct(benchmark::State& state) {
    
     for (auto _ : state) {
         std::map<int, int> m;
@@ -70,7 +70,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 }
 
 // Benchmark minimum
-static void BM_Pop(benchmark::State& state) {
+static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = generateRandomData(count);
     
@@ -113,7 +113,7 @@ static void BM_Search(benchmark::State& state)
 
 
 // Benchmark remove(value)
-static void BM_RemoveValue(benchmark::State& state) {
+static void BM_Remove(benchmark::State& state) {
     size_t count = state.range(0);
     std::map<int, int> m;    
     auto data = generateRandomData(count);
@@ -135,17 +135,17 @@ static void BM_RemoveValue(benchmark::State& state) {
 }
 
 
-BENCHMARK(BM_Baseline)->RangeMultiplier(4)->Range(256, 1<<20);
+BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20);
 
 BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20); 
 
-BENCHMARK(BM_Pop)->RangeMultiplier(2)->Range(256, 1<<20); 
+BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20); 
 
 BENCHMARK(BM_Search)->RangeMultiplier(4)->Range(256, 1<<20); 
 
-BENCHMARK(BM_RemoveValue)->RangeMultiplier(4)->Range(256, 1<<20); 
+BENCHMARK(BM_Remove)->RangeMultiplier(4)->Range(256, 1<<20); 
 
 
 BENCHMARK_MAIN();

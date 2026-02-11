@@ -1,8 +1,0 @@
-name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
-"BM_Construct<int, 3>",1000000000000,5.11998e-10,5.31e-10,ns,,,,,
-"BM_PushRandom<int, 3>/256",87765,6391.95,6763.97,ns,,,,,
-"BM_PushRandom<int, 3>/512",40578,16613.5,17575.6,ns,,,,,
-"BM_PushRandom<int, 3>/4096",1295,468087,496256,ns,,,,,
-"BM_PushRandom<int, 3>/32768",61,1.05634e+07,1.12671e+07,ns,,,,,
-"BM_PushRandom<int, 3>/262144",3,2.42601e+08,2.58726e+08,ns,,,,,
-"BM_PushRandom<int, 3>/1048576",1,2.14202e+09,2.28417e+09,ns,,,,,
