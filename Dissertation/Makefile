@@ -136,13 +136,13 @@ bench-all: bench-beap bench-beap bench-bst # bench-nbeap
 run: $(TARGET)
 	./$(TARGET)
 
-run-unit-tests: $(UNIT_TEST_TARGET)
+run-unit-tests: clean $(UNIT_TEST_TARGET)
 	./$(UNIT_TEST_TARGET)
 
-run-beap-tests: $(UNIT_TEST_TARGET)
+run-beap-tests: clean $(UNIT_TEST_TARGET)
 	./$(UNIT_TEST_TARGET) --gtest_filter=BeapTest.*
 
-run-nbeap-tests: $(UNIT_TEST_TARGET)
+run-nbeap-tests: clean $(UNIT_TEST_TARGET)
 	./$(UNIT_TEST_TARGET) --gtest_filter=NBeap*.*
 
 run-bench-beap: $(BEAP_BENCH_TARGET)

@@ -143,20 +143,14 @@ public:
 
     void remove(T val)
     {
-        //std::cout << "Trying to delete " << val << std::endl;
-        //printState("Before Searching");
-        auto res = _searchHelper(val);
+        std::pair<uint64_t, unsigned int> out{-1,-1};
 
-        if(!res.has_value())
+        if(!_searchHelper(val, out))
         {
-            std::cout << "Can not find " << val << std::endl;
-            printState("Remove Operation");
             return;
         }
-
-        auto resVal = res.value();
-        //std::cout << "Swapping " << val << " with " << _container[_size - 1] << std::endl;  
-        std::swap(_container[resVal.first], _container[_size - 1]);
+        
+        std::swap(_container[out.first], _container[_size - 1]);
 
         _size--;
         _container.resize(_size);
@@ -177,16 +171,16 @@ public:
             _height--;
         }
 
-        auto li = span(resVal.second, _interval, _height);
+        auto li = span(out.second, _interval, _height);
 
 
-        if(compare(val, _container[resVal.first]))
+        if(compare(val, _container[out.first]))
         {
-            bubbleUp(0, resVal.first, resVal.second, li);
+            bubbleUp(0, out.first, out.second, li);
         }
         
 
-        siftDown(resVal.first, resVal.second, li);
+        siftDown(out.first, out.second, li);
 
     }
 
@@ -197,16 +191,18 @@ public:
             return false;
         }
 
+        std::pair<uint64_t, unsigned int> out;
+
         if constexpr (N == 1)
         {
-            return _search1D(val).has_value();
+            return _search1D(val, out);
         }
         else if constexpr (N == 2)
         {
-            return _search2D(val).has_value();
+            return _search2D(val, out);
         }
         else {
-            return _searchND(val, _interval.first, _height, _interval).has_value();
+            return _searchND(val, _interval.first, _height, _interval, out);
         }
 
     };
@@ -250,7 +246,8 @@ private:
     std::pair<uint64_t, uint64_t> _interval;
     uint64_t _levelSize;
     std::pair<uint64_t, uint64_t> searchInterval{0,0};
-    static constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
+    static constexpr uint64_t INVALID_INDEX = static_cast<size_t>(-1);
+    static constexpr std::pair<uint64_t, unsigned int> INVALID_PAIR = {-1, -1};
     
     struct Vec { std::array<unsigned int, N> data; };
 
@@ -270,7 +267,7 @@ private:
         uint64_t currentPos, unsigned int childHeight, std::pair<uint64_t, uint64_t> levelInterval
     );
 
-    std::optional<uint64_t> getBestChild(
+    uint64_t getBestChild(
         uint64_t currentPos, unsigned int childHeight, std::pair<uint64_t, uint64_t> levelInterval
     );
 
@@ -282,7 +279,7 @@ private:
         unsigned int currHeight, uint64_t numOfElemCurrLevel, int offsetDim
     );
 
-    std::optional<std::pair<uint64_t, unsigned int>>_search1D(T val)
+    bool _search1D(T val, std::pair<uint64_t, unsigned int>& out)
     {
         // can simplify this using binary search 
         auto from = _interval.first;
@@ -296,19 +293,21 @@ private:
             }
             else if(compare(val, _container[from]))
             {
-                return std::nullopt;
+                return false;
             }
             else{
-                searchInterval.first = h;
-                searchInterval.second = h;
-                return std::make_pair(from, h);
+                //searchInterval.first = h;
+                //searchInterval.second = h;
+                out.first = from;
+                out.second = h;
+                return true;
             }
         }
 
-        return std::nullopt;
+        return false;
     }
 
-    std::optional<std::pair<uint64_t, unsigned int>>_search2D(T val)
+    bool _search2D(T val, std::pair<uint64_t, unsigned int>& out)
     {
         auto currPos = _interval.first;
         auto h = _height;
@@ -317,7 +316,7 @@ private:
         {
             if (currPos >= _size)
             {
-                return std::nullopt;
+                return false;
             }
 
 
@@ -350,25 +349,25 @@ private:
             }
             else 
             {
-                return std::make_pair(currPos, h);
+                out.first = currPos;
+                out.second = h;
+                return true;
             }
-
-            
-
         }
     }
-    std::optional<std::pair<uint64_t, unsigned int>> _searchHelper(T val)
+
+    bool _searchHelper(T val, std::pair<uint64_t, unsigned int>& out)
     {
         if constexpr (N == 1)
         {
-            return _search1D(val);
+            return _search1D(val, out);
         }
         else if constexpr (N == 2)
         {
-            return _search2D(val);
+            return _search2D(val, out);
         }
         else {
-            return _searchND(val, _interval.first, _height, _interval);
+            return _searchND(val, _interval.first, _height, _interval, out);
         }
 
     }
@@ -425,7 +424,7 @@ private:
         return {currLevInt.second + 1, currLevInt.second + l};
     }
 
-    std::optional<uint64_t> getBestOtherChildren(
+    uint64_t getBestOtherChildren(
         uint64_t parentId, uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval, 
         uint64_t maxNumOfChildren, uint64_t dOffset
     );
@@ -443,9 +442,10 @@ private:
         return p.second - p.first + 1;
     }
 
-    std::optional<std::pair<uint64_t, unsigned int>> _searchND(
+    bool _searchND(
         T val, const uint64_t currPos, const unsigned int currHeight, 
-        const std::pair<uint64_t, uint64_t> levelInterval
+        const std::pair<uint64_t, uint64_t> levelInterval,
+        std::pair<uint64_t, unsigned int>& out
     );
 
     std::pair<uint64_t, size_t> getFirstUniqueChildPos(
@@ -491,19 +491,16 @@ void NBeap<T, N, Compare>::siftDown(
 
     while(h < _height)
     {
-        std::optional<uint64_t> bestChildOpt = 
+        uint64_t bestChild = 
                 getBestChild(currPos, h, levelInterval);
         
-        if(!bestChildOpt.has_value()         || 
-            compare(_container[bestChildOpt.value()], val)
-        )
+        if (bestChild == INVALID_INDEX || compare(_container[bestChild], val))
         {
             break;
         }
-
-        //std::cout << _container[bestChildOpt.value()] << std::endl;
-        _container[currPos] = std::move(_container[bestChildOpt.value()]);
-        currPos = bestChildOpt.value();
+        
+        _container[currPos] = std::move(_container[bestChild]);
+        currPos = bestChild;
         levelInterval = getNextLevelInterval(h, levelInterval);
         h++;
     }
@@ -679,7 +676,7 @@ inline uint64_t NBeap<T, N, Compare>::getBestRemainingParents(
 }
 
 template <Comparable T, size_t N, typename Compare>
-inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
+uint64_t NBeap<T, N, Compare>::getBestChild(
     uint64_t currentPos, 
     unsigned int parentHeight, 
     std::pair<uint64_t, uint64_t> levelInterval
@@ -689,7 +686,7 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
     {
         auto child = currentPos + 1;
         if (child >= _size)
-            return std::nullopt;
+            return INVALID_INDEX;
 
         return child;
     }
@@ -701,7 +698,7 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
         
 
         if(child1 >= _size)
-            return std::nullopt;
+            return INVALID_INDEX;
 
         auto child2 =  child1 + 1;
         
@@ -726,7 +723,7 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
             auto minChild = levelInterval.second + 1;
             if(minChild >= _size)
             {
-                return std::nullopt;
+                return INVALID_INDEX;
             }
 
             auto maxNumOfChildren = N - 1;
@@ -748,10 +745,13 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
         auto levelSize = levelInterval.second - levelInterval.first + 1;
         auto minChild =  currentPos + levelSize;
         if(minChild >= _size)
-            return std::nullopt;
+            return INVALID_INDEX;
         
-        auto minChildRest = getBestOtherChildren(currentPos, minChild, levelInterval, N - 1, 1)
-                                .value_or(minChild);
+        auto minChildRest = getBestOtherChildren(currentPos, minChild, levelInterval, N - 1, 1);
+        if (minChildRest == INVALID_INDEX)
+        {
+            return minChild;
+        }
 
         return minChild + (minChildRest - minChild) * !compare(_container[minChildRest], _container[minChild]);
     }
@@ -759,15 +759,17 @@ inline std::optional<uint64_t> NBeap<T, N, Compare>::getBestChild(
     
 }
 
+// Returns either NULL or the index and height of the element being found
 template <Comparable T, size_t N, typename Compare>
-std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND(
+bool NBeap<T, N, Compare>::_searchND(
     T val, const uint64_t currPos, const unsigned int currHeight, 
-    const std::pair<uint64_t, uint64_t> levelInterval
+    const std::pair<uint64_t, uint64_t> levelInterval, 
+    std::pair<uint64_t, unsigned int>& out
 ) 
 {
     if(currPos >= _size)
     {
-        return std::nullopt;
+        return false;
     }
 
     if(compare(_container[currPos], val))
@@ -776,9 +778,10 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
         auto newPos = currPos - INTERVALSIZE(parentLevel);
         if(newPos >= levelInterval.first)
         {
-            return std::nullopt;
+            return false;
         } 
-        return _searchND(val, newPos, currHeight - 1, parentLevel);
+        
+        return _searchND(val, newPos, currHeight - 1, parentLevel, out);
     }
     else if(compare(val, _container[currPos]))
     {
@@ -808,20 +811,18 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
                     auto grandParent = parentSibling - INTERVALSIZE(grandParentLevel);
                     if(grandParent >= levelInterval.first) // only going to happen if the last level is not full
                     {
-                        return std::nullopt;
+                        return false;
                     } 
 
-                    auto res = _searchND(val, grandParent, currHeight - 1, grandParentLevel);
-                    if(res.has_value())
+                    if(_searchND(val, grandParent, currHeight - 1, grandParentLevel, out))
                     {
-                        return res;
+                        return true;
                     }
                 }
                 else {
-                    auto res = _searchND(val, parentSibling, currHeight, levelInterval);
-                    if(res.has_value())
+                    if(_searchND(val, parentSibling, currHeight, levelInterval, out))
                     {
-                        return res;
+                        return true;
                     }
                 }
 
@@ -848,20 +849,18 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
                     auto sibling = childPos - INTERVALSIZE(levelInterval);
                     if(sibling > levelInterval.second) // only going to happen if the last level is not full
                     {
-                        return std::nullopt;
+                        return false;
                     } 
 
-                    auto res = _searchND(val, sibling, currHeight, levelInterval);
-                    if(res.has_value())
+                    if(_searchND(val, sibling, currHeight, levelInterval, out))
                     {
-                        return res;
+                        return true;
                     }
                 }
                 else {
-                    auto res = _searchND(val, childPos, currHeight + 1, childrenLevel);
-                    if(res.has_value())
+                    if(_searchND(val, childPos, currHeight + 1, childrenLevel, out))
                     {
-                        return res;
+                        return true;
                     }
                 }
 
@@ -871,12 +870,14 @@ std::optional<std::pair<uint64_t, unsigned int>> NBeap<T, N, Compare>::_searchND
             }
         }
 
-        return std::nullopt;
+        return false;
     }
 
     else
     {
-        return std::make_pair(currPos, currHeight);
+        out.first = currPos; 
+        out.second = currHeight;
+        return true;
     }
 
 }
@@ -903,7 +904,7 @@ std::pair<uint64_t, size_t> NBeap<T, N, Compare>::getFirstUniqueChildPos(
 }
 
 template <Comparable T, size_t N, typename Compare>
-std::optional<uint64_t> NBeap<T, N, Compare>::getBestOtherChildren(
+uint64_t NBeap<T, N, Compare>::getBestOtherChildren(
     uint64_t parentId, uint64_t currentPos, std::pair<uint64_t, uint64_t> levelInterval,
     uint64_t maxNumOfChildren, uint64_t dOffset
 )
@@ -914,7 +915,7 @@ std::optional<uint64_t> NBeap<T, N, Compare>::getBestOtherChildren(
     auto bestChild = currentPos + innerLayerSize;
     if(bestChild >= _size)
     {
-        return std::nullopt;
+        return INVALID_INDEX;
     }
 
     maxNumOfChildren--;
