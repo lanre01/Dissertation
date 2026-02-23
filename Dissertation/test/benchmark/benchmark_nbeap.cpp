@@ -8,7 +8,7 @@ template<typename T>
 std::vector<T> generateRandomData(size_t size) {
     std::uniform_int_distribution<T> dist(1, 1'000'000);
     std::vector<T> v(size);
-    for (auto& x : v) x = dist(rng);
+    for (auto x : v) x = dist(rng);
     return v;
 }
 
@@ -49,7 +49,7 @@ static void BM_PushRandom(benchmark::State& state) {
         b.reserve(count);
         state.ResumeTiming();
         
-        for (auto& x : data)
+        for (auto x : data)
             b.insert(x);
 
         //benchmark::DoNotOptimize(b);
@@ -69,10 +69,9 @@ static void BM_PushSortedAsc(benchmark::State& state) {
         b.reserve(count);
         state.ResumeTiming();
 
-        for (auto& x : data)
+        for (int x : data)
             b.insert(x);
 
-        //benchmark::DoNotOptimize(b);
     }
 }
 
@@ -88,7 +87,7 @@ static void BM_PushSortedDesc(benchmark::State& state) {
         b.reserve(count);
         state.ResumeTiming();
 
-        for (auto& x : data)
+        for (auto x : data)
             b.insert(x);
 
         //benchmark::DoNotOptimize(b);
@@ -105,7 +104,7 @@ static void BM_Extract(benchmark::State& state) {
         state.PauseTiming();
         NBeap<T, N> b;
         b.reserve(count);
-        for (auto& x : data) b.insert(x);
+        for (auto x : data) b.insert(x);
         state.ResumeTiming();
 
         for (size_t i = 0; i < count; ++i) {
@@ -123,13 +122,15 @@ static void BM_Search(benchmark::State& state) {
     auto data = generateRandomData<T>(count);
 
     NBeap<T, N> b;
-    for (auto& x : data) b.insert(x);
+    b.reserve(count);
+    for (auto x : data) b.insert(x);
 
     std::uniform_int_distribution<T> dist(1, 1'000'000);
 
     for (auto _ : state) {
         T query = dist(rng);
-        benchmark::DoNotOptimize(b.search(query));
+        auto result = b.search(query);
+        benchmark::DoNotOptimize(result);
     }
 }
 

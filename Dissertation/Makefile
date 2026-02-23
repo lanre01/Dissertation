@@ -3,7 +3,7 @@ CXX := clang++
 # CXXFLAGS := -std=c++20 -Wall -Wextra -O2 -I./src
 
 CXXFLAGS_BASE := -std=c++20 -Wall -Wextra -I./src
-CXXFLAGS_RELEASE := $(CXXFLAGS_BASE) -O2
+CXXFLAGS_RELEASE := $(CXXFLAGS_BASE) -O3
 CXXFLAGS_DEBUG := $(CXXFLAGS_BASE) -O0 -g -ggdb3 -fno-omit-frame-pointer -DDEBUG
 
 CXXFLAGS := $(CXXFLAGS_RELEASE)

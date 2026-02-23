@@ -3,7 +3,7 @@
 #include "test_utils.hpp"
 
 
-
+constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
 
 class BeapTest : public ::testing::Test {
 protected:

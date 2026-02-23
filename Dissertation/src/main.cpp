@@ -25,7 +25,7 @@ std::vector<int> generateRandomData(size_t n) {
 
 int main()
 {
-    NBeap<int, 7> nbeap;
+    NBeap<int, 5> nbeap;
     /*int MAX_NUMBER = 35;
 
     
@@ -54,7 +54,7 @@ int main()
         prev = current;
     }*/
 
-    size_t MAX_NUMBER = 1000;
+    size_t MAX_NUMBER = 10000;
     auto data = generateRandomData(MAX_NUMBER);
     for(auto x : data)
     {
@@ -62,13 +62,13 @@ int main()
     }
 
     nbeap.printState("After Insertion");
-    for(auto x : data)
+    /*for(auto x : data)
     {   
         nbeap.remove(x);
         nbeap.printState("Removal");
     }
 
-    nbeap.printState("Removal");
+    nbeap.printState("Removal");*/
     //nbeap.printState("Search error");
 
 
