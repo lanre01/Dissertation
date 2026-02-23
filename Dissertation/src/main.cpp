@@ -21,38 +21,27 @@ std::vector<int> generateRandomData(size_t n) {
 
 
 
+void createFilesWithNumber()
+{
+    std::ofstream myfile("numbers.txt");
+    // std::ifstream myfile ("example.txt"); for reading
+    // std::string line; while (getline(myfile, line)) 
+    // std::from_chars(line.data(), line.data() + line.size(), result)
+    std::uniform_int_distribution<int> dist(1, 1'000'000'000);
+    dist(rng);
 
+    for(int i = 0; i < 2000000; i++)
+    {
+        myfile << dist(rng) << std::endl;
+    }
+
+    myfile.close();
+
+}
 
 int main()
 {
-    NBeap<int, 5> nbeap;
-    /*int MAX_NUMBER = 35;
-
-    
-    auto data = generateRandomData(MAX_NUMBER);
-
-    //nbeap.insert(54);
-    
-    
-    const int STRESS_COUNT = 35;
-    
-
-    for (int i = 0; i < STRESS_COUNT; ++i) {
-        nbeap.insert(rand() % STRESS_COUNT);
-    }
-
-    nbeap.printState("After insertion");
-
-    int prev = nbeap.extract();
-    while (nbeap.size() > 0) {
-        int current = nbeap.extract();
-        if(current < prev)
-        {
-            std::cout << "Beap property violated, current=" << current << " previous=" << prev << std::endl;
-            nbeap.printState("After violation");
-        } // Should be non-decreasing
-        prev = current;
-    }*/
+    /*NBeap<int, 5> nbeap;
 
     size_t MAX_NUMBER = 10000;
     auto data = generateRandomData(MAX_NUMBER);
@@ -61,16 +50,10 @@ int main()
         nbeap.insert(x);
     }
 
-    nbeap.printState("After Insertion");
-    /*for(auto x : data)
-    {   
-        nbeap.remove(x);
-        nbeap.printState("Removal");
-    }
+    nbeap.printState("After Insertion");*/
 
-    nbeap.printState("Removal");*/
-    //nbeap.printState("Search error");
 
+    createFilesWithNumber();
 
     std::cout << "end" << std::endl;
 

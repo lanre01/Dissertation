@@ -265,8 +265,8 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
                 h++;
                 currentLevel = childSpan(currentLevel.second, h);
             }
-
         }
+        
         else{
             return {idx, h};
         }

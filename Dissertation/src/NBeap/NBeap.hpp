@@ -339,13 +339,11 @@ private:
                         currPos = currPos - h + 1;
                         h--;
                     }
-                    
                 }
                 else {
                     currPos = newPos;
                     h++;
                 }
-
             }
             else 
             {
