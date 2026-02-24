@@ -4,7 +4,6 @@
 #include <utility>
 #include <functional>
 #include <algorithm>
-#include <optional>
 #include <bits/stdc++.h>
 
 template<typename T>
@@ -210,6 +209,14 @@ public:
     uint64_t size() {return _size;}
     unsigned int height() {return _height - 1;}
     bool empty() {return _size == 0; }
+    void clear()
+    {
+        _height = 0;
+        _size = 0;
+        _container.clear();
+        _interval = {0, 0};
+        _levelSize = 0;
+    }
 
     void printState(const std::string& operation) {
     	std::cout << "After " << operation << ": " << std::endl;
@@ -245,11 +252,9 @@ private:
     Compare compare;
     std::pair<uint64_t, uint64_t> _interval;
     uint64_t _levelSize;
-    std::pair<uint64_t, uint64_t> searchInterval{0,0};
+
     static constexpr uint64_t INVALID_INDEX = static_cast<size_t>(-1);
-    static constexpr std::pair<uint64_t, unsigned int> INVALID_PAIR = {-1, -1};
-    
-    struct Vec { std::array<unsigned int, N> data; };
+
 
     std::optional<std::pair<uint64_t, unsigned int>> _search(
         T val, uint64_t from, unsigned int height, std::pair<uint64_t, uint64_t> levelInterval
@@ -296,8 +301,6 @@ private:
                 return false;
             }
             else{
-                //searchInterval.first = h;
-                //searchInterval.second = h;
                 out.first = from;
                 out.second = h;
                 return true;
@@ -309,21 +312,36 @@ private:
 
     bool _search2D(T val, std::pair<uint64_t, unsigned int>& out)
     {
+
         auto currPos = _interval.first;
         auto h = _height;
+        auto idx = 1;
 
         while(1)
         {
             if (currPos >= _size)
             {
+                //std::cout << "Idx count is=" << idx << " and size=" << _size << std::endl;
+                //std::cout << "Height=" << h << " and currPos=" << currPos << std::endl;
+                //std::cout << "Max height=" << _height << std::endl;
                 return false;
             }
 
 
             if (compare(_container[currPos], val))
             {
+                // need to update this actully to end search if we ever have
+                // to go up at the end of any level.
+                if(idx == h)
+                {
+                    //std::cout << "Idx count is=" << idx << " and size=" << _size << std::endl;
+                    //std::cout << "Height=" << h << " and currPos=" << currPos << std::endl;
+                    //std::cout << "Max height=" << _height << std::endl;
+                    return false;
+                }
+
                 currPos = currPos - h + 1;
-                h -= 1;
+                h--;
             }
             else if (compare(val, _container[currPos]))
             {
@@ -339,19 +357,25 @@ private:
                         currPos = currPos - h + 1;
                         h--;
                     }
+                    {
+                        idx++;
+                    }
                 }
                 else {
                     currPos = newPos;
                     h++;
+                    idx++;
                 }
             }
             else 
             {
+                
                 out.first = currPos;
                 out.second = h;
                 return true;
             }
         }
+        
     }
 
     bool _searchHelper(T val, std::pair<uint64_t, unsigned int>& out)
@@ -550,8 +574,8 @@ uint64_t NBeap<T, N, Compare>::getBestParentIndex(
     }
     else if constexpr (N == 2) 
     { 
-        auto levelSize = INTERVALSIZE(levelInterval);
-        auto firstParent = currentPos - levelSize;
+        //auto levelSize = INTERVALSIZE(levelInterval);
+        auto firstParent = currentPos - childHeight;
 
         if(currentPos == levelInterval.first)
         {
@@ -690,11 +714,8 @@ uint64_t NBeap<T, N, Compare>::getBestChild(
     }
     else if constexpr (N == 2) 
     {
-        auto leveSize = INTERVALSIZE(levelInterval);
+        auto child1 = currentPos + parentHeight;
         
-        auto child1 = currentPos + leveSize;
-        
-
         if(child1 >= _size)
             return INVALID_INDEX;
 
@@ -783,11 +804,6 @@ bool NBeap<T, N, Compare>::_searchND(
     }
     else if(compare(val, _container[currPos]))
     {
-        // Just involves getting the children in a while loop to see if any can find the val
-        // Steps:
-        // get the children
-        // but we also want to avoid serching a node multiple times
-
     
         auto firstChild = currPos + INTERVALSIZE(levelInterval);
         //auto maxNumberOfChildren = N - 1;
@@ -907,37 +923,31 @@ uint64_t NBeap<T, N, Compare>::getBestOtherChildren(
     uint64_t maxNumOfChildren, uint64_t dOffset
 )
 {
-    auto innerLayer = getNMinusOffsetLevel(parentId, levelInterval, dOffset);
-    auto innerLayerSize = innerLayer.second - innerLayer.first + 1;
+    std::pair<uint64_t, uint64_t> innerLayer = levelInterval;
+    uint64_t bestChild = INVALID_INDEX;
+    uint64_t currentChild = currentPos;
 
-    auto bestChild = currentPos + innerLayerSize;
-    if(bestChild >= _size)
+    while(dOffset <= N)
     {
-        return INVALID_INDEX;
-    }
-
-    maxNumOfChildren--;
-
-    uint64_t currentOffset = dOffset + 1;
-    auto currentChild = bestChild;
-    
-    while(maxNumOfChildren > 0)
-    {
-        innerLayer = getNMinusOffsetLevel(parentId, innerLayer, currentOffset);
-        innerLayerSize = innerLayer.second - innerLayer.first + 1;
+        innerLayer = getNMinusOffsetLevel(parentId, innerLayer, dOffset);
         
-        currentChild += innerLayerSize;
+        currentChild += INTERVALSIZE(innerLayer);
 
         if(currentChild >= _size)
         {
-            break;
+            return bestChild;
         }
 
-        bestChild = bestChild + (currentChild - bestChild) * 
+        if(bestChild == INVALID_INDEX)
+        {
+            bestChild = currentChild;
+        }
+        else {
+            bestChild = bestChild + (currentChild - bestChild) * 
                     !compare(_container[currentChild], _container[bestChild]);
+        }
 
-        maxNumOfChildren--;
-        currentOffset++;
+        dOffset++;
     }
 
     return bestChild;

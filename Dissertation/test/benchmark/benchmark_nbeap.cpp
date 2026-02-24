@@ -1,16 +1,61 @@
+#include <iostream>
+#include <fstream>
+#include <charconv>
 #include <benchmark/benchmark.h>
-#include <random>
 #include "../../src/NBeap/NBeap.hpp"    
 
-static std::mt19937 rng(42);
 
-template<typename T>
-std::vector<T> generateRandomData(size_t size) {
-    std::uniform_int_distribution<T> dist(1, 1'000'000);
-    std::vector<T> v(size);
-    for (auto x : v) x = dist(rng);
-    return v;
+inline std::vector<int> readRandomData(size_t n)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    int i = 0;
+    while (getline(myfile, line) && i < n)
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            i++;
+            vec.push_back(result);
+        }
+    }
+
+    myfile.close();
+
+
+    return vec;
 }
+
+
+inline std::vector<int> readRandomDataTest(size_t count)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    int i = 0;
+    int j = 0.75 * count;
+    int final = count + 0.25 * count;
+
+    while (getline(myfile, line) && i < j) i++;
+
+    while(getline(myfile, line) && j < final )
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            j++;
+            vec.push_back(result);
+        }
+    }
+
+    myfile.close();
+    return vec;
+}
+
+
 
 template<typename T, int N>
 class BeapFixture : public benchmark::Fixture {
@@ -41,32 +86,32 @@ static void BM_Construct(benchmark::State& state) {
 template<typename T, int N>
 static void BM_PushRandom(benchmark::State& state) {
     const size_t count = state.range(0);
-    auto data = generateRandomData<T>(count);
-    
+    auto data = readRandomData(count);
+    NBeap<T, N> b;  
+    b.reserve(count);
+
     for (auto _ : state) {
         state.PauseTiming();
-        NBeap<T, N> b;  
-        b.reserve(count);
+        b.clear();
         state.ResumeTiming();
         
         for (auto x : data)
-            b.insert(x);
-
-        //benchmark::DoNotOptimize(b);
+             b.insert(x);
     }
 }
 
-// Sorted input - best case for minNBeap
+// Benchmark insert ascending random data
 template<typename T, int N>
 static void BM_PushSortedAsc(benchmark::State& state) {
     const size_t count = state.range(0);
-    auto data = generateRandomData<T>(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end());
+    NBeap<T, N> b;
+    b.reserve(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        NBeap<T, N> b;
-        b.reserve(count);
+        b.clear();
         state.ResumeTiming();
 
         for (int x : data)
@@ -78,19 +123,19 @@ static void BM_PushSortedAsc(benchmark::State& state) {
 template<typename T, int N>
 static void BM_PushSortedDesc(benchmark::State& state) {
     const size_t count = state.range(0);
-    auto data = generateRandomData<T>(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end(), std::greater<int>());
+    NBeap<T, N> b;
+    b.reserve(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        NBeap<T, N> b;
-        b.reserve(count);
+        b.clear();
         state.ResumeTiming();
 
         for (auto x : data)
             b.insert(x);
 
-        //benchmark::DoNotOptimize(b);
     }
 }
 
@@ -98,20 +143,19 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 template<typename T, int N>
 static void BM_Extract(benchmark::State& state) {
     const size_t count = state.range(0);
-    auto data = generateRandomData<T>(count);
+    auto data = readRandomData(count);
+    NBeap<T, N> b;
+    b.reserve(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        NBeap<T, N> b;
-        b.reserve(count);
+        b.clear();
         for (auto x : data) b.insert(x);
         state.ResumeTiming();
 
-        for (size_t i = 0; i < count; ++i) {
-            b.extract();
+        for (size_t i = 0; i < count; i++) {
+            benchmark::DoNotOptimize(b.extract());
         }
-
-        //benchmark::DoNotOptimize(b);
     }
 }
 
@@ -119,19 +163,41 @@ static void BM_Extract(benchmark::State& state) {
 template<typename T, int N>
 static void BM_Search(benchmark::State& state) {
     const size_t count = state.range(0);
-    auto data = generateRandomData<T>(count);
+    auto data = readRandomData(count);
+    auto tests = readRandomDataTest(count);
 
     NBeap<T, N> b;
     b.reserve(count);
     for (auto x : data) b.insert(x);
 
-    std::uniform_int_distribution<T> dist(1, 1'000'000);
+    for (auto _ : state) {
+        for(auto t : tests) {
+            benchmark::DoNotOptimize(b.search(t));
+        }
+    }
+}
+
+// Benchmark remove(value)
+template<typename T, int N>
+static void BM_Remove(benchmark::State& state) {
+    size_t count = state.range(0);
+    NBeap<int> b;
+    b.reserve(count);
+    auto tests = readRandomDataTest(count);
+    auto data = readRandomData(count);
 
     for (auto _ : state) {
-        T query = dist(rng);
-        auto result = b.search(query);
-        benchmark::DoNotOptimize(result);
+        state.PauseTiming();
+        b.clear();
+        for (auto x : data) b.insert(x);
+        state.ResumeTiming();
+
+        for (auto t : tests)
+            b.remove(t);
     }
+    
+
+    //state.SetItemsProcessed(state.iterations() * count);
 }
 
 

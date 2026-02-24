@@ -1,18 +1,63 @@
+#include <iostream>
+#include <fstream>
+#include <charconv>
 #include <benchmark/benchmark.h>
 #include <random>
 #include <algorithm>
 #include <map>       
 #include <vector>
 
+inline std::vector<int> readRandomData(size_t n)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    int i = 0;
+    while (getline(myfile, line) && i < n)
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            i++;
+            vec.push_back(result);
+        }
+    }
 
-static std::mt19937 rng(42);
 
-std::vector<int> generateRandomData(size_t n) {
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
-    std::vector<int> v(n);
-    for (auto& x : v) x = dist(rng);
-    return v;
+    myfile.close();
+
+
+    return vec;
 }
+
+
+inline std::vector<int> readRandomDataTest(size_t count)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    int i = 0;
+    int j = 0.75 * count;
+    int final = count + 0.25 * count;
+
+    while (getline(myfile, line) && i < j) i++;
+
+    while(getline(myfile, line) && j < final )
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            j++;
+            vec.push_back(result);
+        }
+    }
+
+    myfile.close();
+    return vec;
+}
+
 
 static void BM_Construct(benchmark::State& state) {
    
@@ -25,60 +70,62 @@ static void BM_Construct(benchmark::State& state) {
 // Benchmark pushing random data
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
+    std::map<int, int> m;
 
-    for (auto _ : state) {
-        std::map<int, int> m;
+    for (auto _ : state) {    
+        state.PauseTiming();
+        m.clear();
+        state.ResumeTiming();
         for (int x : data) 
             m[x] = x;
     }
     
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark push ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end());
-
+    std::map<int, int> m;
     for (auto _ : state) {
-        std::map<int, int> m;
+        state.PauseTiming();
+        m.clear();
+        state.ResumeTiming();
         
         for (int x : data) 
             m[x] = x;
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
-
 }
 
 // Benchmark push descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end(), std::greater<int>());
 
+    std::map<int, int> m;
+
     for (auto _ : state) {
-        std::map<int, int> m;
+        state.PauseTiming();
+        m.clear();
+        state.ResumeTiming();    
         
         for (int x : data) 
             m[x] = x;
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark minimum
 static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
-    
+    auto data = readRandomData(count);
+    std::map<int, int> m;
 
     for (auto _ : state) {
         state.PauseTiming();
-        std::map<int, int> m;
-        
+        m.clear();
         for (int x : data) 
             m[x] = x;
         state.ResumeTiming();
@@ -87,28 +134,24 @@ static void BM_Extract(benchmark::State& state) {
             benchmark::DoNotOptimize(m.erase(m.begin()));
         }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 static void BM_Search(benchmark::State& state)
 {
     size_t count = state.range(0);
     std::map<int, int> m;
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
     for (int x : data) 
         m[x] = x;
 
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
+    auto tests = readRandomDataTest(count);
 
     for(auto _ : state)
     {
-        int q = dist(rng);
-        auto result = m.find(q);
-        benchmark::DoNotOptimize(result);
+        for(auto t : tests){
+            benchmark::DoNotOptimize(m.find(t));
+        }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 
@@ -116,22 +159,20 @@ static void BM_Search(benchmark::State& state)
 static void BM_Remove(benchmark::State& state) {
     size_t count = state.range(0);
     std::map<int, int> m;    
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
+    auto tests = readRandomDataTest(count);
 
     for (auto _ : state) {
         state.PauseTiming();
+        m.clear();
         for (auto x : data) 
             m[x] = x;
         state.ResumeTiming();
 
-        for (auto x : data){
-            auto t = m.erase(x);
-            benchmark::DoNotOptimize(t);
-    
+        for (auto t : tests){
+            benchmark::DoNotOptimize(m.erase(t));
         }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 

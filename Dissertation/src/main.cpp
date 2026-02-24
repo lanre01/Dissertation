@@ -41,9 +41,10 @@ void createFilesWithNumber()
 
 int main()
 {
-    /*NBeap<int, 5> nbeap;
+    NBeap<int, 5> nbeap;
+    nbeap.insert(10);
 
-    size_t MAX_NUMBER = 10000;
+    /*size_t MAX_NUMBER = 10000;
     auto data = generateRandomData(MAX_NUMBER);
     for(auto x : data)
     {
@@ -53,7 +54,7 @@ int main()
     nbeap.printState("After Insertion");*/
 
 
-    createFilesWithNumber();
+    //createFilesWithNumber();
 
     std::cout << "end" << std::endl;
 

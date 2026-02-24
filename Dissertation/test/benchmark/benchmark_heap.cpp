@@ -1,18 +1,60 @@
+#include <iostream>
+#include <fstream>
+#include <charconv>
 #include <benchmark/benchmark.h>
-#include <random>
-#include <algorithm>
-#include <queue>       
 #include <vector>
 
 
-static std::mt19937 rng(42);
+inline std::vector<int> readRandomData(size_t n)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    size_t i = 0;
+    while (getline(myfile, line) && i < n)
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            i++;
+            vec.push_back(result);
+        }
+    }
 
-std::vector<int> generateRandomData(size_t n) {
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
-    std::vector<int> v(n);
-    for (auto& x : v) x = dist(rng);
-    return v;
+    myfile.close();
+
+    return vec;
 }
+
+
+inline std::vector<int> readRandomDataTest(size_t count)
+{
+    std::ifstream myfile ("numbers.txt");
+    std::vector<int> vec;
+    std::string line; 
+    size_t i = 0;
+    size_t j = 0.75 * count;
+    size_t final = count + 0.25 * count;
+
+    while (getline(myfile, line) && i < j) i++;
+
+    while(getline(myfile, line) && j < final )
+    {
+        int result;
+        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
+        if(ec != std::errc::invalid_argument)
+        {
+            j++;
+            vec.push_back(result);
+        }
+    }
+
+    myfile.close();
+
+    return vec;
+}
+
 
 // Benchmark heap construction
 static void BM_Construct(benchmark::State& state) {
@@ -21,7 +63,6 @@ static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
         std::vector<int> v;
         v.reserve(count);
-        //std::make_heap(v.begin(), v.end(), std::greater<>{});
         benchmark::DoNotOptimize(v);
         /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
@@ -34,16 +75,21 @@ static void BM_Construct(benchmark::State& state) {
 // Benchmark pushing random data
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
+    std::vector<int> v;
+    v.reserve(count);
 
     for (auto _ : state) {
-        std::vector<int> v;
-        v.reserve(count);
+        
         //std::make_heap(v.begin(), v.end(), std::greater<>{});
         /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
             std::move(v)
         );*/
+
+        state.PauseTiming();
+        v.clear();
+        state.ResumeTiming();
 
         for (int x : data){
             v.push_back(x);
@@ -51,19 +97,20 @@ static void BM_PushRandom(benchmark::State& state) {
         }
         //pq.push(x);
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 // Benchmark push ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end());
+    std::vector<int> v;
+    v.reserve(count);
 
     for (auto _ : state) {
-        std::vector<int> v;
-        v.reserve(count);
+        state.PauseTiming();
+        v.clear();
+        state.ResumeTiming();
         //std::make_heap(v.begin(), v.end(), std::greater<>{});
         /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(), 
@@ -84,12 +131,16 @@ static void BM_PushSortedAsc(benchmark::State& state) {
 // Benchmark push descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
     std::sort(data.begin(), data.end(), std::greater<int>());
+    std::vector<int> v;
+    v.reserve(count);
 
     for (auto _ : state) {
-        std::vector<int> v;
-        v.reserve(count);
+        
+        state.PauseTiming();
+        v.clear();
+        state.ResumeTiming();
         //std::make_heap(v.begin(), v.end(), std::greater<>{});
         /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
@@ -110,17 +161,19 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 // Benchmark pop
 static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = generateRandomData(count);
+    auto data = readRandomData(count);
+    std::vector<int> v;
+    v.reserve(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        std::vector<int> v;
-        v.reserve(count);
+        
         //std::make_heap(v.begin(), v.end(), std::greater<>{});
         /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
             std::move(v)
         );*/
+        v.clear();
         for (int x : data) 
         {
             //pq.push(x);
@@ -135,30 +188,28 @@ static void BM_Extract(benchmark::State& state) {
             v.pop_back();
         }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
 static void BM_Search(benchmark::State& state)
 {
     size_t count = state.range(0);
 
-    auto v = generateRandomData(count);
+    auto v = readRandomData(count);
+    auto tests = readRandomDataTest(count);
     std::make_heap(v.begin(), v.end(), std::greater<>{});
 
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
 
     for(auto _ : state)
     {
-        int q = dist(rng);
-        for(size_t i = 0; i < count; i++)
-        {
-            if(v[i] == q) {
-                auto t = v[i];
-                benchmark::DoNotOptimize(t);
-                break;
+        for (auto q : tests)
+            for(size_t i = 0; i < count; i++)
+            {
+                if(v[i] == q) {
+                    auto t = v[i];
+                    benchmark::DoNotOptimize(t);
+                    break;
+                }
             }
-        }
     }
 
     state.SetItemsProcessed(state.iterations() * count);

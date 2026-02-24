@@ -18,13 +18,16 @@ public:
 
 	Beap& operator=(const Beap&) = default;
 
-	size_t getMaxIndexIncontainer(size_t index1, size_t index2);
+    bool search(T value)
+    {
+        std::pair<size_t, size_t> out{0, 0};
+        return _search(value, out);
+    }
+    
 
-	std::pair<size_t, size_t> search(T value);
+	T extract();
 
-	T pop();
-
-	void push(T value);
+	void insert(T value);
 
 	void remove(T value);
 
@@ -33,6 +36,13 @@ public:
     size_t size() {return _size;}
 
 	size_t capacity() {return container.capacity();}
+    
+    void clear() {
+        container.clear();
+        _size = 0;
+        _height = 0;
+        _span = {0,0};
+    }
 
 	bool empty(){return container.empty();}
 
@@ -57,23 +67,16 @@ private:
     std::pair<size_t, size_t> _span{0,0}; // ideally -1 should be used here, but cannot have -1 with size_t
     static constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
     
-	void siftUp(const size_t pos, const size_t h)
-    {
-        siftUp(pos, h, std::pair{0,0});
-    }
 
-    void siftUp(
+    void siftDown(
         const size_t pos, 
         const size_t h,
         const std::pair<size_t, size_t> levelSpan
     );
 
-	void siftDown(const size_t startPos, const size_t pos, const size_t childHeight)
-    {
-        siftDown(startPos, pos, childHeight, _span);
-    }
+    bool _search(T value, std::pair<size_t, size_t>& out);
 
-    void siftDown(
+    void bubbleUp(
         const size_t startPos, 
         const size_t pos, 
         const size_t childHeight,
@@ -82,21 +85,16 @@ private:
 
 	inline const std::pair<size_t, size_t> span(size_t _height);
 
-	//inline const std::pair<size_t, size_t> getParents(const size_t childHeight, const size_t child);
-    inline const std::pair<size_t, size_t> getParents(
+    inline size_t getBestParent(
         const size_t childHeight, 
         const size_t childIndex,
         const std::pair<size_t, size_t> curr_child_Span
     );
 
-	/*inline const std::pair<size_t, size_t> getChildren(
-        const size_t parentheight, const size_t index
-    );*/
-
-    inline const std::pair<size_t, size_t> getChildren(
-        const size_t parentHeight, const size_t index, 
-        const std::pair<size_t, size_t> curr_parent_span
+    inline size_t getBestChild(
+        const size_t parentHeight, const size_t index
     );
+
     inline std::pair<size_t, size_t> childSpan(const size_t parent_span_last_index, const size_t child_height)
     {
         return {parent_span_last_index + 1, parent_span_last_index + child_height};
@@ -113,7 +111,7 @@ private:
 // cpp code
 
 template <typename T, typename Compare>
-void Beap<T, Compare>::siftUp(
+void Beap<T, Compare>::siftDown(
     const size_t pos, 
     const size_t h, 
     const std::pair<size_t, size_t> levelSpan
@@ -126,42 +124,31 @@ void Beap<T, Compare>::siftUp(
 
     size_t currentPos = pos;
     size_t currentHeight = h;
-    T newItem = container[pos];
+    T newItem = std::move(container[pos]);
     auto currentSpan = levelSpan;
 
     while (true)
     {
-        std::pair<size_t, size_t> children = getChildren(currentHeight, currentPos, currentSpan);
-        size_t leftChild = children.first;
-        size_t rightChild = children.second;
-        
-        // Find the smallest child
-        size_t minChildPos = INVALID_INDEX;
-        if (leftChild < _size) {
-            minChildPos = leftChild;
-            if (rightChild < _size && compare(container[leftChild], container[rightChild])) {
-                minChildPos = rightChild;
-            }
-        }
+        auto bestChildPos = getBestChild(currentHeight, currentPos);
 
         // If no children or children are larger, we're done
-        if (minChildPos == INVALID_INDEX) {
+        if (bestChildPos == INVALID_INDEX) {
             break;
         }
 
         // Move the smaller child up
-        container[currentPos] = container[minChildPos];
-        currentPos = minChildPos;
+        container[currentPos] = std::move(container[bestChildPos]);
+        currentPos = bestChildPos;
         currentHeight++;
-        currentSpan = childSpan(currentSpan.second, currentHeight);
+        currentSpan = childSpan(currentSpan.second, currentHeight); // need to remove this
     }
     
-    container[currentPos] = newItem;
-    siftDown(pos, currentPos, currentHeight, currentSpan);
+    container[currentPos] = std::move(newItem);
+    bubbleUp(pos, currentPos, currentHeight, currentSpan);
 }
 
 template <typename T, typename Compare>
-void Beap<T, Compare>::siftDown(
+void Beap<T, Compare>::bubbleUp(
     const size_t startPos, 
     const size_t pos, 
     const size_t childHeight,
@@ -173,57 +160,47 @@ void Beap<T, Compare>::siftDown(
         return;
     }
     
-    T newItem = container[pos];
+    T newItem = std::move(container[pos]);
     size_t currentPos = pos;
     size_t currentHeight = childHeight;
     auto currentSpan = levelSpan;
     
     while (currentPos > startPos)
     {
-        std::pair<size_t, size_t> parents = getParents(currentHeight, currentPos, currentSpan);
-        size_t maxParentPos = getMaxIndexIncontainer(parents.first, parents.second);
-        if (maxParentPos == INVALID_INDEX || compare(newItem, container[maxParentPos])) {
+        size_t bestParentPos = getBestParent(currentHeight, currentPos, currentSpan);
+        
+        if (compare(newItem, container[bestParentPos])) {
             break;
         }
 
-        container[currentPos] = container[maxParentPos];
-        currentPos = maxParentPos;
+        container[currentPos] = std::move(container[bestParentPos]);
+        currentPos = bestParentPos;
         currentHeight--;
         currentSpan = parentSpan(currentSpan.first, currentHeight);
     }
-    container[currentPos] = newItem;
+
+    container[currentPos] = std::move(newItem);
 }
 
 template <typename T, typename Compare>
-size_t Beap<T, Compare>::getMaxIndexIncontainer(size_t index1, size_t index2)
-{
-    if (index2 == INVALID_INDEX) return index1;
-    if (index1 == INVALID_INDEX) return index2;
-    int diff = index2 - index1;
-    
-    auto result = index1 + (diff * !compare(container[index1], container[index2]));
-    
-    return result;
-}
-
-template <typename T, typename Compare>
-std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
+bool Beap<T, Compare>::_search(T value, std::pair<size_t, size_t>& out)
 {
     if(_size <= 0 || compare(container[0], value))
     {
-        return {INVALID_INDEX, INVALID_INDEX};
+        return false;
     }
 
     size_t h = _height;
+    size_t end = _span.first;
+    size_t start = _span.second;
     std::pair<size_t, size_t> currentLevel = _span;
-    size_t end = currentLevel.first;
-    
+
     if(value == container[end])
     {
-        return {end, h};
+        out.first = end;
+        out.second = h;
+        return true;
     }
-
-    size_t start = currentLevel.second;
 
     if(start >= _size)
     {
@@ -233,52 +210,60 @@ std::pair<size_t, size_t> Beap<T, Compare>::search(T value)
     }
 
     size_t idx = start;
+    //std::cout << "initial idx = " << idx << "initial h = " << h << std::endl;
     
     while(true)
     {
+        //std::cout << "Segfaulting here and idx=" << idx << "h = " << h << std::endl;
         
         if(idx == end)
         {
-            return {INVALID_INDEX, INVALID_INDEX};
+            return false;
         }
 
         if(compare(container[idx], value))
         {
-            std::pair<size_t, size_t> parents = getParents(h, idx, currentLevel);
-            if(parents.first == INVALID_INDEX)
+            // auto firstParent = idx - h;
+            // This condition is actually not needed. Idx must never go up 
+            // when on the first element in any level
+            if (idx == currentLevel.first)
             {
-                return {INVALID_INDEX, INVALID_INDEX};
+                return false; 
             }
-            idx = parents.first;
+
+            idx -= h;
             h--;
             currentLevel = parentSpan(currentLevel.first, h);
         }
         else if(compare(value,container[idx]))
         {
-            auto children = getChildren(h, idx, currentLevel);
-            if(children.first >= _size)
+            auto firstChild = idx + h;
+            if(firstChild >= _size)
             {
                 idx--;
             }
-            else{
-                idx = children.first;
+            else
+            {
+                idx = firstChild;
                 h++;
                 currentLevel = childSpan(currentLevel.second, h);
             }
         }
         
         else{
-            return {idx, h};
+            out.first = idx;
+            out.second = h;
+            return true;
         }
     }
 }
 
 template <typename T, typename Compare>
-T Beap<T, Compare>::pop()
+T Beap<T, Compare>::extract()
 {
     if(_size <= 0)
     {
-        throw std::out_of_range("cannot pop empty beap");
+        throw std::out_of_range("cannot extract empty beap");
     }
     T minValue = std::exchange(container[0], container[_size-1]);
     _size--;
@@ -297,12 +282,12 @@ T Beap<T, Compare>::pop()
     }
     
     
-    siftUp(0, 1);
+    siftDown(0, 1, std::pair{0,0});
     return minValue;
 }
 
 template <typename T, typename Compare>
-void Beap<T, Compare>::push(T value)
+void Beap<T, Compare>::insert(T value)
 {
     _size++;
 
@@ -317,20 +302,20 @@ void Beap<T, Compare>::push(T value)
     {
         return;
     }
-    siftDown(0, _size - 1, _height);
+    bubbleUp(0, _size - 1, _height, _span);
 } 
 
 template <typename T, typename Compare>
 void Beap<T, Compare>::remove(T value)
 {
-    auto result = search(value);
+    std::pair<size_t, size_t> out;
     
-    if(result.first == INVALID_INDEX)
+    if(!_search(value, out))
     {
         return;
     }
 
-    auto prevElem = std::exchange(container[result.first], container[_size - 1]);
+    auto prevElem = std::exchange(container[out.first], container[_size - 1]);
 
     // decrement the size and resize the container
     _size--;
@@ -349,16 +334,16 @@ void Beap<T, Compare>::remove(T value)
         _span = parentSpan(_span.first, _height); // update global span
     }
 
-    // if the last element in the vector was removed, no need to siftUp
-    if(result.first >= _size)
+    // if the last element in the vector was removed, no need to siftDown
+    if(out.first >= _size)
     {
         return;
     }
 
-    if(compare(value, container[result.first]))
-        siftDown(0, result.first, result.second, span(result.second));
+    if(compare(value, container[out.first]))
+        bubbleUp(0, out.first, out.second, span(out.second));
 
-    siftUp(result.first, result.second, span(result.second));
+    siftDown(out.first, out.second, span(out.second));
     
 }
 
@@ -376,39 +361,44 @@ inline const std::pair<size_t, size_t> Beap<T, Compare>::span(size_t h)
 }
 
 template <typename T, typename Compare>
-inline const std::pair<size_t, size_t> Beap<T, Compare>::getParents(
-    const size_t childHeight, 
-    const size_t childIndex,
-    const std::pair<size_t, size_t> curr_child_span
+inline size_t Beap<T, Compare>::getBestParent(
+        const size_t childHeight, 
+        const size_t childIndex,
+        const std::pair<size_t, size_t> curr_child_span
     ) 
-    {
-    size_t parentHeight = childHeight - 1;
-    auto parentLevel = parentSpan(curr_child_span.first, parentHeight);
-    size_t numberOfElementInTheLevel = parentLevel.second - parentLevel.first + 1;
+{
 
-    if (childIndex == curr_child_span.first)
+    auto firstParent = childIndex - childHeight;
+    if(childIndex == curr_child_span.second)
     {
-        return {INVALID_INDEX ,  parentLevel.first};
+        return firstParent;
     }
 
-    if (childIndex == curr_child_span.second)
+    if(childIndex == curr_child_span.first)
     {
-        return {parentLevel.second, INVALID_INDEX};
+        return firstParent + 1;
     }
 
-    auto secondParent = childIndex - numberOfElementInTheLevel;
-
-    return { secondParent - 1, secondParent};
+    return firstParent + !compare(container[firstParent], container[firstParent+1]);
 }
 
 template <typename T, typename Compare>
-inline const std::pair<size_t, size_t> Beap<T, Compare>::getChildren(const size_t parentHeight, const size_t index, 
-    const std::pair<size_t, size_t> curr_parent_span)
+inline size_t Beap<T, Compare>::getBestChild(const size_t parentHeight, const size_t index)
 {
-    auto currentLevel = childSpan(curr_parent_span.second, parentHeight);
-    int numberOfElementsInTheLevel = currentLevel.second - currentLevel.first + 1;
 
-    return { index + numberOfElementsInTheLevel, index + numberOfElementsInTheLevel + 1 };
+    auto firstChild = index + parentHeight;
+    if (firstChild >= _size)
+    {
+        return INVALID_INDEX;
+    }
+
+    auto secondChild = firstChild + 1;
+    if (secondChild >= _size)
+    {
+        return firstChild;
+    }
+
+    return firstChild + compare(container[firstChild], container[secondChild]);
 }
 
 

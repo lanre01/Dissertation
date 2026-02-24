@@ -40,6 +40,20 @@ TYPED_TEST(NBeapTestMultipleDim, SearchInMultipleDimensions) {
     }
 }
 
+TYPED_TEST(NBeapTestMultipleDim, SearchSuccedesInMultipleDimensions) {
+    
+    const int MAX_NUMBER = 1000;
+
+    auto data = generateRandomData(MAX_NUMBER);
+    auto tests = generateRandomData(MAX_NUMBER/4);
+    for(auto x : data) this->nbeap.insert(x);
+
+    for(auto x : tests)
+    {
+        this->nbeap.search(x);
+        SUCCEED();
+    }
+}
 
 TYPED_TEST(NBeapTestMultipleDim, MultipleInsertionAndExtraction) {
     
@@ -75,6 +89,23 @@ TYPED_TEST(NBeapTestMultipleDim, MultipleRemoveOperations)
     }
 
     EXPECT_EQ(0, this->nbeap.size());
+}
+
+TYPED_TEST(NBeapTestMultipleDim, MultipleRemoveOperationsSucced)
+{
+    const int MAX_NUMBER = 1000;
+    auto data = generateRandomData(MAX_NUMBER);
+    auto tests = generateRandomData(MAX_NUMBER/4);
+    for(auto d : data)
+    {
+        this->nbeap.insert(d);
+    }
+
+    for(auto d : tests)
+    {
+        this->nbeap.remove(d);
+        SUCCEED();
+    }
 }
 
 

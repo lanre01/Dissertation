@@ -70,19 +70,19 @@ $(UNIT_TEST_TARGET): $(UNIT_TEST_OBJS) $(PRODUCTION_OBJS) | $(BIN_DIR)
 
 # Beap benchmark
 $(BEAP_BENCH_TARGET): $(BEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
 
 # NBeap benchmark
 $(NBEAP_BENCH_TARGET): $(NBEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread  -static -fno-omit-frame-pointer
 
 # heap benchmark
 $(HEAP_BENCH_TARGET): $(HEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
 
 # bst benchmark
 $(BST_BENCH_TARGET): $(BST_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -fno-omit-frame-pointer
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
 
 # Compilation rules
 $(BUILD_DIR)/main.o: $(MAIN_SRC) | $(BUILD_DIR)
