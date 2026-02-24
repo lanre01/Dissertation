@@ -43,7 +43,7 @@
 # vs folder
 .vs/
 # binaries
-bin/*
+bin/
 !bin/bench_beap
 !bin/bench_bst 
 !bin/bench_heap

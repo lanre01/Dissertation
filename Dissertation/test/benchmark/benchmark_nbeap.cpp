@@ -181,7 +181,7 @@ static void BM_Search(benchmark::State& state) {
 template<typename T, int N>
 static void BM_Remove(benchmark::State& state) {
     size_t count = state.range(0);
-    NBeap<int> b;
+    NBeap<T, N> b;
     b.reserve(count);
     auto tests = readRandomDataTest(count);
     auto data = readRandomData(count);
@@ -195,9 +195,6 @@ static void BM_Remove(benchmark::State& state) {
         for (auto t : tests)
             b.remove(t);
     }
-    
-
-    //state.SetItemsProcessed(state.iterations() * count);
 }
 
 
