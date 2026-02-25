@@ -1,12 +1,3 @@
-2026-02-25T14:18:40+00:00
-Running ./bin/bench_nbeap
-Run on (16 X 2294.61 MHz CPU s)
-CPU Caches:
-  L1 Data 32 KiB (x16)
-  L1 Instruction 32 KiB (x16)
-  L2 Unified 4096 KiB (x16)
-  L3 Unified 16384 KiB (x2)
-Load Average: 5.35, 3.70, 3.09
 name,iterations,real_time,cpu_time,time_unit,bytes_per_second,items_per_second,label,error_occurred,error_message
 "BM_Construct<int, 9>/256",23680980,29.5343,29.5299,ns,,,,,
 "BM_Construct<int, 9>/1024",7587108,92.537,92.531,ns,,,,,
