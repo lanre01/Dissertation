@@ -313,7 +313,77 @@ private:
     bool _search2D(T val, std::pair<uint64_t, unsigned int>& out)
     {
 
-        auto currPos = _interval.first;
+        if(_size <= 0 || compare(_container[0], val))
+        {
+            return false;
+        }
+
+        size_t h = _height;
+        size_t end = _interval.first;
+        size_t start = _interval.second;
+        std::pair<size_t, size_t> currentLevel = _interval;
+
+        if(val == _container[end])
+        {
+            out.first = end;
+            out.second = h;
+            return true;
+        }
+
+        if(start >= _size)
+        {
+            start = start - h;
+            currentLevel = getPreviousLevelInterval(h, currentLevel);
+            h--;
+        }
+
+        size_t idx = start;
+
+        while(true)
+        {
+            if (idx == end)
+            {
+                return false;
+            }
+
+            if (compare(_container[idx], val))
+            {
+                // auto firstParent = idx - h;
+                // This condition is actually not needed. Idx must never go up 
+                // when on the first element in any level
+                if (idx == currentLevel.first)
+                {
+                    return false; 
+                }
+
+                idx -= h;
+                currentLevel = getPreviousLevelInterval(h, currentLevel);
+                h--;
+            }
+            else if (compare(val, _container[idx]))
+            {
+                auto firstChild = idx + h;
+                if(firstChild >= _size)
+                {
+                    idx--;
+                }
+                else
+                {
+                    idx = firstChild;
+                    currentLevel = getNextLevelInterval(h, currentLevel);
+                    h++;
+                    
+                }
+            }
+            else {
+                out.first = idx;
+                out.second = h;
+                return true;
+            }
+
+        }
+
+        /*auto currPos = _interval.first;
         auto h = _height;
         auto idx = 1;
         auto currentInterval = _interval;
@@ -342,7 +412,7 @@ private:
                 }
 
                 currPos = currPos - h + 1;
-                currentInterval = getPreviousLevelInterval(h, currentInterval);
+                currentInterval = getPreviousLevelInterval(currentInterval, h);
                 h--;
                 
             }
@@ -379,7 +449,7 @@ private:
                 out.second = h;
                 return true;
             }
-        }
+        }*/
         
     }
 
