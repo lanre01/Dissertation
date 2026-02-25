@@ -316,6 +316,7 @@ private:
         auto currPos = _interval.first;
         auto h = _height;
         auto idx = 1;
+        auto currentInterval = _interval;
 
         while(1)
         {
@@ -332,7 +333,7 @@ private:
             {
                 // need to update this actully to end search if we ever have
                 // to go up at the end of any level.
-                if(idx == h)
+                if(currPos == currentInterval.second)
                 {
                     //std::cout << "Idx count is=" << idx << " and size=" << _size << std::endl;
                     //std::cout << "Height=" << h << " and currPos=" << currPos << std::endl;
@@ -341,7 +342,9 @@ private:
                 }
 
                 currPos = currPos - h + 1;
+                currentInterval = getPreviousLevelInterval(h, currentInterval);
                 h--;
+                
             }
             else if (compare(val, _container[currPos]))
             {
@@ -352,9 +355,10 @@ private:
                     // case when we reach the last element in the last level
                     // if the last level is not fully occupied, we want to jump to 
                     // the parent's level to ensure the last two levels are fully explored
-                    if(currPos >= _size && h == _height)
+                    if(currPos >= _size)
                     {
-                        currPos -= h;
+                        currPos -= (h - 1);
+                        currentInterval = getPreviousLevelInterval(h, currentInterval);
                         h--;
                     }
                     {
@@ -363,6 +367,7 @@ private:
                 }
                 else {
                     currPos = newPos;
+                    currentInterval = getNextLevelInterval(h, currentInterval);
                     h++;
                     idx++;
                 }
