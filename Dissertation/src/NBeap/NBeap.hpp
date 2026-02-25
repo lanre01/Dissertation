@@ -352,9 +352,9 @@ private:
                     // case when we reach the last element in the last level
                     // if the last level is not fully occupied, we want to jump to 
                     // the parent's level to ensure the last two levels are fully explored
-                    if(currPos >= _size)
+                    if(currPos >= _size && h == _height)
                     {
-                        currPos = currPos - h + 1;
+                        currPos -= h;
                         h--;
                     }
                     {

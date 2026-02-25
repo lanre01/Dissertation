@@ -206,9 +206,9 @@ BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20);
 
 BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20); 
 
-BENCHMARK(BM_Search)->RangeMultiplier(4)->Range(256, 1<<20); 
+BENCHMARK(BM_Search)->RangeMultiplier(2)->Range(256, 1<<20); 
 
-BENCHMARK(BM_Remove)->RangeMultiplier(4)->Range(256, 1<<20); 
+BENCHMARK(BM_Remove)->RangeMultiplier(2)->Range(256, 1<<20); 
 
 
 BENCHMARK_MAIN();

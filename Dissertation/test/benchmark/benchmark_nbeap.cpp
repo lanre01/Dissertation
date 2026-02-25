@@ -205,6 +205,7 @@ BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK_TEMPLATE(BM_PushSortedAsc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_PushSortedDesc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Remove, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(2)->Range(256, 1<<20);
 
 #define REGISTER_SHORTER_BEAP_BENCH(T, N) \
@@ -213,6 +214,7 @@ BENCHMARK_TEMPLATE(BM_PushRandom, T, N)->RangeMultiplier(4)->Range(256, 1<<20); 
 BENCHMARK_TEMPLATE(BM_PushSortedAsc, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_PushSortedDesc, T, N)->RangeMultiplier(2)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Extract, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
+BENCHMARK_TEMPLATE(BM_Remove, T, N)->RangeMultiplier(4)->Range(256, 1<<20); \
 BENCHMARK_TEMPLATE(BM_Search, T, N)->RangeMultiplier(4)->Range(256, 1<<20);
 
 
