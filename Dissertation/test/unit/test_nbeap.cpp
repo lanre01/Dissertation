@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../../src/NBeap/NBeap.hpp"
+#include "../../src/n_beap/n_beap.hpp"
 #include "test_utils.hpp"
 #include <type_traits>
 

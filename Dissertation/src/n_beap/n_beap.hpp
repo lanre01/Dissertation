@@ -1,10 +1,14 @@
+// Copyright Lawal Alongbija 2026.
+// Distributed under the Boost Software License, Version 1.0.
+// (See http://www.boost.org/LICENSE_1_0.txt)
+
 #include <stdexcept>
 #include <concepts>
 #include <vector>
 #include <utility>
 #include <functional>
 #include <algorithm>
-#include <bits/stdc++.h>
+//#include <bits/stdc++.h>
 
 template<typename T>
 concept Comparable = requires(T a, T b) {
@@ -382,75 +386,6 @@ private:
             }
 
         }
-
-        /*auto currPos = _interval.first;
-        auto h = _height;
-        auto idx = 1;
-        auto currentInterval = _interval;
-
-        while(1)
-        {
-            if (currPos >= _size)
-            {
-                //std::cout << "Idx count is=" << idx << " and size=" << _size << std::endl;
-                //std::cout << "Height=" << h << " and currPos=" << currPos << std::endl;
-                //std::cout << "Max height=" << _height << std::endl;
-                return false;
-            }
-
-
-            if (compare(_container[currPos], val))
-            {
-                // need to update this actully to end search if we ever have
-                // to go up at the end of any level.
-                if(currPos == currentInterval.second)
-                {
-                    //std::cout << "Idx count is=" << idx << " and size=" << _size << std::endl;
-                    //std::cout << "Height=" << h << " and currPos=" << currPos << std::endl;
-                    //std::cout << "Max height=" << _height << std::endl;
-                    return false;
-                }
-
-                currPos = currPos - h + 1;
-                currentInterval = getPreviousLevelInterval(currentInterval, h);
-                h--;
-                
-            }
-            else if (compare(val, _container[currPos]))
-            {
-                auto newPos = currPos + h + 1; 
-                if (newPos >= _size)
-                {
-                    currPos += 1;
-                    // case when we reach the last element in the last level
-                    // if the last level is not fully occupied, we want to jump to 
-                    // the parent's level to ensure the last two levels are fully explored
-                    if(currPos >= _size)
-                    {
-                        currPos -= (h - 1);
-                        currentInterval = getPreviousLevelInterval(h, currentInterval);
-                        h--;
-                    }
-                    {
-                        idx++;
-                    }
-                }
-                else {
-                    currPos = newPos;
-                    currentInterval = getNextLevelInterval(h, currentInterval);
-                    h++;
-                    idx++;
-                }
-            }
-            else 
-            {
-                
-                out.first = currPos;
-                out.second = h;
-                return true;
-            }
-        }*/
-        
     }
 
     bool _searchHelper(T val, std::pair<uint64_t, unsigned int>& out)
@@ -493,8 +428,7 @@ private:
         {
             return numOfElemCurrLevel;
         }
-
-        if constexpr (N == 2)
+        else if constexpr (N == 2)
         {
             return --numOfElemCurrLevel;
         }
@@ -507,7 +441,7 @@ private:
         std::pair<uint64_t, uint64_t> currLevInt
     )
     {
-        auto l = getNumOfElemInPrevLevel(currHeight, currLevInt.second - currLevInt.first + 1);
+        auto l = getNumOfElemInPrevLevel(currHeight, INTERVALSIZE(currLevInt));
 
         return {currLevInt.first - l, currLevInt.first - 1};
     }
@@ -516,7 +450,7 @@ private:
         unsigned int currHeight, std::pair<uint64_t, uint64_t> currLevInt
     )
     { 
-        auto l = getNumberOfElementInNextLevel(currHeight, currLevInt.second - currLevInt.first + 1);
+        auto l = getNumberOfElementInNextLevel(currHeight,  INTERVALSIZE(currLevInt));
 
         return {currLevInt.second + 1, currLevInt.second + l};
     }

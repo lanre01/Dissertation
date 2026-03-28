@@ -7,8 +7,8 @@
 #include <queue>  
 #include <chrono>
 
-#include "Beap/Beap.hpp"
-#include "NBeap/NBeap.hpp"
+#include "beap/beap.hpp"
+#include "n_beap/n_beap.hpp"
 
 static std::mt19937 rng(42);
 
@@ -41,8 +41,22 @@ void createFilesWithNumber()
 
 int main()
 {
-    NBeap<int, 5> nbeap;
-    nbeap.insert(10);
+    // NBeap<int, 5> nbeap;
+    // nbeap.insert(10);
+
+    int MAX_NUMBER = 10;
+    auto data = generateRandomData(MAX_NUMBER);
+    Beap<int> beap = Beap<int>(data);
+
+    int prev = beap.extract();
+    while (beap.size() > 0) {
+        int current = beap.extract();
+        if (current <  prev)
+        {
+            std::cout << "Failed: " << current << "is less than" << prev << std::endl;
+        }
+        prev = current;
+    }
 
     /*size_t MAX_NUMBER = 10000;
     auto data = generateRandomData(MAX_NUMBER);

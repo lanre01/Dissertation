@@ -191,14 +191,14 @@ $(BIN_DIR):
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/Heap: | $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/Heap
+$(BUILD_DIR)/heap: | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/heap
 
-$(BUILD_DIR)/Beap: | $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/Beap
+$(BUILD_DIR)/beap: | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/beap
 
-$(BUILD_DIR)/NBeap: | $(BUILD_DIR)
-	mkdir -p $(BUILD_DIR)/NBeap
+$(BUILD_DIR)/n_beap: | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/n_beap
 
 $(BUILD_DIR)/test:
 	mkdir -p $(BUILD_DIR)/test

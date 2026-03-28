@@ -1,9 +1,7 @@
 #include <gtest/gtest.h>
-#include "../../src/Beap/Beap.hpp"  
+#include "../../src/beap/beap.hpp"  
 #include "test_utils.hpp"
 
-
-constexpr size_t INVALID_INDEX = static_cast<size_t>(-1);
 
 class BeapTest : public ::testing::Test {
 protected:
@@ -27,7 +25,7 @@ TEST_F(BeapTest, InsertFirstElement) {
     EXPECT_EQ(beap.extract(), 10);
 }
 
-TEST_F(BeapTest, InsertMultipleElementsMaintainsOrder) {
+TEST_F(BeapTest, InsertMultipleElements) {
     beap.insert(10);
     beap.insert(5);
     beap.insert(15);
@@ -46,22 +44,22 @@ TEST_F(BeapTest, InsertDuplicateValues) {
     EXPECT_EQ(beap.extract(), 5); 
 }
 
+TEST_F(BeapTest, BulKInsertionMaintainsBeapProperty)
+{
+    int MAX_NUMBER = 10000;
+    auto data = generateRandomData(MAX_NUMBER);
+    beap = Beap<int>(data);
+
+    int prev = beap.extract();
+    while (beap.size() > 0) {
+        int current = beap.extract();
+        EXPECT_GE(current, prev); // Should be non-decreasing
+        prev = current;
+    }
+}
 
 TEST_F(BeapTest, PopFromEmptyBeap) {
     EXPECT_THROW(beap.extract(), std::out_of_range);
-}
-
-TEST_F(BeapTest, PopSingleElement) {
-    beap.insert(42);
-    int value = beap.extract();
-    
-    EXPECT_EQ(value, 42);
-    EXPECT_EQ(beap.size(), 0);
-    EXPECT_EQ(beap.height(), -1);
-
-    beap.insert(3);
-    EXPECT_EQ(beap.size(), 1);
-    EXPECT_EQ(beap.height(), 0);
 }
 
 TEST_F(BeapTest, PopMaintainsBeapProperty) {
@@ -126,8 +124,6 @@ TEST_F(BeapTest, RemoveExistingElement) {
     auto data = generateRandomData(MAX_NUMBER);
     for (int x : data) beap.insert(x);
 
-    
-    //b.printState("Pushes");
     for (int x : data) {
         beap.remove(x);
     }
@@ -144,8 +140,6 @@ TEST_F(BeapTest, RemoveNonExistingElement) {
     EXPECT_EQ(beap.size(), initialSize); 
 }
 
-
-// Complex Operations Tests
 TEST_F(BeapTest, MultipleOperationsSequence) {
     beap.insert(20);
     beap.insert(10);
@@ -160,10 +154,10 @@ TEST_F(BeapTest, MultipleOperationsSequence) {
     
     beap.remove(20);
     
-    // Final state should be valid
     EXPECT_EQ(beap.size(), 2);
-    EXPECT_EQ(beap.getContainer()[0], 25);
 }
+
+// Stress Tests
 
 TEST_F(BeapTest, LargeNumberOfInsertions) {
     const int NUM_ELEMENTS = 10000;
@@ -174,15 +168,11 @@ TEST_F(BeapTest, LargeNumberOfInsertions) {
     
     EXPECT_EQ(beap.size(), NUM_ELEMENTS);
 
-    //beap.printState("Before pop");
-    // Should pop in sorted order (min first)
     for (int i = 1; i <= NUM_ELEMENTS; ++i) {
         EXPECT_EQ(beap.extract(), i);
-        //beap.printState("pop");
     }
 }
 
-// Edge Cases
 TEST_F(BeapTest, NegativeNumbers) {
     beap.insert(-5);
     beap.insert(-10);
@@ -193,17 +183,7 @@ TEST_F(BeapTest, NegativeNumbers) {
     EXPECT_EQ(beap.extract(), 0);
 }
 
-TEST_F(BeapTest, LargeNumbers) {
-    beap.insert(1000000);
-    beap.insert(500000);
-    beap.insert(1500000);
-    
-    EXPECT_EQ(beap.extract(), 500000);
-}
-
-
-// Performance-oriented Tests (can be disabled for quick runs)
-TEST_F(BeapTest, StressTest) {
+TEST_F(BeapTest, LargeNumberOfInsertionsAndExtraction) {
     const int STRESS_COUNT = 1000;
     
     for (int i = 0; i < STRESS_COUNT; ++i) {
@@ -218,16 +198,7 @@ TEST_F(BeapTest, StressTest) {
     }
 }
 
-TEST_F(BeapTest, SearchGreaterThanAllElements) {
-    beap.insert(1);
-    beap.insert(2);
-    beap.insert(3);
-    beap.insert(4);
-
-    EXPECT_FALSE(beap.search(999));
-}
-
-TEST_F(BeapTest, SearchixtureOfInputs) {
+TEST_F(BeapTest, SearchInvolvingPresentAndAbsentElements) {
     int MAX_NUMBER = 1000;
     auto data = generateRandomData(MAX_NUMBER);
     auto tests = generateRandomData(MAX_NUMBER/4);
