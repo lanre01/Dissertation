@@ -302,8 +302,8 @@ bool Beap<T, Compare>::searchImpl(T value, std::pair<size_t, size_t>& out)
         if(compare_(container_[idx], value))
         {
             // If search attempts to go up at the start of any level, 
-            // the element cannot exist in the structure and search
-            // must terminate
+            // this means the element does not exist in the structure 
+            // and search must terminate
             if (idx == currentLevel.first)
             {
                 return false; 
