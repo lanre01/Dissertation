@@ -1,3 +1,5 @@
+// An N-Dimensional beap implementation based on J. Ian Munro and Hendra Suwanda's 
+// bi-parental heap (see https://www.sciencedirect.com/science/article/pii/0022000080900379)
 // Copyright Lawal Alongbija 2026.
 // Distributed under the Boost Software License, Version 1.0.
 // (See http://www.boost.org/LICENSE_1_0.txt)

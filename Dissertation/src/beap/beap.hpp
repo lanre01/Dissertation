@@ -1,4 +1,4 @@
-// A Bi-Parental heap implementation based on to J. Ian Munro and Hendra Suwanda
+// A Bi-Parental heap implementation based on J. Ian Munro and Hendra Suwanda
 // (see https://www.sciencedirect.com/science/article/pii/0022000080900379)
 
 // Copyright Lawal Alongbija 2026.
@@ -10,7 +10,6 @@
 #include <vector>
 #include <cassert>
 #include <cmath>
-#include <iostream>
 
 template <typename T, typename Compare = std::greater<T>>
 class Beap
@@ -55,15 +54,17 @@ public:
         span_ = span(height_);
         auto currSpan = span_;
         auto currentHeight = height_;
-        for (size_t i = span_.first - 1; i >= 0 && i != INVALID_INDEX_; i--)
+        for (size_t i = span_.first - 1; i >= 1; i--)
         {
             if (i < currSpan.first) {
                 currentHeight--;
-              currSpan = parentSpan(currSpan.first, currentHeight);
+                currSpan = parentSpan(currSpan.first, currentHeight);
             }
               
             siftDownNoBubbleUp(i, currentHeight, currSpan);
         }
+        
+        siftDownNoBubbleUp(0, 1, {0, 0});
     }
 
 
