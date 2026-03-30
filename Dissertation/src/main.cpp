@@ -41,7 +41,7 @@ void createFilesWithNumber()
 
 int main()
 {
-    NBeap<int, 1> nbeap;
+    NBeap<int, 10> nbeap;
     // nbeap.insert(10);
 
     /*int MAX_NUMBER = 10;
@@ -58,27 +58,42 @@ int main()
         prev = current;
     }*/
 
-    // size_t MAX_NUMBER = 10;
-    // auto data = generateRandomData(MAX_NUMBER);
-    // for(auto x : data)
-    // {
-    //     nbeap.insert(x);
-    // }
-
-    // nbeap.printState("After Insertion");
-
-    // nbeap.search(30);
-
-    const int MAX_NUMBER = 1000;
-
+    size_t MAX_NUMBER = 100;
     auto data = generateRandomData(MAX_NUMBER);
-
-    for(auto x : data) this->nbeap.insert(x);
-
     for(auto x : data)
     {
-        nbeap.search(x);
+        nbeap.insert(x);
+        //nbeap.printState("Insertion");
     }
+    nbeap.printState("After Insertion");
+
+    int prev = nbeap.extract(); 
+    while (nbeap.size() > 0) {
+        //nbeap.printState("before failure");
+        int current = nbeap.extract();
+        if (current <  prev)
+        {
+            nbeap.printState("After failure");
+            std::cout << "Failed: " << current << " is less than" << prev << std::endl;
+        }
+        prev = current;
+    }
+
+    nbeap.printState("After extraction");
+
+    // Testing span and height function
+    // auto res = nbeap.getSpanAndHeight(100, 3);
+    // std::cout << "params = 100, 3: " << res[0] << "," << res[1] << "," << res[2] << std::endl;
+
+    // res = nbeap.getSpanAndHeight(0, 3);
+    // std::cout << "params = 0, 3: " << res[0] << "," << res[1] << "," << res[2] << std::endl;
+
+    // res = nbeap.getSpanAndHeight(0, 10);
+    // std::cout << "params = 0, 10: " << res[0] << "," << res[1] << "," << res[2] << std::endl;
+    // res = nbeap.getSpanAndHeight(5, 9);
+    // std::cout << "params = 5, 9: " << res[0] << "," << res[1] << "," << res[2] << std::endl;
+    // nbeap.search(30);
+
 
 
     //createFilesWithNumber();
