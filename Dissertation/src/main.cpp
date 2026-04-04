@@ -41,7 +41,12 @@ void createFilesWithNumber()
 
 int main()
 {
-    NBeap<int, 10> nbeap;
+    NBeap<int, 3> nbeap;
+    std::vector<size_t> vec;
+    nbeap.insertParent(vec, 12, 4, {10, 19});
+    if(!vec.empty())
+        std::cout << "parent: " << vec.back() << std::endl;
+
     // nbeap.insert(10);
 
     /*int MAX_NUMBER = 10;
@@ -58,28 +63,28 @@ int main()
         prev = current;
     }*/
 
-    size_t MAX_NUMBER = 100;
-    auto data = generateRandomData(MAX_NUMBER);
-    for(auto x : data)
-    {
-        nbeap.insert(x);
-        //nbeap.printState("Insertion");
-    }
-    nbeap.printState("After Insertion");
+    // size_t MAX_NUMBER = 10000;
+    // auto data = generateRandomData(MAX_NUMBER);
+    // for(auto x : data)
+    // {
+    //     nbeap.insert(x);
+    //     //nbeap.printState("Insertion");
+    // }
+    // nbeap.printState("After Insertion");
 
-    int prev = nbeap.extract(); 
-    while (nbeap.size() > 0) {
-        //nbeap.printState("before failure");
-        int current = nbeap.extract();
-        if (current <  prev)
-        {
-            nbeap.printState("After failure");
-            std::cout << "Failed: " << current << " is less than" << prev << std::endl;
-        }
-        prev = current;
-    }
+    // int prev = nbeap.extract(); 
+    // while (nbeap.size() > 0) {
+    //     //nbeap.printState("before failure");
+    //     int current = nbeap.extract();
+    //     if (current <  prev)
+    //     {
+    //         nbeap.printState("After failure");
+    //         std::cout << "Failed: " << current << " is less than" << prev << std::endl;
+    //     }
+    //     prev = current;
+    // }
 
-    nbeap.printState("After extraction");
+    // nbeap.printState("After extraction");
 
     // Testing span and height function
     // auto res = nbeap.getSpanAndHeight(100, 3);
@@ -102,3 +107,85 @@ int main()
 
     return 0;
 }
+
+// template <Comparable T, size_t N, typename Compare>
+// inline size_t NBeap<T, N, Compare>::getBestRemainingParents(
+//     size_t currentPos, std::pair<size_t, size_t> parentsInterval, size_t dOffset
+// )
+// {
+//     size_t bestParent = INVALID_INDEX_;
+
+//     while (true)
+//     {
+//         const size_t idx = currentPos - parentsInterval.first;
+
+//         auto innerLevelAndHeight = getSpanAndHeight(idx, N - dOffset);
+//         std::pair<size_t, size_t> innerLevelLocal{
+//             innerLevelAndHeight[0], innerLevelAndHeight[1]
+//         };
+
+//         const size_t innerLevelSize = INTERVALSIZE(innerLevelLocal);
+
+//         const size_t prevInnerLevelSize =
+//             getNumberOfElementInPreviousLevel(
+//                 innerLevelAndHeight[2],
+//                 innerLevelSize,
+//                 dOffset
+//             );
+
+//         std::pair<size_t, size_t> prevInnerLocal{
+//             innerLevelLocal.first - prevInnerLevelSize,
+//             innerLevelLocal.first - 1
+//         };
+
+//         std::pair<size_t, size_t> prevInnerGlobal{
+//             parentsInterval.first + prevInnerLocal.first,
+//             parentsInterval.first + prevInnerLocal.second
+//         };
+
+//         if (idx == innerLevelLocal.first)
+//         {
+//             const size_t parent = prevInnerGlobal.first;
+
+//             if (bestParent == INVALID_INDEX_)
+//             {
+//                 return parent;
+//             }
+
+//             return parent + (bestParent - parent) *
+//                 !compare(container_[parent], container_[bestParent]);
+//         }
+
+//         if (idx == innerLevelLocal.second)
+//         {
+//             const size_t parent = prevInnerGlobal.second;
+
+//             if (bestParent == INVALID_INDEX_)
+//             {
+//                 return parent;
+//             }
+
+//             return parent + (bestParent - parent) *
+//                 !compare(container_[parent], container_[bestParent]);
+//         }
+
+//         const size_t parent = currentPos - prevInnerLevelSize;
+
+//         if (parent <= prevInnerGlobal.second)
+//         {
+//             if (bestParent == INVALID_INDEX_)
+//             {
+//                 bestParent = parent;
+//             }
+//             else
+//             {
+//                 bestParent = parent + (bestParent - parent) *
+//                     !compare(container_[parent], container_[bestParent]);
+//             }
+//         }
+
+//         currentPos = parent;
+//         parentsInterval = prevInnerGlobal;
+//         dOffset++;
+//     }
+// }

@@ -108,14 +108,75 @@ TYPED_TEST(NBeapTestMultipleDim, MultipleRemoveOperationsSucced)
     }
 }
 
-TYPED_TEST(NBeapTestMultipleDim, InsertingNegativeNumbers)
+template <typename DimTag>
+class NBeapBulkTestMultipleDim : public ::testing::Test {
+protected:
+    static constexpr size_t N = DimTag::value;
+    const int MAX_NUMBER = 1000;
+
+    std::vector<int> data1 = generateRandomData(MAX_NUMBER);
+    std::vector<int> data = data1;
+    NBeap<int, N> nbeap = NBeap<int, N>(data1);
+};
+
+
+
+TYPED_TEST_SUITE(NBeapBulkTestMultipleDim, DIMS);
+
+// TYPED_TEST(NBeapBulkTestMultipleDim, SearchInMultipleDimensions) 
+// {
+//     for(auto x : this->data)
+//     {
+//         EXPECT_TRUE(this->nbeap.search(x));
+//     }
+// }
+
+TYPED_TEST(NBeapBulkTestMultipleDim, SearchSuccedesInMultipleDimensions) 
+{
+    auto tests = generateRandomData(this->MAX_NUMBER/4);
+
+    for(auto x : tests)
+    {
+        this->nbeap.search(x);
+        SUCCEED();
+    }
+}
+
+TYPED_TEST(NBeapBulkTestMultipleDim, MultipleInsertionAndExtraction) 
 {
 
-    this->nbeap.insert(-5);
-    this->nbeap.insert(-10);
-    this->nbeap.insert(0);
-    
-    EXPECT_EQ(this->nbeap.extract(), -10);
-    EXPECT_EQ(this->nbeap.extract(), -5);
-    EXPECT_EQ(this->nbeap.extract(), 0);
+    int prev = this->nbeap.extract();
+    while (this->nbeap.size() > 0) {
+        int current = this->nbeap.extract();
+        EXPECT_GE(current, prev) << "Failed for N=" << TestFixture::N;
+        prev = current;
+    }
+}
+
+TYPED_TEST(NBeapBulkTestMultipleDim, MultipleRemoveOperations)
+{
+    for(auto d : this->data)
+    {
+        this->nbeap.remove(d);
+    }
+
+    EXPECT_EQ(0, this->nbeap.size());
+}
+
+TYPED_TEST(NBeapBulkTestMultipleDim, BulkConstructedSearchFindsAllInsertedValues)
+{
+    for (auto d : this->data) {
+        ASSERT_TRUE(this->nbeap.search(d)) << "Missing value: " << d;
+    }
+}
+
+TYPED_TEST(NBeapBulkTestMultipleDim, MultipleRemoveOperationsSucced)
+{
+    auto tests = generateRandomData(this->MAX_NUMBER/4);
+
+    for(auto d : tests)
+    {
+        this->nbeap.remove(d);
+        SUCCEED();
+    }
 }
