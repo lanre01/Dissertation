@@ -34,7 +34,6 @@ public:
     , height_(0)
     , size_(0)
     , interval_(0, 0)
-    , levelSize_(0)
     {
         initFactorials();
     }
@@ -50,7 +49,6 @@ public:
     , height_(0)
     , size_(0)
     , interval_(0, 0)
-    , levelSize_(0)
     {
         initFactorials();
         size_ = container_.size();
@@ -60,7 +58,6 @@ public:
             if(size_ == 1)
             {
                 height_ = 1;
-                levelSize_ = 1;
             }
             
             return;
@@ -68,23 +65,19 @@ public:
 
         auto spanAndHeight = getSpanAndHeight(size_ - 1, N);
         interval_ = {spanAndHeight[0], spanAndHeight[1]};
-        levelSize_ = INTERVALSIZE(interval_);
         height_ = spanAndHeight[2];
         auto currInterval = interval_;
-        auto currentHeight = height_;
-        for(size_t i = interval_.first - 1; i > 0; i--)
+        for (size_t h = height_ - 1; h > 0; h-- )
         {
-            if (i < currInterval.first) {
-                currInterval = getPreviousLevelInterval(currentHeight, currInterval);
-                currentHeight--;
+            currInterval = getPreviousLevelInterval(h + 1, currInterval);
+            for(size_t j = currInterval.first; j <= currInterval.second; j++)
+            {
+                siftDownNoBubbleUp(j, h, currInterval);
             }
 
-            siftDownNoBubbleUp(i, currentHeight, currInterval);
-            // siftDown(i, currentHeight, currInterval);
         }
-        // siftdown from index 0 to avoid overflow in the for loop
+
         siftDownNoBubbleUp(0, 1, {0, 0}); 
-        // siftDown(0, 1);
 
     }
 
@@ -97,9 +90,8 @@ public:
         container_.reserve(count);
     }
 
-    T extract() {
-
-        // check we can actually extract
+    T extract() 
+    {
         if(size_ <= 0)
         {
             throw std::out_of_range("cannot pop empty nbeap");
@@ -112,7 +104,6 @@ public:
         // if we just extracted the last element
         if(size_ == 0)
         {
-            levelSize_ = 0;
             height_ = 0;
             interval_ = {0, 0};
             return minElem;
@@ -128,20 +119,10 @@ public:
                 interval_.second -= 1;
                 
             }
-
-            else if constexpr (N == 2)
-            {
-                levelSize_--;
-                height_--;
-                interval_.second = interval_.first - 1;
-                interval_.first -= levelSize_;
-            }
             else {
                 interval_ = getPreviousLevelInterval(height_, interval_);
-                levelSize_ = interval_.second - interval_.first + 1; 
                 height_--;
             }
-            
         }
 
         siftDown(0, 1);
@@ -151,7 +132,6 @@ public:
 
     void insert(T val)
     {
-        // std::cout << "Inserting: " << val << std::endl; 
         container_.push_back(std::move(val));
 
         if(size_ == 0)
@@ -159,7 +139,6 @@ public:
             size_++;
             height_++;
             interval_ = {0,0};
-            levelSize_++;
             return;
         }
 
@@ -172,20 +151,8 @@ public:
         else {
             if (interval_.second < size_)
             {
-                if constexpr(N == 2) 
-                {
-                    height_++;
-                    levelSize_++;
-                    interval_.first = interval_.second + 1; 
-                    interval_.second += levelSize_;
-                    
-                }
-                else {
-                    interval_ = getNextLevelInterval(height_, interval_);
-                    levelSize_ = interval_.second - interval_.first + 1;
-                    height_++;
-                }
-                
+                interval_ = getNextLevelInterval(height_, interval_);
+                height_++;
             }
         }
 
@@ -215,7 +182,6 @@ public:
 
         if (size_ == 0)
         {
-            levelSize_ = 0;
             height_ = 0;
             interval_ = {0, 0};
             return;
@@ -224,7 +190,6 @@ public:
         if (size_ - 1 < interval_.first)
         {
             interval_ = getPreviousLevelInterval(height_, interval_);
-            levelSize_ = INTERVALSIZE(interval_);
             height_--;
         }
 
@@ -279,7 +244,6 @@ public:
         size_ = 0;
         container_.clear();
         interval_ = {0, 0};
-        levelSize_ = 0;
     }
 
     void printState(const std::string& operation) {
@@ -303,7 +267,7 @@ public:
             n = getNumberOfElementInNextLevel(h, n);
             h++;
         }
-		std::cout << " | size=" << size_ << " height=" << height_ << " levelSize=" << levelSize_ << std::endl;
+		std::cout << " | size=" << size_ << " height=" << height_ << " levelSize=" << INTERVALSIZE(interval_) << std::endl;
         std::cout << " | intervals=" << interval_.first << "," << interval_.second << std::endl;
 		std::cout.flush();
 	}
@@ -321,7 +285,6 @@ private:
     size_t height_;
     size_t size_;
     std::pair<size_t, size_t> interval_;
-    size_t levelSize_;
     std::array<size_t, N+1> factorials{};
 
     static constexpr size_t INVALID_INDEX_ = static_cast<size_t>(-1);
@@ -568,7 +531,8 @@ private:
             return _search2D(val, out);
         }
         else {
-            return _searchND(val, interval_.first, height_, interval_, out);
+            return _searchND(val, out);
+            // return _searchND(val, interval_.first, height_, interval_, out);
         }
 
     }
@@ -1137,140 +1101,81 @@ template <Comparable T, size_t N, typename Compare>
 inline bool NBeap<T, N, Compare>::_searchND(T val, std::pair<size_t, size_t> &out)
 {
 
-    // // where do we start searching from
-    // if (size_ <= 0 || compare(container_[0], val))
-    // {
-    //     return false;
-    // }
-    // auto currHeight = height_;
-    // auto currentInterval = interval_;
-
-    // // start = currentInterval.second;
-    // if (currentInterval.second >= size_)
-    // {
-    //     currentInterval = getPreviousLevelInterval(currHeight, currentInterval);
-    //     // start = currentInterval.second;
-    // }
-
-    // std::vector<size_t> stack;
-    // stack.reserve(INTERVALSIZE(currentInterval));
-    // stack.push_back(currentInterval.second);
-    // while(!stack.empty())
-    // {
-    //     const std::size_t loc = stack.back();
-    //     stack.pop_back();
-
-        
-        
-    //     const auto spanAndHeight = getSpanAndHeight(loc, N);
-    //     currentInterval = {spanAndHeight[0], spanAndHeight[1]};
-    //     const size_t h = spanAndHeight[2];
-
-    //     if(loc >= size_)
-    //     {
-    //         // need to go the parent here if i can;
-    //         insertParent(stack, loc, h, currentInterval);
-    //         continue;
-    //     }
-        
-        
-    //     if(compare(container_[loc], val))
-    //     {
-    //         // We want to go up
-    //         // case where we are at the start of a level
-    //         if(loc == currentInterval.first)
-    //         {
-    //             continue;
-    //         }
-
-    //         insertParent(stack, loc, h, currentInterval);
-    //         // What are the cases here
-    //         // when in index 
-    //     }
-    //     else if(compare(val, container_[loc]))
-    //     {
-    //         // we want to go down
-    //         // Need to insert the children here
-    //         // How many children though ??
-    //         if(loc == currentInterval.first)
-    //         {
-    //             auto child = currentInterval.second + 1;
-    //             for(auto i = 1; i < N; i++)
-    //             {
-    //                 stack.push_back(child);
-    //                 child++;
-    //             }
-    //             continue;
-    //         }
-
-    //         auto idx = loc - currentInterval.first;
-    //         auto currentIntervalSize = INTERVALSIZE(currentInterval);
-    //         auto firstChild = loc + currentIntervalSize;
-    //         stack.push_back(firstChild);
-    //         auto offset = 1;
-    //         auto currentPos = firstChild;
-    //         while (offset < N)
-    //         {
-    //             auto innerLayerAndHeight = getSpanAndHeight(idx, N - offset);
-    //             currentInterval = {innerLayerAndHeight[0], innerLayerAndHeight[1]};
-    //             currentIntervalSize = INTERVALSIZE(currentInterval);
-    //             if(currentIntervalSize == 1)
-    //             {
-    //                 break;
-    //             }
-
-    //             currentPos += currentIntervalSize;
-    //             stack.push_back(currentPos);
-
-    //             idx -= currentInterval.first;
-    //             offset++;
-    //         }
-    //     }
-    //     else 
-    //     {
-    //         out.first = loc;
-    //         out.second = h;
-    //         return true;
-    //     }
-    // }
-
-    // I will try searching from the left
-
     if (size_ <= 0 || compare(container_[0], val))
     {
         return false;
     }
 
+    
+    // I also want to create some cache for the 
+    constexpr int CACHE_SIZE = 10;
+    std::array<size_t, 2 * CACHE_SIZE> CACHE{};
+
     std::vector<size_t> stack;
+    stack.reserve(2 * INTERVALSIZE(interval_));
+
+    auto slot = 2 * (height_ % CACHE_SIZE);
+    CACHE[slot] = interval_.first;
+    CACHE[slot + 1] = interval_.second;
+
     stack.push_back(interval_.first);
-    while(!stack.empty())
+    stack.push_back(height_);
+
+    while (!stack.empty())
     {
-        auto loc = stack.back();
+        assert(stack.size() >= 2);
+
+        const auto h = stack.back();
         stack.pop_back();
-        auto spanAndHeight = getSpanAndHeight(loc, N);
-        const auto h = spanAndHeight[2];
-        std::pair<size_t, size_t> currentInterval = {spanAndHeight[0], spanAndHeight[1]};
 
-        if(loc >= size_)
+        const auto loc = stack.back();
+        stack.pop_back();
+
+        const auto slot = 2 * (h % CACHE_SIZE);
+
+        std::pair<size_t, size_t> currentInterval;
+
+        if (loc >= CACHE[slot] && loc <= CACHE[slot + 1])
         {
-            // push the parent and then -
-            auto prevLevelInterval = getPreviousLevelInterval(h, currentInterval);
-            auto parent = loc - INTERVALSIZE(prevLevelInterval);
-            if(parent <= prevLevelInterval.second)
-            {
-                stack.push_back(parent);
-            }
-            continue;
+            currentInterval = {CACHE[slot], CACHE[slot + 1]};
         }
+        else
+        {
+            auto spanAndHeight = getSpanAndHeight(loc, N);
+            currentInterval = {spanAndHeight[0], spanAndHeight[1]};
+            CACHE[slot] = currentInterval.first;
+            CACHE[slot + 1] = currentInterval.second;
+        }
+        
 
-        if(compare(container_[loc], val))
+        // if(loc >= size_)
+        // {
+        //     // push the parent and then -
+        //     auto prevLevelInterval = getPreviousLevelInterval(h, currentInterval);
+        //     auto parent = loc - INTERVALSIZE(prevLevelInterval);
+        //     if(parent <= prevLevelInterval.second)
+        //     {
+        //         const auto pSlot = 2 * ((h - 1) % CACHE_SIZE);
+        //         CACHE[pSlot] = prevLevelInterval.first;
+        //         CACHE[pSlot + 1] = prevLevelInterval.second;
+        //         stack.push_back(parent);
+        //         stack.push_back(h - 1);
+        //     }
+        //     continue;
+        // }
+
+        if(loc >= size_ || compare(container_[loc], val))
         {
             // going up 
             auto prevLevelInterval = getPreviousLevelInterval(h, currentInterval);
             auto parent = loc - INTERVALSIZE(prevLevelInterval);
             if(parent <= prevLevelInterval.second)
             {
+                const auto pSlot = 2 * ((h - 1) % CACHE_SIZE);
+                CACHE[pSlot] = prevLevelInterval.first;
+                CACHE[pSlot + 1] = prevLevelInterval.second;
                 stack.push_back(parent);
+                stack.push_back(h - 1);
             }
             
         }
@@ -1282,9 +1187,14 @@ inline bool NBeap<T, N, Compare>::_searchND(T val, std::pair<size_t, size_t> &ou
                 getFirstUniqueChildPos(loc, firstChild, N-1, currentInterval);
             auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
             auto firstUniqueChild = firstUniqueChildPosAndMaxNumOfChildren.first;
+            auto nextLevelInterval = getNextLevelInterval(h, currentInterval);
+            const auto cSlot = 2 * ((h + 1) % CACHE_SIZE);
+            CACHE[cSlot] = nextLevelInterval.first;
+            CACHE[cSlot + 1] = nextLevelInterval.second; 
             while(maxNumberOfChildren > 0)
             {
                 stack.push_back(firstUniqueChild);
+                stack.push_back(h + 1);
                 firstUniqueChild++;
                 maxNumberOfChildren--;
             }

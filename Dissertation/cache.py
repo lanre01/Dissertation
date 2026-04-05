@@ -60,7 +60,6 @@ if __name__ == "__main__":
     
     path = Path(benchmark_dir)
     pattern = rf"^bench_(?:\d+-)?{re.escape(bench_file)}\.csv$"
-    # pattern = rf"bench_(\d?-?{bench_file}).csv"
     # filter out the benchmark result file from the dir
     files = [f for f in path.iterdir() if f.is_file() and re.match(pattern, f.name)]
     print(f"Processing {len(files)} files")

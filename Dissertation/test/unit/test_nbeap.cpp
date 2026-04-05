@@ -163,7 +163,7 @@ TYPED_TEST(NBeapBulkTestMultipleDim, MultipleRemoveOperations)
     EXPECT_EQ(0, this->nbeap.size());
 }
 
-TYPED_TEST(NBeapBulkTestMultipleDim, BulkConstructedSearchFindsAllInsertedValues)
+TYPED_TEST(NBeapBulkTestMultipleDim, BulkSearchInMultipleDimensions)
 {
     for (auto d : this->data) {
         ASSERT_TRUE(this->nbeap.search(d)) << "Missing value: " << d;
