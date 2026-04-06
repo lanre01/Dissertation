@@ -13,7 +13,6 @@
 #include <cmath>
 #include <cassert>
 #include <array>
-//#include <bits/stdc++.h>
 
 template<typename T>
 concept Comparable = requires(T a, T b) {
@@ -76,9 +75,7 @@ public:
             }
 
         }
-
         siftDownNoBubbleUp(0, 1, {0, 0}); 
-
     }
 
     ~NBeap() = default;
@@ -381,7 +378,9 @@ private:
     );
     
     size_t getBestParentIndex(
-        size_t currentPos, size_t childHeight, std::pair<size_t, size_t> levelInterval
+        const size_t childPos, 
+        const size_t childHeight,
+        const std::pair<size_t, size_t> levelInterval
     );
 
     size_t getBestChildIndex(
@@ -391,10 +390,6 @@ private:
     std::array<size_t, 3> getInnerLayerAndHeight(
         size_t levelIndex, const size_t levelHeight, std::pair<size_t, size_t> levelInterval, size_t dim
     );
-
-    // std::array<size_t, 3> getInnerLevelAndHeight(
-    //     size_t childPos, size_t levelHeight, std::pair<size_t, size_t> levelInterval, size_t dim
-    // ); 
 
     // This can actually use binary search since it is sorted
     // Beap search is used for consistency reason
@@ -532,7 +527,7 @@ private:
     {
         assert(currHeight > 1);
 
-        switch (dim)
+    switch (dim)
         {
         case 1:
             return 1;
@@ -686,27 +681,27 @@ void NBeap<T, N, Compare>::bubbleUp(
 
 template <Comparable T, size_t N, typename Compare>
 size_t NBeap<T, N, Compare>::getBestParentIndex(
-    size_t currentPos, 
-    size_t childHeight,
-    std::pair<size_t, size_t> levelInterval
+    const size_t childPos, 
+    const size_t childHeight,
+    const std::pair<size_t, size_t> levelInterval
 )
 {
     
     if constexpr (N == 1)
     {
-        return currentPos - 1;
+        return childPos - 1;
     }
     else if constexpr (N == 2) 
     { 
         //auto levelSize = INTERVALSIZE(levelInterval);
-        auto firstParent = currentPos - childHeight;
+        auto firstParent = childPos - childHeight;
 
-        if(currentPos == levelInterval.first)
+        if(childPos == levelInterval.first)
         {
             return firstParent + 1;
         }
 
-        if(currentPos == levelInterval.second)
+        if(childPos == levelInterval.second)
         {
             return firstParent;
         }
@@ -717,44 +712,112 @@ size_t NBeap<T, N, Compare>::getBestParentIndex(
     {
         auto parentsInterval = getPreviousLevelInterval(childHeight, levelInterval);
 
-        // std::cout << " Parents for " << currentPos << " are : ";
-
-        if(currentPos == levelInterval.first)
+        if(childPos == levelInterval.first)
         {
-            // std::cout << parentsInterval.first << std::endl;
             return parentsInterval.first;
         }
 
-        if(currentPos == levelInterval.second)
+        if(childPos == levelInterval.second)
         {
-            // std::cout << parentsInterval.second << std::endl;
             return parentsInterval.second;
         }
 
         auto parentsLevelSize = INTERVALSIZE(parentsInterval);
         if(parentsLevelSize == 1)
         {
-            // std::cout << parentsInterval.first << std::endl;
             return parentsInterval.first;
         }
-
-        auto bestParent = currentPos - parentsLevelSize;
-        
-        if(bestParent > parentsInterval.second)
+        auto bestParent = INVALID_INDEX_;
+        auto currentLoc = childPos - parentsLevelSize;
+        if(currentLoc <= parentsInterval.second)
         {
-            return getBestRemainingParents(bestParent, parentsInterval, 1);
+            bestParent = currentLoc;
         } 
 
-        auto bestParentFromRest = 
-            getBestRemainingParents(bestParent, parentsInterval, 1);
-
-        if (bestParentFromRest >= INVALID_INDEX_)
+        std::array<size_t, 3> innerLevelAndHeight{levelInterval.first, levelInterval.second, childHeight};
+        auto dim = N - 1;
+        while(dim > 0)
         {
-            return bestParent;
+            innerLevelAndHeight = getInnerLayerAndHeight(childPos, 
+                innerLevelAndHeight[2], {innerLevelAndHeight[0], innerLevelAndHeight[1]}, dim);
+            const auto currentLevelSize = INTERVALSIZE(innerLevelAndHeight[0], innerLevelAndHeight[1]);
+            
+            
+
+            if(childPos == innerLevelAndHeight[0])
+            {
+                size_t parent;
+                if(innerLevelAndHeight[2] <= 1)
+                {
+                    parent = currentLoc - 1;
+                }
+                else {
+                    parent = currentLoc - getNumOfElemInPrevLevel(innerLevelAndHeight[2], currentLevelSize, dim);
+                }
+                
+
+                if (bestParent == INVALID_INDEX_)
+                {
+                    return parent;
+                }
+
+                return parent + (bestParent - parent) *
+                    !compare(container_[parent], container_[bestParent]);
+
+            }
+
+            if(childPos == innerLevelAndHeight[1])
+            {
+                const size_t parent = currentLoc - currentLevelSize;
+
+                if (bestParent == INVALID_INDEX_)
+                {
+                    return parent;
+                }
+
+                return parent + (bestParent - parent) *
+                    !compare(container_[parent], container_[bestParent]);
+            }
+
+            const auto prevLevelSize = getNumOfElemInPrevLevel(innerLevelAndHeight[2], currentLevelSize, dim);
+            currentLoc -= prevLevelSize;
+
+            if(childPos - prevLevelSize < innerLevelAndHeight[0])
+            {
+                if (bestParent == INVALID_INDEX_)
+                {
+                    bestParent = currentLoc;
+                }
+                else
+                {
+                    bestParent = currentLoc + (bestParent - currentLoc) *
+                        !compare(container_[currentLoc], container_[bestParent]);
+                }
+            }
+
+            dim--;
         }
 
-        return bestParentFromRest + (bestParent - bestParentFromRest) * 
-                        !compare(container_[bestParentFromRest], container_[bestParent]);
+        return bestParent;
+
+
+        // auto bestParent = childPos - parentsLevelSize;
+        
+        // if(bestParent > parentsInterval.second)
+        // {
+        //     return getBestRemainingParents(bestParent, parentsInterval, 1);
+        // } 
+
+        // auto bestParentFromRest = 
+        //     getBestRemainingParents(bestParent, parentsInterval, 1);
+
+        // if (bestParentFromRest >= INVALID_INDEX_)
+        // {
+        //     return bestParent;
+        // }
+
+        // return bestParentFromRest + (bestParent - bestParentFromRest) * 
+        //                 !compare(container_[bestParentFromRest], container_[bestParent]);
         
     }
     
@@ -906,32 +969,6 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
         auto bestChild =  currentPos + INTERVALSIZE(levelInterval);
         if(bestChild >= size_)
             return INVALID_INDEX_;
-        
-        // std::pair<size_t, size_t> innerLayer {}; 
-        // size_t currentChild = bestChild;
-        // auto idx = currentPos - levelInterval.first;
-        // size_t dOffset = 1;
-
-        // while(dOffset < N)
-        // {
-        //     auto innerLayerAndHeight = getSpanAndHeight(idx, N - dOffset);
-        //     innerLayer = {innerLayerAndHeight[0], innerLayerAndHeight[1]};
-        //     currentChild += INTERVALSIZE(innerLayer);
-            
-        //     if(currentChild >= size_)
-        //     {
-        //         return bestChild;
-        //     }
-
-        //     bestChild = bestChild + (currentChild - bestChild) * 
-        //             !compare(container_[currentChild], container_[bestChild]);
-
-
-        //     idx = idx - innerLayer.first;
-        //     dOffset++;
-        // }
-
-        // return bestChild;
 
         std::array<size_t, 3> innerLayerAndHeight{levelInterval.first, levelInterval.second, parentHeight};
         size_t currentChild = bestChild;
@@ -1168,34 +1205,3 @@ inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLayerAndHeight(
 
     // return {start + 1, end, h};
 }
-
-// // returns also the height of the parentLevel
-// template <Comparable T, size_t N, typename Compare>
-// inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLevelAndHeight(
-//     size_t childPos, size_t levelHeight, 
-//     std::pair<size_t, size_t> levelInterval, size_t dim
-// ) 
-// {
-
-
-//     if(currentPos == parentLevelStart)
-//     {
-//         return {parentLevelStart-1, parentLevelStart-1, parentLevelStart, 1};
-//     }
-
-//     size_t curretHeight = 1, numOfElementInLevel = 1, curLevelEnd = parentLevelStart, 
-//     prevLevelEnd = parentLevelStart-1, prevLevelStart = parentLevelStart;
-//     while(true) 
-//     {
-//         numOfElementInLevel = getNumberOfElementInNextLevel(curretHeight, numOfElementInLevel, dim);
-//         prevLevelStart = prevLevelEnd + 1;
-//         prevLevelEnd = curLevelEnd;
-//         curLevelEnd += numOfElementInLevel;
-//         curretHeight++;
-//         if(currentPos <= curLevelEnd)
-//         {
-//             return {prevLevelStart, prevLevelEnd, curLevelEnd};
-//         }
-//     }
-
-// }
