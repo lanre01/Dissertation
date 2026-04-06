@@ -2,7 +2,7 @@
 #include <fstream>
 #include <charconv>
 #include <benchmark/benchmark.h>
-#include "../../src/NBeap/NBeap.hpp"    
+#include "../../src/n_beap/n_beap.hpp"    
 
 
 inline std::vector<int> readRandomData(size_t n)
@@ -31,12 +31,13 @@ inline std::vector<int> readRandomData(size_t n)
 
 inline std::vector<int> readRandomDataTest(size_t count)
 {
+    // 50% is looking too much maybe 10%
     std::ifstream myfile ("numbers.txt");
     std::vector<int> vec;
     std::string line; 
     int i = 0;
-    int j = 0.75 * count;
-    int final = count + 0.25 * count;
+    int j = 0.975 * count;
+    int final = count + (0.025 * count);
 
     while (getline(myfile, line) && i < j) i++;
 

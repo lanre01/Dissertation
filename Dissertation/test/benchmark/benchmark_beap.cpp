@@ -2,7 +2,7 @@
 #include <fstream>
 #include <benchmark/benchmark.h>
 #include <charconv>
-#include "../../src/Beap/Beap.hpp"  
+#include "../../src/beap/beap.hpp"  
 
 
 

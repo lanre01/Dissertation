@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-'''
-what do i want to achieve
 
-goal - to able to store new benchmark results so that i can
-       visualise the performance difference overtime
-
-       
-what would that entail?
-- run this program with the benchmark file as input
-- may need pattern matching to select the correct file(s) 
-- copy the cpu_time column from the new benchmark result and add to 
-  the cache file
-'''
+# Caches intermediate benchmark results to track performance difference 
+# across different implementations
+# command - ./cache.py 3-nbeap (optional message)
 
 import sys
 import os
@@ -23,9 +14,8 @@ cache_dir = "bench_results_cache"
 benchmark_dir = "benchmark_results"
 
 
-# get the csv file from benchmark dir
-# get the cache file from the ben_result cache otherwise create a new one
-# write a 
+# get the csv file from benchmark_results dir
+# get the cache file from the benchmark_result cache otherwise create a new one
 def process(filename, message):
     bench = re.search(r".*/bench_(.*)\.csv$", str(filename)).group(1)
     dest_path = Path(cache_dir) / f"{bench}.csv"

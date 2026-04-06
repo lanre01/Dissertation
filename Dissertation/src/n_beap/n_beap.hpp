@@ -167,7 +167,7 @@ public:
     {
         std::pair<size_t, size_t> out{};
 
-        if (!_searchHelper(val, out))
+        if (!searchHelper(val, out))
         {
             return;
         }
@@ -217,19 +217,7 @@ public:
 
         std::pair<size_t, size_t> out;
 
-        if constexpr (N == 1)
-        {
-            return _search1D(val, out);
-        }
-        else if constexpr (N == 2)
-        {
-            return _search2D(val, out);
-        }
-        else {
-            return _searchND(val, out);
-            // return _searchND(val, interval_.first, height_, interval_, out);
-        }
-
+        return searchHelper(val, out);
     };
 
     size_t size() {return size_;}
@@ -271,12 +259,6 @@ public:
         std::cout << " | intervals=" << interval_.first << "," << interval_.second << std::endl;
 		std::cout.flush();
 	}
-
-    void insertParent(
-        std::vector<size_t>& stack, 
-        size_t loc, size_t h, 
-        std::pair<size_t, size_t> currInterval
-    );
 
 
 private:
@@ -341,9 +323,10 @@ private:
         {
             while(interval.first > idx)
             {
-                auto num = getNumberOfElementInPreviousLevel(h, INTERVALSIZE(interval), offsetDim);
-                interval.second = interval.first - 1;
-                interval.first = interval.first - num;
+                interval = getPreviousLevelInterval(h, interval, dim);
+                // auto num = getNumOfElemInPrevLevel(h, INTERVALSIZE(interval), offsetDim);
+                // interval.second = interval.first - 1;
+                // interval.first = interval.first - num;
                 h--;
             }
             return {interval.first, interval.second, h};
@@ -352,9 +335,10 @@ private:
         {
             while(interval.second < idx)
             {
-                auto num = getNumberOfElementInNextLevel(h, INTERVALSIZE(interval), offsetDim);
-                interval.first = interval.second + 1;
-                interval.second = interval.second + num;
+                interval = getNextLevelInterval(h, interval, dim);
+                // auto num = getNumberOfElementInNextLevel(h, INTERVALSIZE(interval), offsetDim);
+                // interval.first = interval.second + 1;
+                // interval.second = interval.second + num;
                 h++;
             }
             return {interval.first, interval.second, h};
@@ -411,17 +395,13 @@ private:
         size_t currentPos, size_t childHeight, std::pair<size_t, size_t> levelInterval
     );
 
-    std::pair<size_t, size_t> getNMinusOffsetLevel(
+    std::array<size_t, 3> getNMinusOffsetLevel(
         size_t levelIndex, std::pair<size_t, size_t> levelInterval, size_t offset = 1
-    );
-
-    size_t getNumberOfElementInNextLevel(
-        size_t currHeight, size_t numOfElemCurrLevel, int offsetDim
     );
 
     // This can actually use binary search since it is sorted
     // Beap search is used for consistency reason
-    bool _search1D(T val, std::pair<size_t, size_t>& out)
+    bool search1D(T val, std::pair<size_t, size_t>& out)
     { 
         auto from = interval_.first;
         auto h = height_;
@@ -446,7 +426,7 @@ private:
         return false;
     }
 
-    bool _search2D(T val, std::pair<size_t, size_t>& out)
+    bool search2D(T val, std::pair<size_t, size_t>& out)
     {
 
         if(size_ <= 0 || compare(container_[0], val))
@@ -520,90 +500,96 @@ private:
         }
     }
 
-    bool _searchHelper(T val, std::pair<size_t, size_t>& out)
+    bool searchHelper(T val, std::pair<size_t, size_t>& out)
     {
         if constexpr (N == 1)
         {
-            return _search1D(val, out);
+            return search1D(val, out);
         }
         else if constexpr (N == 2)
         {
-            return _search2D(val, out);
+            return search2D(val, out);
         }
+
         else {
-            return _searchND(val, out);
-            // return _searchND(val, interval_.first, height_, interval_, out);
+            return searchND(val, out);
+            // return searchND(val, interval_.first, height_, interval_, out);
         }
 
     }
 
-    size_t getNumberOfElementInNextLevel(size_t currHeight, size_t numOfElemCurrLevel)
+    size_t getNumberOfElementInNextLevel(size_t currHeight, size_t numOfElemCurrLevel, size_t dim = N)
     {
-        if constexpr (N == 1)
+        switch (dim)
         {
-            return numOfElemCurrLevel;
-        }
-        if constexpr (N == 2)
-        {
+        case 1:
+            return 1;
+        case 2:
             return ++numOfElemCurrLevel;
+        default:
+            return (numOfElemCurrLevel * (currHeight + dim - 1 )) / currHeight;
         }
-
-        return  (numOfElemCurrLevel * (currHeight + N - 1 )) / currHeight;
     }
 
-    size_t getNumOfElemInPrevLevel(size_t currHeight, size_t numOfElemCurrLevel)
+    size_t getNumOfElemInPrevLevel(size_t currHeight, size_t numOfElemCurrLevel, size_t dim = N)
     {
-        if(currHeight <= 1)
-            return 0;
+        assert(currHeight > 1);
 
-        if constexpr (N == 1)
+        switch (dim)
         {
-            return numOfElemCurrLevel;
-        }
-        else if constexpr (N == 2)
-        {
+        case 1:
+            return 1;
+        case 2:
             return --numOfElemCurrLevel;
+        default:
+            return (numOfElemCurrLevel * (currHeight - 1)) / (currHeight + dim - 2);
         }
-
-        return (numOfElemCurrLevel * (currHeight - 1)) / (currHeight + N - 2);
     }
 
     std::pair<size_t, size_t> getPreviousLevelInterval(
         size_t currHeight, 
-        std::pair<size_t, size_t> currLevInt
+        std::pair<size_t, size_t> currLevInt, 
+        size_t dim = N
     )
     {
-        auto l = getNumOfElemInPrevLevel(currHeight, INTERVALSIZE(currLevInt));
+        auto l = getNumOfElemInPrevLevel(currHeight, INTERVALSIZE(currLevInt), dim);
 
         return {currLevInt.first - l, currLevInt.first - 1};
     }
 
     std::pair<size_t, size_t> getNextLevelInterval(
-        size_t currHeight, std::pair<size_t, size_t> currLevInt
+        size_t currHeight, std::pair<size_t, size_t> currLevInt,
+        size_t dim = N 
     )
     { 
-        auto l = getNumberOfElementInNextLevel(currHeight,  INTERVALSIZE(currLevInt));
+        auto l = getNumberOfElementInNextLevel(currHeight,  INTERVALSIZE(currLevInt), dim);
 
         return {currLevInt.second + 1, currLevInt.second + l};
     }
 
-    inline size_t getBestRemainingParents(
+    size_t getBestRemainingParents(
         size_t currentPos, std::pair<size_t, size_t> parentsInterval, size_t dOffset
     );
 
-    inline size_t INTERVALSIZE(const std::pair<size_t, size_t>& p)
+    inline size_t INTERVALSIZE(size_t start, size_t end)
     {
-        return p.second - p.first + 1;
+        assert(end >= start);
+        return end - start + 1;
     }
 
-    bool _searchND(
+    inline size_t INTERVALSIZE(const std::pair<size_t, size_t>& p)
+    {
+        return INTERVALSIZE(p.first, p.second);
+    }
+
+    bool searchND(
         T val, const size_t currPos, const size_t currHeight, 
         const std::pair<size_t, size_t> levelInterval,
         std::pair<size_t, size_t>& out
     );
 
     // iterative
-    bool _searchND(
+    bool searchND(
         T val,
         std::pair<size_t, size_t>& out
     );
@@ -613,10 +599,6 @@ private:
     std::pair<size_t, size_t> getFirstUniqueChildPos(
         size_t parentIdx, size_t firstChildPos, size_t maxNumberOfChildren,
         std::pair<size_t, size_t> levelInterval
-    );
-
-    size_t getNumberOfElementInPreviousLevel(
-        size_t currHeight, size_t numOfElemCurrLevel, int offsetDim
     );
     
 };
@@ -824,10 +806,10 @@ inline size_t NBeap<T, N, Compare>::getBestRemainingParents(
         const size_t innerLevelSize = INTERVALSIZE(innerLevelLocal);
 
         const size_t prevInnerLevelSize =
-            getNumberOfElementInPreviousLevel(
+            getNumOfElemInPrevLevel(
                 innerLevelAndHeight[2],
                 innerLevelSize,
-                dOffset
+                N - dOffset
             );
 
         std::pair<size_t, size_t> prevInnerLocal{
@@ -983,18 +965,13 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
 
 
 template <Comparable T, size_t N, typename Compare>
-bool NBeap<T, N, Compare>::_searchND(
+bool NBeap<T, N, Compare>::searchND(
     T val, const size_t currPos, const size_t currHeight, 
     const std::pair<size_t, size_t> levelInterval, 
     std::pair<size_t, size_t>& out
 ) 
 {
-    if(currPos >= size_)
-    {
-        return false;
-    }
-
-    if(compare(container_[currPos], val))
+    if(currPos >= size_ || compare(container_[currPos], val))
     {
         auto parentLevel = getPreviousLevelInterval(currHeight, levelInterval);
         auto newPos = currPos - INTERVALSIZE(parentLevel);
@@ -1003,91 +980,29 @@ bool NBeap<T, N, Compare>::_searchND(
             return false;
         } 
         
-        return _searchND(val, newPos, currHeight - 1, parentLevel, out);
+        return searchND(val, newPos, currHeight - 1, parentLevel, out);
     }
     else if(compare(val, container_[currPos]))
     {
-    
         auto firstChild = currPos + INTERVALSIZE(levelInterval);
-        auto firstUniqueChildPosAndMaxNumOfChildren = 
-            getFirstUniqueChildPos(currPos, firstChild, N-1, levelInterval);
+        const auto firstUniqueChildPosAndMaxNumOfChildren = 
+                getFirstUniqueChildPos(currPos, firstChild, N-1, levelInterval);
+        const auto childrenLevel = getNextLevelInterval(currHeight, levelInterval);
+        auto childPos = firstUniqueChildPosAndMaxNumOfChildren.first;
+        auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
 
-        if(firstChild >= size_ || firstUniqueChildPosAndMaxNumOfChildren.first >= size_)
+        while (maxNumberOfChildren > 0)
         {
-            auto parentSibling = 
-                firstUniqueChildPosAndMaxNumOfChildren.first - INTERVALSIZE(levelInterval);
-            auto maxSibling = firstUniqueChildPosAndMaxNumOfChildren.second;
-
-            while(maxSibling > 0)
+            if(searchND(val, childPos, currHeight + 1, childrenLevel, out))
             {
-                if(parentSibling >= size_)
-                {
-                    auto grandParentLevel = getPreviousLevelInterval(currHeight, levelInterval);
-                    auto grandParent = parentSibling - INTERVALSIZE(grandParentLevel);
-                    if(grandParent >= levelInterval.first) // only going to happen if the last level is not full
-                    {
-                        return false;
-                    } 
-
-                    if(_searchND(val, grandParent, currHeight - 1, grandParentLevel, out))
-                    {
-                        return true;
-                    }
-                }
-                else {
-                    if(_searchND(val, parentSibling, currHeight, levelInterval, out))
-                    {
-                        return true;
-                    }
-                }
-
-                
-                parentSibling++;
-                maxSibling--;
-
+                return true;
             }
-        }
-        else 
-        {
-            auto childrenLevel = getNextLevelInterval(currHeight, levelInterval);
-            auto childPos = firstUniqueChildPosAndMaxNumOfChildren.first;
-            auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
-
-            while(maxNumberOfChildren > 0)
-            {
-                if(childPos >= size_)
-                {
-                    // should i be breaking here?
-                    // we should actually be going to that childs parent
-                    // instead of break
-                    //auto grandParentLevel = getPreviousLevelInterval(currHeight, levelInterval);
-                    auto sibling = childPos - INTERVALSIZE(levelInterval);
-                    if(sibling > levelInterval.second) // only going to happen if the last level is not full
-                    {
-                        return false;
-                    } 
-
-                    if(_searchND(val, sibling, currHeight, levelInterval, out))
-                    {
-                        return true;
-                    }
-                }
-                else {
-                    if(_searchND(val, childPos, currHeight + 1, childrenLevel, out))
-                    {
-                        return true;
-                    }
-                }
-
-                
-                childPos++;
-                maxNumberOfChildren--;
-            }
+            childPos++;
+            maxNumberOfChildren--;
         }
 
         return false;
     }
-
     else
     {
         out.first = currPos; 
@@ -1098,7 +1013,7 @@ bool NBeap<T, N, Compare>::_searchND(
 }
 
 template <Comparable T, size_t N, typename Compare>
-inline bool NBeap<T, N, Compare>::_searchND(T val, std::pair<size_t, size_t> &out)
+inline bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
 {
 
     if (size_ <= 0 || compare(container_[0], val))
@@ -1146,23 +1061,6 @@ inline bool NBeap<T, N, Compare>::_searchND(T val, std::pair<size_t, size_t> &ou
             CACHE[slot] = currentInterval.first;
             CACHE[slot + 1] = currentInterval.second;
         }
-        
-
-        // if(loc >= size_)
-        // {
-        //     // push the parent and then -
-        //     auto prevLevelInterval = getPreviousLevelInterval(h, currentInterval);
-        //     auto parent = loc - INTERVALSIZE(prevLevelInterval);
-        //     if(parent <= prevLevelInterval.second)
-        //     {
-        //         const auto pSlot = 2 * ((h - 1) % CACHE_SIZE);
-        //         CACHE[pSlot] = prevLevelInterval.first;
-        //         CACHE[pSlot + 1] = prevLevelInterval.second;
-        //         stack.push_back(parent);
-        //         stack.push_back(h - 1);
-        //     }
-        //     continue;
-        // }
 
         if(loc >= size_ || compare(container_[loc], val))
         {
@@ -1211,164 +1109,52 @@ inline bool NBeap<T, N, Compare>::_searchND(T val, std::pair<size_t, size_t> &ou
     return false;
 }
 
-template <Comparable T, size_t N, typename Compare>
-void NBeap<T, N, Compare>::insertParent(
-    std::vector<size_t>& stack, 
-    size_t loc, size_t h, 
-    std::pair<size_t, size_t> currInterval
-)
-{
-    if(loc == currInterval.second)
-    {
-        stack.push_back(currInterval.first - 1);
-        return;
-    }
-
-    auto parentsInterval = getPreviousLevelInterval(h , currInterval);
-    auto currentPos = loc - INTERVALSIZE(parentsInterval);
-    auto dOffset = 1;
-    size_t lastParent = INVALID_INDEX_;
-    auto numberOfParents = 0;
-
-    while(true)
-    {
-        const size_t idx = currentPos - parentsInterval.first;
-        auto innerLevelAndHeight = getSpanAndHeight(idx, N - dOffset);
-        std::pair<size_t, size_t> innerLevelLocal{
-            innerLevelAndHeight[0], innerLevelAndHeight[1]
-        };
-        const size_t innerLevelSize = INTERVALSIZE(innerLevelLocal);
-        const size_t prevInnerLevelSize =
-            getNumberOfElementInPreviousLevel(
-                innerLevelAndHeight[2],
-                innerLevelSize,
-                dOffset
-            );   
-        
-        std::pair<size_t, size_t> prevInnerLocal{
-            innerLevelLocal.first - prevInnerLevelSize,
-            innerLevelLocal.first - 1
-        };
-
-        std::pair<size_t, size_t> prevInnerGlobal{
-            parentsInterval.first + prevInnerLocal.first,
-            parentsInterval.first + prevInnerLocal.second
-        };
-
-        if(idx == innerLevelLocal.first)
-        {
-            if(idx == innerLevelLocal.second /*&& numberOfParents > 0*/)
-            {
-                stack.push_back(prevInnerGlobal.second);
-            }
-            
-            break;
-        }
-
-        if(idx == innerLevelLocal.second)
-        {
-            stack.push_back(prevInnerGlobal.second);
-            break;
-        }
-
-        const size_t parent = currentPos - prevInnerLevelSize;
-
-        if (parent <= prevInnerGlobal.second)
-        {
-            lastParent = parent;    
-            numberOfParents++;
-        }
-
-        currentPos = parent;
-        parentsInterval = prevInnerGlobal;
-        dOffset++;
-
-    }
-
-    return;
-}
 
 template <Comparable T, size_t N, typename Compare>
 std::pair<size_t, size_t> NBeap<T, N, Compare>::getFirstUniqueChildPos(
     size_t parentIdx, size_t firstChildPos, size_t maxNumberOfChildren,
-    std::pair<size_t, size_t> levelInterval)
+    std::pair<size_t, size_t> levelInterval
+)
 {
-    auto innerLevel = getNMinusOffsetLevel(parentIdx, levelInterval, 1);
-    auto nextchildPos = firstChildPos + INTERVALSIZE(innerLevel);
-    auto offset = 2;
-    while(innerLevel.first != parentIdx)
+    auto dim  = N - 1;
+    auto innerLevelAndHeight = getNMinusOffsetLevel(parentIdx, levelInterval, dim);
+    dim--;
+    auto nextchildPos = firstChildPos + INTERVALSIZE(innerLevelAndHeight[0], innerLevelAndHeight[1]);
+    while(innerLevelAndHeight[0] != parentIdx)
     {
-        innerLevel = getNMinusOffsetLevel(parentIdx, innerLevel, offset);
-        nextchildPos += INTERVALSIZE(innerLevel);
+        innerLevelAndHeight = getNMinusOffsetLevel(parentIdx, {innerLevelAndHeight[0], innerLevelAndHeight[1]}, dim);
+        nextchildPos += INTERVALSIZE(innerLevelAndHeight[0], innerLevelAndHeight[1]);
         maxNumberOfChildren--;
-        offset++;
+        dim--;
     }
 
 
-    return {nextchildPos, maxNumberOfChildren};
+    return {nextchildPos, dim + 1};
 }
 
 
 
 template <Comparable T, size_t N, typename Compare>
-inline std::pair<size_t, size_t> NBeap<T, N, Compare>::getNMinusOffsetLevel(
-    size_t parentIdx, std::pair<size_t, size_t> levelInterval, size_t offset
+inline std::array<size_t, 3> NBeap<T, N, Compare>::getNMinusOffsetLevel(
+    size_t parentIdx, std::pair<size_t, size_t> levelInterval, size_t dim
 ) 
 {
 
-    if(parentIdx == levelInterval.first) // should not happen because this is already accounted for up
+    if(parentIdx == levelInterval.first)
     {
-        return {parentIdx, parentIdx};
+        return {parentIdx, parentIdx, 1};
     }
 
     // Possible optimisation here is to start searching
     // from the back since most element should be at the last level
     size_t h = 1, l = 1, end = levelInterval.first, start = levelInterval.first;
-    //size_t maxInterval = levelInterval.second - levelInterval.first + 1; // can replace levelInterval with the level size acc
-    while(1) 
+    while(parentIdx > end) 
     {
-        l = getNumberOfElementInNextLevel(h, l, offset);
+        l = getNumberOfElementInNextLevel(h, l, dim);
         start = end;
         end += l;
         h++;
-        if(parentIdx <= end)
-        {
-            return {start + 1, end};
-        }
     }
-}
 
-
-template <Comparable T, size_t N, typename Compare>
-inline size_t NBeap<T, N, Compare>::getNumberOfElementInNextLevel(
-    size_t currHeight, size_t numOfElemCurrLevel, int offsetDim
-)
-{
-    switch (N-offsetDim)
-    {
-    case 1:
-        return 1;
-    case 2:
-        return ++numOfElemCurrLevel;
-    default:
-        return (numOfElemCurrLevel * (currHeight + (N - offsetDim) - 1 )) / currHeight;
-    }
-}
-
-template <Comparable T, size_t N, typename Compare>
-inline size_t NBeap<T, N, Compare>::getNumberOfElementInPreviousLevel(
-    size_t currHeight, size_t numOfElemCurrLevel, int offsetDim
-)
-{
-    auto dim = N - offsetDim;
-
-    switch (dim)
-    {
-    case 1:
-        return 1;
-    case 2:
-        return --numOfElemCurrLevel;
-    default:
-        return (numOfElemCurrLevel * (currHeight - 1)) / (currHeight + dim - 2);
-    }
+    return {start + 1, end, h};
 }
