@@ -318,15 +318,11 @@ private:
     {
         auto h = getApproximateHeight(idx, dim);
         auto interval = span(h, dim);
-        auto offsetDim = N - dim;
         if(idx < interval.first)
         {
             while(interval.first > idx)
             {
                 interval = getPreviousLevelInterval(h, interval, dim);
-                // auto num = getNumOfElemInPrevLevel(h, INTERVALSIZE(interval), offsetDim);
-                // interval.second = interval.first - 1;
-                // interval.first = interval.first - num;
                 h--;
             }
             return {interval.first, interval.second, h};
@@ -336,9 +332,6 @@ private:
             while(interval.second < idx)
             {
                 interval = getNextLevelInterval(h, interval, dim);
-                // auto num = getNumberOfElementInNextLevel(h, INTERVALSIZE(interval), offsetDim);
-                // interval.first = interval.second + 1;
-                // interval.second = interval.second + num;
                 h++;
             }
             return {interval.first, interval.second, h};
@@ -395,9 +388,13 @@ private:
         size_t currentPos, size_t childHeight, std::pair<size_t, size_t> levelInterval
     );
 
-    std::array<size_t, 3> getNMinusOffsetLevel(
-        size_t levelIndex, std::pair<size_t, size_t> levelInterval, size_t offset = 1
+    std::array<size_t, 3> getInnerLayerAndHeight(
+        size_t levelIndex, const size_t levelHeight, std::pair<size_t, size_t> levelInterval, size_t dim
     );
+
+    // std::array<size_t, 3> getInnerLevelAndHeight(
+    //     size_t childPos, size_t levelHeight, std::pair<size_t, size_t> levelInterval, size_t dim
+    // ); 
 
     // This can actually use binary search since it is sorted
     // Beap search is used for consistency reason
@@ -603,30 +600,6 @@ private:
     
 };
 
-
-// template <Comparable T, size_t N, typename Compare>
-// std::pair<size_t, size_t> NBeap<T, N, Compare>::span(
-//     size_t preferredHeight,
-//     std::pair<size_t, size_t> knownHeightInterval,
-//     size_t knownHeight)
-// {
-//     if (preferredHeight == knownHeight)
-//     {
-//         return knownHeightInterval;
-//     }
-
-//     while(knownHeight > preferredHeight)
-//     {
-//         auto prevLevelElems = 
-//             getNumOfElemInPrevLevel(knownHeight, INTERVALSIZE(knownHeightInterval));
-//         knownHeightInterval.second = knownHeightInterval.first - 1;
-//         knownHeightInterval.first -= prevLevelElems; 
-//         knownHeight--;
-//     }
-
-//     return knownHeightInterval; 
-// }
-
 template<Comparable T, size_t N, typename Compare>
 void NBeap<T, N, Compare>::siftDown(
     size_t startPos, size_t h, std::pair<size_t, size_t> levelInterval
@@ -640,7 +613,7 @@ void NBeap<T, N, Compare>::siftDown(
         size_t bestChild = 
                 getBestChildIndex(currPos, h, levelInterval);
         
-        if (bestChild == INVALID_INDEX_ /*|| compare(container_[bestChild], val)*/)
+        if (bestChild == INVALID_INDEX_ || compare(container_[bestChild], val))
         {
             break;
         }
@@ -652,7 +625,7 @@ void NBeap<T, N, Compare>::siftDown(
     }
 
     container_[currPos] = std::move(val);
-    bubbleUp(startPos, currPos, h, levelInterval);
+    // bubbleUp(startPos, currPos, h, levelInterval);
 }
 
 template<Comparable T, size_t N, typename Compare>
@@ -934,17 +907,42 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
         if(bestChild >= size_)
             return INVALID_INDEX_;
         
-        std::pair<size_t, size_t> innerLayer {}; 
-        size_t currentChild = bestChild;
-        auto idx = currentPos - levelInterval.first;
-        size_t dOffset = 1;
+        // std::pair<size_t, size_t> innerLayer {}; 
+        // size_t currentChild = bestChild;
+        // auto idx = currentPos - levelInterval.first;
+        // size_t dOffset = 1;
 
-        while(dOffset < N)
-        {
-            auto innerLayerAndHeight = getSpanAndHeight(idx, N - dOffset);
-            innerLayer = {innerLayerAndHeight[0], innerLayerAndHeight[1]};
-            currentChild += INTERVALSIZE(innerLayer);
+        // while(dOffset < N)
+        // {
+        //     auto innerLayerAndHeight = getSpanAndHeight(idx, N - dOffset);
+        //     innerLayer = {innerLayerAndHeight[0], innerLayerAndHeight[1]};
+        //     currentChild += INTERVALSIZE(innerLayer);
             
+        //     if(currentChild >= size_)
+        //     {
+        //         return bestChild;
+        //     }
+
+        //     bestChild = bestChild + (currentChild - bestChild) * 
+        //             !compare(container_[currentChild], container_[bestChild]);
+
+
+        //     idx = idx - innerLayer.first;
+        //     dOffset++;
+        // }
+
+        // return bestChild;
+
+        std::array<size_t, 3> innerLayerAndHeight{levelInterval.first, levelInterval.second, parentHeight};
+        size_t currentChild = bestChild;
+        size_t dim = N - 1;
+
+        while(dim > 0)
+        {
+            innerLayerAndHeight = getInnerLayerAndHeight(currentPos, 
+                innerLayerAndHeight[2], {innerLayerAndHeight[0], innerLayerAndHeight[1]}, dim);
+            currentChild += INTERVALSIZE(innerLayerAndHeight[0], innerLayerAndHeight[1]);
+
             if(currentChild >= size_)
             {
                 return bestChild;
@@ -952,10 +950,7 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
 
             bestChild = bestChild + (currentChild - bestChild) * 
                     !compare(container_[currentChild], container_[bestChild]);
-
-
-            idx = idx - innerLayer.first;
-            dOffset++;
+            dim--;
         }
 
         return bestChild;
@@ -1082,7 +1077,7 @@ inline bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out
             // going down
             auto firstChild = loc + INTERVALSIZE(currentInterval);
             auto firstUniqueChildPosAndMaxNumOfChildren = 
-                getFirstUniqueChildPos(loc, firstChild, N-1, currentInterval);
+                getFirstUniqueChildPos(loc, firstChild, h, currentInterval);
             auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
             auto firstUniqueChild = firstUniqueChildPosAndMaxNumOfChildren.first;
             auto nextLevelInterval = getNextLevelInterval(h, currentInterval);
@@ -1112,19 +1107,19 @@ inline bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out
 
 template <Comparable T, size_t N, typename Compare>
 std::pair<size_t, size_t> NBeap<T, N, Compare>::getFirstUniqueChildPos(
-    size_t parentIdx, size_t firstChildPos, size_t maxNumberOfChildren,
+    size_t parentIdx, size_t firstChildPos, size_t parentHeight,
     std::pair<size_t, size_t> levelInterval
 )
 {
     auto dim  = N - 1;
-    auto innerLevelAndHeight = getNMinusOffsetLevel(parentIdx, levelInterval, dim);
+    auto innerLevelAndHeight = getInnerLayerAndHeight(parentIdx, parentHeight, levelInterval, dim);
     dim--;
     auto nextchildPos = firstChildPos + INTERVALSIZE(innerLevelAndHeight[0], innerLevelAndHeight[1]);
     while(innerLevelAndHeight[0] != parentIdx)
     {
-        innerLevelAndHeight = getNMinusOffsetLevel(parentIdx, {innerLevelAndHeight[0], innerLevelAndHeight[1]}, dim);
+        innerLevelAndHeight = getInnerLayerAndHeight(parentIdx, innerLevelAndHeight[2], 
+            {innerLevelAndHeight[0], innerLevelAndHeight[1]}, dim);
         nextchildPos += INTERVALSIZE(innerLevelAndHeight[0], innerLevelAndHeight[1]);
-        maxNumberOfChildren--;
         dim--;
     }
 
@@ -1135,26 +1130,72 @@ std::pair<size_t, size_t> NBeap<T, N, Compare>::getFirstUniqueChildPos(
 
 
 template <Comparable T, size_t N, typename Compare>
-inline std::array<size_t, 3> NBeap<T, N, Compare>::getNMinusOffsetLevel(
-    size_t parentIdx, std::pair<size_t, size_t> levelInterval, size_t dim
+inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLayerAndHeight(
+    size_t idx, const size_t levelHeight, std::pair<size_t, size_t> levelInterval, size_t dim
 ) 
 {
-
-    if(parentIdx == levelInterval.first)
+    if(idx == levelInterval.first)
     {
-        return {parentIdx, parentIdx, 1};
+        return {idx, idx, 1};
     }
+
+    // get the previous level
+    auto prevLevelSize = getNumOfElemInPrevLevel(levelHeight, INTERVALSIZE(levelInterval), dim + 1);
+
+    size_t h = levelHeight, start = levelInterval.first + prevLevelSize, end = levelInterval.second;
+    size_t currLevelSize = INTERVALSIZE(start, end);
+    while(idx < start)
+    {
+        currLevelSize = getNumOfElemInPrevLevel(h, currLevelSize, dim);
+        end = start - 1;
+        start -= currLevelSize;
+        h--;
+    } 
+
+    return {start, end, h};
+
 
     // Possible optimisation here is to start searching
     // from the back since most element should be at the last level
-    size_t h = 1, l = 1, end = levelInterval.first, start = levelInterval.first;
-    while(parentIdx > end) 
-    {
-        l = getNumberOfElementInNextLevel(h, l, dim);
-        start = end;
-        end += l;
-        h++;
-    }
+    // size_t h = 1, l = 1, end = levelInterval.first, start = levelInterval.first;
+    // while(idx > end) 
+    // {
+    //     l = getNumberOfElementInNextLevel(h, l, dim);
+    //     start = end;
+    //     end += l;
+    //     h++;
+    // }
 
-    return {start + 1, end, h};
+    // return {start + 1, end, h};
 }
+
+// // returns also the height of the parentLevel
+// template <Comparable T, size_t N, typename Compare>
+// inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLevelAndHeight(
+//     size_t childPos, size_t levelHeight, 
+//     std::pair<size_t, size_t> levelInterval, size_t dim
+// ) 
+// {
+
+
+//     if(currentPos == parentLevelStart)
+//     {
+//         return {parentLevelStart-1, parentLevelStart-1, parentLevelStart, 1};
+//     }
+
+//     size_t curretHeight = 1, numOfElementInLevel = 1, curLevelEnd = parentLevelStart, 
+//     prevLevelEnd = parentLevelStart-1, prevLevelStart = parentLevelStart;
+//     while(true) 
+//     {
+//         numOfElementInLevel = getNumberOfElementInNextLevel(curretHeight, numOfElementInLevel, dim);
+//         prevLevelStart = prevLevelEnd + 1;
+//         prevLevelEnd = curLevelEnd;
+//         curLevelEnd += numOfElementInLevel;
+//         curretHeight++;
+//         if(currentPos <= curLevelEnd)
+//         {
+//             return {prevLevelStart, prevLevelEnd, curLevelEnd};
+//         }
+//     }
+
+// }

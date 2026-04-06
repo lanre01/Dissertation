@@ -43,9 +43,7 @@ int main()
 {
     NBeap<int, 3> nbeap;
     std::vector<size_t> vec;
-    nbeap.insertParent(vec, 12, 4, {10, 19});
-    if(!vec.empty())
-        std::cout << "parent: " << vec.back() << std::endl;
+    
 
     // nbeap.insert(10);
 
