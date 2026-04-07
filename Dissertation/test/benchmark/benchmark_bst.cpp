@@ -38,8 +38,8 @@ inline std::vector<int> readRandomDataTest(size_t count)
     std::vector<int> vec;
     std::string line; 
     int i = 0;
-    int j = 0.75 * count;
-    int final = count + 0.25 * count;
+    int j = 0.975 * count;
+    int final = count + 0.025 * count;
 
     while (getline(myfile, line) && i < j) i++;
 

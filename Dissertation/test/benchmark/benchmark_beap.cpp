@@ -38,15 +38,14 @@ inline std::vector<int> readRandomData(size_t n)
     return vec;
 }
 
-
 inline std::vector<int> readRandomDataTest(size_t count)
 {
     std::ifstream myfile ("numbers.txt");
     std::vector<int> vec;
     std::string line; 
     int i = 0;
-    int j = 0.75 * count;
-    int final = count + 0.25 * count;
+    int j = 0.975 * count;
+    int final = count + 0.025 * count;
 
     while (getline(myfile, line) && i < j) i++;
 
@@ -73,6 +72,20 @@ static void BM_Construct(benchmark::State& state) {
     for (auto _ : state) {
         Beap<int> b;
         b.reserve(count);
+        benchmark::DoNotOptimize(b);
+    }
+}
+
+static void BM_BulkInsert(benchmark::State& state)
+{
+    size_t count = state.range(0);
+
+    for(auto _ : state)
+    {
+        state.PauseTiming();
+        auto data = readRandomData(count);
+        state.ResumeTiming();
+        Beap<int> b = Beap<int>(data);
         benchmark::DoNotOptimize(b);
     }
 }
@@ -200,15 +213,14 @@ static void BM_Remove(benchmark::State& state) {
 
 BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20); 
 
+BENCHMARK(BM_BulkInsert)->RangeMultiplier(2)->Range(256, 1<<20);
 BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20); 
 BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20); 
-
 BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20); 
-
 BENCHMARK(BM_Search)->RangeMultiplier(2)->Range(256, 1<<20); 
-
 BENCHMARK(BM_Remove)->RangeMultiplier(2)->Range(256, 1<<20); 
+
 
 
 BENCHMARK_MAIN();
