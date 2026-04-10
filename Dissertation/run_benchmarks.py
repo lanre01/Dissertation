@@ -20,6 +20,7 @@ class BenchmarkRunner():
                 "heap": "bench_heap",
                 "bst": "bench_bst",
                 "nbeap": "bench_nbeap",
+                "minmax_heap" : "bench_minmax_heap"
             }
         self.bench_dir = "bin"
         self.bench_result_dir = "benchmark_results"
@@ -85,6 +86,7 @@ class BenchmarkRunner():
                     f'--benchmark_filter={pattern}',
                     f"--benchmark_out={resultPath}",
                     "--benchmark_out_format=csv",
+                    "--benchmark_repetitions=10",
                     "--benchmark_display_aggregates_only=true"
                 ]
                 , check=True 

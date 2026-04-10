@@ -37,11 +37,13 @@ public:
         initFactorials();
     }
 
+    // Constructs the beap by taking ownership of the provided vector via move.
     NBeap(std::vector<T> vec) 
     : NBeap(Compare(), std::move(vec))
     {
     }
 
+    // Constructs the beap by taking ownership of the provided vector via move.
     NBeap(Compare c, std::vector<T> vec) 
     : compare(c)
     , container_(std::move(vec))
@@ -83,11 +85,6 @@ public:
 
     NBeap& operator=(const NBeap&) = default;
 
-    void reserve(size_t count)
-    {
-        container_.reserve(count);
-    }
-
     T extract() 
     {
         if(size_ <= 0)
@@ -123,7 +120,10 @@ public:
             }
         }
 
-        siftDown(0, 1);
+        if constexpr (N <= 4)
+            siftDown(0, 1);
+        else 
+            siftDownNoBubbleUp(0, 1);
 
         return minElem;
     }
@@ -153,8 +153,6 @@ public:
                 height_++;
             }
         }
-
-       
 
         bubbleUp(0, size_, height_, interval_);
 
@@ -203,7 +201,10 @@ public:
             bubbleUp(0, pos, h, li);
         }
         
-        siftDown(pos, h, li);
+        if constexpr (N <= 4)
+            siftDown(pos, h, li);
+        else 
+            siftDownNoBubbleUp(pos, h, li);
     }
 
     bool search(T val) { 
@@ -223,7 +224,11 @@ public:
     size_t height() {return height_ - 1;}
 
     bool empty() {return size_ == 0; }
-
+    
+    std::vector<T> getContainer()
+    {
+        return container_;
+    }
     void clear()
     {
         height_ = 0;
@@ -232,31 +237,33 @@ public:
         interval_ = {0, 0};
     }
 
-    // void printState(const std::string& operation) {
-    // 	std::cout << "After " << operation << ": " << std::endl;
-    //     size_t i = 0;
-    //     size_t h = 1;
-    //     size_t n = 1;
-    //     while(i < size_)
-    //     {
-    //         for (size_t k = 0; k < n; k++)
-    //         {
-    //             if(i+k >= size_)
-    //             {
-    //                 break;
-    //             }
-    //             std::cout << container_[i+k] << " ";
-    //         }
-    //         std::cout << std::endl;
+    #ifdef DEBUG
+    void printState(const std::string& operation) {
+    	std::cout << "After " << operation << ": " << std::endl;
+        size_t i = 0;
+        size_t h = 1;
+        size_t n = 1;
+        while(i < size_)
+        {
+            for (size_t k = 0; k < n; k++)
+            {
+                if(i+k >= size_)
+                {
+                    break;
+                }
+                std::cout << container_[i+k] << " ";
+            }
+            std::cout << std::endl;
 
-    //         i+=n;
-    //         n = getNumberOfElementInNextLevel(h, n);
-    //         h++;
-    //     }
-	// 	std::cout << " | size=" << size_ << " height=" << height_ << " levelSize=" << INTERVALSIZE(interval_) << std::endl;
-    //     std::cout << " | intervals=" << interval_.first << "," << interval_.second << std::endl;
-	// 	std::cout.flush();
-	// }
+            i+=n;
+            n = getNumberOfElementInNextLevel(h, n);
+            h++;
+        }
+		std::cout << " | size=" << size_ << " height=" << height_ << " levelSize=" << INTERVALSIZE(interval_) << std::endl;
+        std::cout << " | intervals=" << interval_.first << "," << interval_.second << std::endl;
+		std::cout.flush();
+	}
+    #endif
 
 
 private:
@@ -292,23 +299,33 @@ private:
         {
         case 1:
             return {currHeight - 1, currHeight - 1};
+
+        case 2:
+            {
+                size_t start = ((currHeight * (currHeight - 1)) >> 1);
+                size_t end = (currHeight * (currHeight + 1)) >> 1;
+                return {start, end-1};
+            }
+        
         default:
-            if (currHeight == 1)
             {
-                return {0 , 0};
-            }
+                if (currHeight == 1)
+                {
+                    return {0 , 0};
+                }
 
-            size_t start = 1;
-            size_t end = 1;
-            for (size_t i = 0; i < dim; i++)
-            {
-                start *= (currHeight - 1 + i);      
-                end   *= (currHeight + i); 
-            }
-            start = start / factorials[dim];
-            end   = end   / factorials[dim];
+                size_t start = 1;
+                size_t end = 1;
+                for (size_t i = 0; i < dim; i++)
+                {
+                    start *= (currHeight - 1 + i);      
+                    end   *= (currHeight + i); 
+                }
+                start = start / factorials[dim];
+                end   = end   / factorials[dim];
 
-            return {start, end - 1};
+                return {start, end - 1};
+            }
         }
     }
 
@@ -361,21 +378,11 @@ private:
         }
         
     }
-
-    
-    
-    // std::pair<size_t, size_t> span(
-    //     size_t preferredHeight, 
-    //     std::pair<size_t, size_t> knownHeighInterval, 
-    //     size_t knowHeight
-    // );
-
-    
     
     void siftDown(size_t startPos, size_t h, std::pair<size_t, size_t> levelInterval = {0,0});
     void bubbleUp(size_t index, size_t endIndex, size_t h, std::pair<size_t, size_t> levelInterval);
     void siftDownNoBubbleUp(
-        size_t startPos, size_t h, std::pair<size_t, size_t> levelInterval
+        size_t startPos, size_t h, std::pair<size_t, size_t> levelInterval = {0, 0}
     );
     
     size_t getBestParentIndex(
@@ -506,7 +513,6 @@ private:
 
         else {
             return searchND(val, out);
-            // return searchND(val, interval_.first, height_, interval_, out);
         }
 
     }
@@ -560,10 +566,6 @@ private:
         return {currLevInt.second + 1, currLevInt.second + l};
     }
 
-    // size_t getBestRemainingParents(
-    //     size_t currentPos, std::pair<size_t, size_t> parentsInterval, size_t dOffset
-    // );
-
     inline size_t INTERVALSIZE(size_t start, size_t end)
     {
         assert(end >= start);
@@ -575,13 +577,6 @@ private:
         return INTERVALSIZE(p.first, p.second);
     }
 
-    // bool searchND(
-    //     T val, const size_t currPos, const size_t currHeight, 
-    //     const std::pair<size_t, size_t> levelInterval,
-    //     std::pair<size_t, size_t>& out
-    // );
-
-    // iterative
     bool searchND(
         T val,
         std::pair<size_t, size_t>& out
@@ -609,11 +604,11 @@ void NBeap<T, N, Compare>::siftDown(
         size_t bestChild = 
                 getBestChildIndex(currPos, h, levelInterval);
         
-        if (bestChild == INVALID_INDEX_ /* || compare(container_[bestChild], val)*/)
+        if (bestChild == INVALID_INDEX_)
         {
             break;
         }
-        
+
         container_[currPos] = std::move(container_[bestChild]);
         currPos = bestChild;
         levelInterval = getNextLevelInterval(h, levelInterval);
@@ -621,7 +616,9 @@ void NBeap<T, N, Compare>::siftDown(
     }
 
     container_[currPos] = std::move(val);
-    bubbleUp(startPos, currPos, h, levelInterval);
+
+    if constexpr (N <= 4)
+        bubbleUp(startPos, currPos, h, levelInterval);
 }
 
 template<Comparable T, size_t N, typename Compare>
@@ -694,8 +691,7 @@ size_t NBeap<T, N, Compare>::getBestParentIndex(
         return childPos - 1;
     }
     else if constexpr (N == 2) 
-    { 
-        //auto levelSize = INTERVALSIZE(levelInterval);
+    {
         auto firstParent = childPos - childHeight;
 
         if(childPos == levelInterval.first)
@@ -799,111 +795,9 @@ size_t NBeap<T, N, Compare>::getBestParentIndex(
         }
 
         return bestParent;
-
-
-        // auto bestParent = childPos - parentsLevelSize;
-        
-        // if(bestParent > parentsInterval.second)
-        // {
-        //     return getBestRemainingParents(bestParent, parentsInterval, 1);
-        // } 
-
-        // auto bestParentFromRest = 
-        //     getBestRemainingParents(bestParent, parentsInterval, 1);
-
-        // if (bestParentFromRest >= INVALID_INDEX_)
-        // {
-        //     return bestParent;
-        // }
-
-        // return bestParentFromRest + (bestParent - bestParentFromRest) * 
-        //                 !compare(container_[bestParentFromRest], container_[bestParent]);
-        
     }
     
 }
-
-// template <Comparable T, size_t N, typename Compare>
-// inline size_t NBeap<T, N, Compare>::getBestRemainingParents(
-//     size_t currentPos, std::pair<size_t, size_t> parentsInterval, size_t dOffset
-// )
-// {
-//     size_t bestParent = INVALID_INDEX_;
-
-//     while (true)
-//     {
-//         const size_t idx = currentPos - parentsInterval.first;
-
-//         auto innerLevelAndHeight = getSpanAndHeight(idx, N - dOffset);
-//         std::pair<size_t, size_t> innerLevelLocal{
-//             innerLevelAndHeight[0], innerLevelAndHeight[1]
-//         };
-
-//         const size_t innerLevelSize = INTERVALSIZE(innerLevelLocal);
-
-//         const size_t prevInnerLevelSize =
-//             getNumOfElemInPrevLevel(
-//                 innerLevelAndHeight[2],
-//                 innerLevelSize,
-//                 N - dOffset
-//             );
-
-//         std::pair<size_t, size_t> prevInnerLocal{
-//             innerLevelLocal.first - prevInnerLevelSize,
-//             innerLevelLocal.first - 1
-//         };
-
-//         std::pair<size_t, size_t> prevInnerGlobal{
-//             parentsInterval.first + prevInnerLocal.first,
-//             parentsInterval.first + prevInnerLocal.second
-//         };
-
-//         if (idx == innerLevelLocal.first)
-//         {
-//             const size_t parent = prevInnerGlobal.first;
-
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 return parent;
-//             }
-
-//             return parent + (bestParent - parent) *
-//                 !compare(container_[parent], container_[bestParent]);
-//         }
-
-//         if (idx == innerLevelLocal.second)
-//         {
-//             const size_t parent = prevInnerGlobal.second;
-
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 return parent;
-//             }
-
-//             return parent + (bestParent - parent) *
-//                 !compare(container_[parent], container_[bestParent]);
-//         }
-
-//         const size_t parent = currentPos - prevInnerLevelSize;
-
-//         if (parent <= prevInnerGlobal.second)
-//         {
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 bestParent = parent;
-//             }
-//             else
-//             {
-//                 bestParent = parent + (bestParent - parent) *
-//                     !compare(container_[parent], container_[bestParent]);
-//             }
-//         }
-
-//         currentPos = parent;
-//         parentsInterval = prevInnerGlobal;
-//         dOffset++;
-//     }
-// }
 
 template <Comparable T, size_t N, typename Compare>
 size_t NBeap<T, N, Compare>::getBestChildIndex(
@@ -940,10 +834,10 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
     {
         /*
         An N-Dimensional beap is just layers of N-1 Dimensional beap
-        By looking at each layer of the N-Dimensional Beap, some patterns 
-        emerge. Each node in the parent layer connects to a node in 
-        the height of its sublayer in the children layer and connects to N-1
-        nodes in the height + 1 of its sublayer.  
+        By looking at each layer of the N-Dimensional Beap, a pattern
+        emerges. By splitting the parent and child level to N-1 
+        dimension, each parent have its children located in its 
+        height and height  + 1 in the children level. 
         */
         if(currentPos == levelInterval.first)
         {
@@ -993,56 +887,6 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
         return bestChild;
     }
 }
-
-
-
-// template <Comparable T, size_t N, typename Compare>
-// bool NBeap<T, N, Compare>::searchND(
-//     T val, const size_t currPos, const size_t currHeight, 
-//     const std::pair<size_t, size_t> levelInterval, 
-//     std::pair<size_t, size_t>& out
-// ) 
-// {
-//     if(currPos >= size_ || compare(container_[currPos], val))
-//     {
-//         auto parentLevel = getPreviousLevelInterval(currHeight, levelInterval);
-//         auto newPos = currPos - INTERVALSIZE(parentLevel);
-//         if(newPos >= levelInterval.first)
-//         {
-//             return false;
-//         } 
-        
-//         return searchND(val, newPos, currHeight - 1, parentLevel, out);
-//     }
-//     else if(compare(val, container_[currPos]))
-//     {
-//         auto firstChild = currPos + INTERVALSIZE(levelInterval);
-//         const auto firstUniqueChildPosAndMaxNumOfChildren = 
-//                 getFirstUniqueChildPos(currPos, firstChild, N-1, levelInterval);
-//         const auto childrenLevel = getNextLevelInterval(currHeight, levelInterval);
-//         auto childPos = firstUniqueChildPosAndMaxNumOfChildren.first;
-//         auto maxNumberOfChildren = firstUniqueChildPosAndMaxNumOfChildren.second;
-
-//         while (maxNumberOfChildren > 0)
-//         {
-//             if(searchND(val, childPos, currHeight + 1, childrenLevel, out))
-//             {
-//                 return true;
-//             }
-//             childPos++;
-//             maxNumberOfChildren--;
-//         }
-
-//         return false;
-//     }
-//     else
-//     {
-//         out.first = currPos; 
-//         out.second = currHeight;
-//         return true;
-//     }
-
-// }
 
 template <Comparable T, size_t N, typename Compare>
 bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
@@ -1137,7 +981,6 @@ bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
         }
     }
 
-
     return false;
 }
 
@@ -1175,33 +1018,40 @@ inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLayerAndHeight(
     {
         return {idx, idx, 1};
     }
-
-    // get the previous level
-    auto prevLevelSize = getNumOfElemInPrevLevel(levelHeight, INTERVALSIZE(levelInterval), dim + 1);
-
-    size_t h = levelHeight, start = levelInterval.first + prevLevelSize, end = levelInterval.second;
-    size_t currLevelSize = INTERVALSIZE(start, end);
-    while(idx < start)
+    
+    switch (dim)
     {
-        currLevelSize = getNumOfElemInPrevLevel(h, currLevelSize, dim);
-        end = start - 1;
-        start -= currLevelSize;
-        h--;
-    } 
+    case 1:
+        return {idx, idx, idx - levelInterval.first + 1};
+    case 2:
+        {
+            auto i = idx - levelInterval.first + 1;
+            auto h = static_cast<std::size_t>(std::round(std::sqrt(i * 2)));
+            auto it = span(h, 2);
+            assert(i-1 >= it.first && i-1 <= it.second);
+            return {it.first + levelInterval.first, it.second + levelInterval.first,  h};
+        }
+    default:
+        {
+            // get the previous level in higher dimension which is then used to
+            // compute the intervals of the last level to start searching from
+            // the end.
+            auto prevLevelSize = 
+                getNumOfElemInPrevLevel(levelHeight, INTERVALSIZE(levelInterval), dim + 1);
 
-    return {start, end, h};
+            size_t h = levelHeight;
+            size_t start = levelInterval.first + prevLevelSize;
+            size_t end = levelInterval.second;
+            size_t currLevelSize = INTERVALSIZE(start, end);
+            while(idx < start)
+            {
+                currLevelSize = getNumOfElemInPrevLevel(h, currLevelSize, dim);
+                end = start - 1;
+                start -= currLevelSize;
+                h--;
+            } 
 
-
-    // Possible optimisation here is to start searching
-    // from the back since most element should be at the last level
-    // size_t h = 1, l = 1, end = levelInterval.first, start = levelInterval.first;
-    // while(idx > end) 
-    // {
-    //     l = getNumberOfElementInNextLevel(h, l, dim);
-    //     start = end;
-    //     end += l;
-    //     h++;
-    // }
-
-    // return {start + 1, end, h};
+            return {start, end, h};
+        }
+    }
 }

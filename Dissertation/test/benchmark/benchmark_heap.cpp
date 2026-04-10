@@ -1,8 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <charconv>
+#include <algorithm>
+#include <cmath>
+#include <vector>
 #include <benchmark/benchmark.h>
 #include <vector>
+#include <queue>
 
 
 inline std::vector<int> readRandomData(size_t n)
@@ -56,174 +60,150 @@ inline std::vector<int> readRandomDataTest(size_t count)
 }
 
 
-// Benchmark heap construction
+
 static void BM_Construct(benchmark::State& state) {
     size_t count = state.range(0);
-    
-    for (auto _ : state) {
-        std::vector<int> v;
-        v.reserve(count);
-        benchmark::DoNotOptimize(v);
-        /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
+
+    for(auto _ : state)
+    {
+        state.PauseTiming();
+        auto data = readRandomData(count);
+        state.ResumeTiming();
+
+        std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
-            std::move(v)
+            std::move(data)
         );
-        benchmark::DoNotOptimize(pq);*/
+        benchmark::DoNotOptimize(pq);
     }
 }
 
-// Benchmark pushing random data
+
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
-    std::vector<int> v;
-    v.reserve(count);
+    
 
     for (auto _ : state) {
         
         //std::make_heap(v.begin(), v.end(), std::greater<>{});
-        /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
+        state.PauseTiming();
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
             std::move(v)
-        );*/
-
-        state.PauseTiming();
-        v.clear();
+        );
         state.ResumeTiming();
 
         for (int x : data){
-            v.push_back(x);
-            std::push_heap(v.begin(), v.end(), std::greater<int>());
+            pq.push(x);
         }
-        //pq.push(x);
+
     }
 }
 
-// Benchmark push ascending random data
+
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
     std::sort(data.begin(), data.end());
-    std::vector<int> v;
-    v.reserve(count);
+    
 
     for (auto _ : state) {
         state.PauseTiming();
-        v.clear();
-        state.ResumeTiming();
-        //std::make_heap(v.begin(), v.end(), std::greater<>{});
-        /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(), 
             std::move(v)
-        );*/
+        );
+        state.ResumeTiming();
+        
 
         for (int x : data) 
         {
-            v.push_back(x);
-            std::push_heap(v.begin(), v.end(), std::greater<int>());
-            //pq.push(x);
+            pq.push(x);
         }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
-// Benchmark push descending random data 
+
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
     std::sort(data.begin(), data.end(), std::greater<int>());
-    std::vector<int> v;
-    v.reserve(count);
+    
 
     for (auto _ : state) {
         
         state.PauseTiming();
-        v.clear();
-        state.ResumeTiming();
-        //std::make_heap(v.begin(), v.end(), std::greater<>{});
-        /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
+        std::vector<int> v;
+        v.reserve(count);
+        std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
             std::move(v)
-        );*/
+        );
+        state.ResumeTiming();
+        
 
         for (int x : data) 
         {
-            v.push_back(x);
-            std::push_heap(v.begin(), v.end(), std::greater<int>());
-            //pq.push(x);
+            pq.push(x);
         }
     }
-
-    state.SetItemsProcessed(state.iterations() * count);
 }
 
-// Benchmark pop
+
 static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = readRandomData(count);
-    std::vector<int> v;
-    v.reserve(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        
-        //std::make_heap(v.begin(), v.end(), std::greater<>{});
-        /*std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
+        auto data = readRandomData(count);
+        std::priority_queue<int, std::vector<int>, std::greater<int>> pq(
             std::greater<int>(),
-            std::move(v)
-        );*/
-        v.clear();
-        for (int x : data) 
-        {
-            //pq.push(x);
-            v.push_back(x);
-            std::push_heap(v.begin(), v.end());
-        }
+            std::move(data)
+        );
         state.ResumeTiming();
 
         for (size_t i = 0; i < count; i++) {
-            //pq.pop();
-            std::pop_heap(v.begin(), v.end(), std::greater<>{});
-            v.pop_back();
+            pq.pop();
         }
     }
 }
 
-static void BM_Search(benchmark::State& state)
-{
-    size_t count = state.range(0);
 
-    auto v = readRandomData(count);
-    auto tests = readRandomDataTest(count);
-    std::make_heap(v.begin(), v.end(), std::greater<>{});
-
-
-    for(auto _ : state)
-    {
-        for (auto q : tests)
-            for(size_t i = 0; i < count; i++)
-            {
-                if(v[i] == q) {
-                    auto t = v[i];
-                    benchmark::DoNotOptimize(t);
-                    break;
-                }
-            }
-    }
-
-    state.SetItemsProcessed(state.iterations() * count);
+static double percentile(std::vector<double> v, double p) {
+    if (v.empty()) return 0.0;
+    std::sort(v.begin(), v.end());
+    const double idx = (p / 100.0) * (v.size() - 1);
+    const std::size_t lo = static_cast<std::size_t>(std::floor(idx));
+    const std::size_t hi = static_cast<std::size_t>(std::ceil(idx));
+    const double frac = idx - lo;
+    return v[lo] + (v[hi] - v[lo]) * frac;
 }
 
 
-BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20);
+#define ADD_STATS() \
+    ->Repetitions(10) \
+    ->ComputeStatistics("p90", [](const std::vector<double>& v){ return percentile(v, 90.0); }) \
+    ->ComputeStatistics("p95", [](const std::vector<double>& v){ return percentile(v, 95.0); }) \
+    ->ComputeStatistics("p99", [](const std::vector<double>& v){ return percentile(v, 99.0); });
 
-BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20);
-BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20);
-BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20);
 
-BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20);
 
-BENCHMARK(BM_Search)->RangeMultiplier(4)->Range(256, 1<<20); 
+BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20)\
+    ADD_STATS();
+
+BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20)\
+    ADD_STATS();
+BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20)\
+    ADD_STATS();
+BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20)\
+    ADD_STATS();
+
+BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20)\
+    ADD_STATS();
 
 BENCHMARK_MAIN();

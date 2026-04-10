@@ -1,9 +1,8 @@
 # Compiler and flags
 CXX := clang++
-# CXXFLAGS := -std=c++20 -Wall -Wextra -O2 -I./src
 
 CXXFLAGS_BASE := -std=c++20 -Wall -Wextra -I./src
-CXXFLAGS_RELEASE := $(CXXFLAGS_BASE) -O3
+CXXFLAGS_RELEASE := $(CXXFLAGS_BASE) -O3 -DNDEBUG
 CXXFLAGS_DEBUG := $(CXXFLAGS_BASE) -O0 -g -ggdb3 -fno-omit-frame-pointer -DDEBUG
 
 CXXFLAGS := $(CXXFLAGS_RELEASE)
@@ -15,23 +14,18 @@ BIN_DIR := bin
 
 # Source files
 MAIN_SRC := $(SRC_DIR)/main.cpp
-#HEAP_SRCS := $(wildcard $(SRC_DIR)/Heap/*.cpp)
-#BEAP_SRCS := $(wildcard $(SRC_DIR)/Beap/*.cpp)
-#NBEAP_SRCS := $(wildcard $(SRC_DIR)/NBeap/*.cpp)
 
 UNIT_TEST_SRCS := $(wildcard test/unit/*.cpp)
 
-# Benchmark sources (3 files total)
+# Benchmark sources
 BEAP_BENCH_SRC := test/benchmark/benchmark_beap.cpp
 NBEAP_BENCH_SRC := test/benchmark/benchmark_nbeap.cpp
 HEAP_BENCH_SRC := test/benchmark/benchmark_heap.cpp
 BST_BENCH_SRC := test/benchmark/benchmark_bst.cpp
+MINMAX_HEAP_SRC := test/benchmark/benchmark_minmax_heap.cpp
 
 # Object files
 MAIN_OBJ := $(BUILD_DIR)/main.o
-#HEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(HEAP_SRCS))
-#BEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(BEAP_SRCS))
-#NBEAP_OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(NBEAP_SRCS))
 
 UNIT_TEST_OBJS := $(patsubst test/unit/%.cpp,$(BUILD_DIR)/test/unit/%.o,$(UNIT_TEST_SRCS))
 
@@ -40,6 +34,7 @@ BEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_beap.o
 NBEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_nbeap.o
 HEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_heap.o
 BST_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_bst.o 
+MINMAX_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_minmax_heap.o
 
 ALL_OBJS := $(MAIN_OBJ) # $(HEAP_OBJS) $(BEAP_OBJS) $(NBEAP_OBJS)
 
@@ -51,6 +46,7 @@ BEAP_BENCH_TARGET := $(BIN_DIR)/bench_beap
 NBEAP_BENCH_TARGET := $(BIN_DIR)/bench_nbeap
 HEAP_BENCH_TARGET := $(BIN_DIR)/bench_heap
 BST_BENCH_TARGET := $(BIN_DIR)/bench_bst
+MINMAX_BENCH_TARGET := $(BIN_DIR)/bench_minmax_heap
 
 # Production code objects (without main)
 PRODUCTION_OBJS := $(filter-out $(BUILD_DIR)/main.o, $(ALL_OBJS))
@@ -84,6 +80,10 @@ $(HEAP_BENCH_TARGET): $(HEAP_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 $(BST_BENCH_TARGET): $(BST_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
 
+# minmax heap benchmark
+$(MINMAX_BENCH_TARGET): $(MINMAX_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
+
 # Compilation rules
 $(BUILD_DIR)/main.o: $(MAIN_SRC) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -113,6 +113,8 @@ $(BUILD_DIR)/test/benchmark/benchmark_heap.o: $(HEAP_BENCH_SRC) | $(BUILD_DIR)/t
 $(BUILD_DIR)/test/benchmark/benchmark_bst.o: $(BST_BENCH_SRC) | $(BUILD_DIR)/test/benchmark
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
+$(BUILD_DIR)/test/benchmark/benchmark_minmax_heap.o: $(MINMAX_HEAP_SRC) | $(BUILD_DIR)/test/benchmark
+	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
 # Build unit test
 tests: $(UNIT_TEST_TARGET)
@@ -126,7 +128,9 @@ bench-nbeap: $(NBEAP_BENCH_TARGET)
 
 bench-bst: $(BST_BENCH_TARGET)
 
-bench-all: bench-beap bench-beap bench-bst # bench-nbeap
+bench-minmax_heap: $(MINMAX_BENCH_TARGET)
+
+bench-all: bench-beap bench-beap bench-bst bench-nbeap bench-minmax_heap
  
 
 # ============================================================
@@ -157,11 +161,10 @@ run-bench-heap: $(HEAP_BENCH_TARGET)
 run-bench-bst: $(BST_BENCH_TARGET)
 	./$(BST_BENCH_TARGET)
 
-run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap 
+run-bench-minmax_heap: $(MINMAX_BENCH_TARGET)
+	./$(MINMAX_BENCH_TARGET)
 
-# Debug build
-#debug: CXXFLAGS += -g -DDEBUG
-#debug: $(TARGET)
+run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap run-bench-minmax_heap
 
 
 debug: CXXFLAGS := $(CXXFLAGS_DEBUG)
@@ -182,6 +185,8 @@ debug-bench-heap: clean $(HEAP_BENCH_TARGET)
 debug-bench-bst: CXXFLAGS := $(CXXFLAGS_DEBUG)
 debug-bench-bst: clean $(BST_BENCH_TARGET)
 
+debug-bench-bst: CXXFLAGS := $(CXXFLAGS_DEBUG)
+debug-bench-bst: clean $(MINMAX_BENCH_TARGET)
 
 
 # Directory creation
@@ -216,4 +221,5 @@ clean:
 .PHONY: all clean run debug run-unit-tests run-bench-beap 
 		run-bench-nbeap run-bench-heap run-bench-all bench-beap 
 		bench-heap bench-bst bench-nbeap run-nbeap-tests run-beap-tests
+		bench-minmax_heap run-bench-minmax_heap
 

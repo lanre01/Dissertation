@@ -88,8 +88,6 @@ public:
     size_t height() {return height_-1;}
 
     size_t size() {return size_;}
-
-	size_t capacity() {return container_.capacity();}
     
     void clear() {
         container_.clear();
@@ -99,8 +97,6 @@ public:
     }
 
 	bool empty(){ return container_.empty(); }
-
-	void reserve(size_t capacity) {container_.reserve(capacity);};
 
 private:
     size_t size_;
@@ -121,6 +117,10 @@ private:
         const std::pair<size_t, size_t> levelSpan
     );
 
+    // The normal sift down does not work for bulk insertion
+    // This is due to the geometry of the beap. The path traverse
+    // up may be different to the path traversed down. So beap 
+    // invariant may not be respected after bubbling up.
     void siftDownNoBubbleUp(
         const size_t pos, 
         const size_t h,
@@ -161,6 +161,7 @@ private:
         return {childspan_first_index_ - parentheight_, childspan_first_index_ - 1};
     }
 };
+
 
 template <typename T, typename Compare>
 void Beap<T, Compare>::siftDownNoBubbleUp(
@@ -428,8 +429,8 @@ inline const std::pair<size_t, size_t> Beap<T, Compare>::span(size_t h)
 {
     assert(h > 0);
 
-    int start = ((h * (h - 1)) / 2) + 1;
-    int end = (h * (h + 1)) / 2;
+    size_t start = ((h * (h - 1)) / 2) + 1;
+    size_t end = (h * (h + 1)) / 2;
     return {start-1, end-1};
 }
 

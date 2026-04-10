@@ -4,17 +4,6 @@
 #include <charconv>
 #include "../../src/beap/beap.hpp"  
 
-
-
-/*static std::mt19937 rng(42);
-
-std::vector<int> generateRandomData(size_t n) {
-    std::uniform_int_distribution<int> dist(1, 1'000'000);
-    std::vector<int> v(n);
-    for (auto& x : v) x = dist(rng);
-    return v;
-}*/
-
 inline std::vector<int> readRandomData(size_t n)
 {
     std::ifstream myfile ("numbers.txt");
@@ -70,22 +59,11 @@ static void BM_Construct(benchmark::State& state) {
     size_t count = state.range(0);
 
     for (auto _ : state) {
-        Beap<int> b;
-        b.reserve(count);
-        benchmark::DoNotOptimize(b);
-    }
-}
-
-static void BM_BulkInsert(benchmark::State& state)
-{
-    size_t count = state.range(0);
-
-    for(auto _ : state)
-    {
         state.PauseTiming();
         auto data = readRandomData(count);
         state.ResumeTiming();
-        Beap<int> b = Beap<int>(data);
+
+        Beap<int> b(data);
         benchmark::DoNotOptimize(b);
     }
 }
@@ -94,8 +72,10 @@ static void BM_BulkInsert(benchmark::State& state)
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
-    Beap<int> b;
-    b.reserve(count);
+    std::vector<int> vec;
+    vec.reserve(count);
+    Beap<int> b(vec);
+    
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -113,8 +93,9 @@ static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
     std::sort(data.begin(), data.end());
-    Beap<int> b;
-    b.reserve(count);
+    std::vector<int> vec;
+    vec.reserve(count);
+    Beap<int> b(vec);
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -124,9 +105,6 @@ static void BM_PushSortedAsc(benchmark::State& state) {
         for (int x : data)
             b.insert(x);
     }
-
-    ////state.SetItemsProcessed(state.iterations() * count);
-
 }
 
 
@@ -135,8 +113,9 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
     std::sort(data.begin(), data.end(), std::greater<int>());
-    Beap<int> b;
-    b.reserve(count);
+    std::vector<int> vec;
+    vec.reserve(count);
+    Beap<int> b(vec);
 
     for (auto _ : state) {
         state.PauseTiming();
@@ -151,15 +130,13 @@ static void BM_PushSortedDesc(benchmark::State& state) {
 // Benchmark Extract
 static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
-    auto data = readRandomData(count);
-    Beap<int> b;
-    b.reserve(count);
+    
+    
 
     for (auto _ : state) {
         state.PauseTiming();
-        b.clear();
-        for(auto d : data)
-            b.insert(d);
+        auto data = readRandomData(count);
+        Beap<int> b(data);
         state.ResumeTiming();
         
         for (size_t i = 0; i < count; i++) {
@@ -168,15 +145,11 @@ static void BM_Extract(benchmark::State& state) {
     }
 }
 
-// Benchmark search 
 static void BM_Search(benchmark::State& state) {
     size_t count = state.range(0);
     
-    Beap<int> b;
-    b.reserve(count);
     auto data = readRandomData(count);
-    for (int x : data) b.insert(x);
-
+    Beap<int> b(data);
     auto tests = readRandomDataTest(count);
 
     
@@ -189,19 +162,15 @@ static void BM_Search(benchmark::State& state) {
 
 
 
-
-// Benchmark remove(value)
 static void BM_Remove(benchmark::State& state) {
     size_t count = state.range(0);
-    Beap<int> b;
-    b.reserve(count);
+   
     auto tests = readRandomDataTest(count);
-    auto data = readRandomData(count);
 
     for (auto _ : state) {
         state.PauseTiming();
-        b.clear();
-        for (auto x : data) b.insert(x);
+        auto data = readRandomData(count);
+        Beap<int> b(data);
         state.ResumeTiming();
 
         for (auto t : tests)
@@ -209,17 +178,54 @@ static void BM_Remove(benchmark::State& state) {
     }
 }
 
+static void BM_SSearch(benchmark::State& state) {
+    const size_t count = state.range(0);
+    auto data = readRandomData(count);
+    std::vector<int>tests(data.begin(), data.begin() + 0.05 * data.size());
+
+    Beap<int> b(data);
+
+    for (auto _ : state) {
+        for(auto t : tests) {
+            benchmark::DoNotOptimize(b.search(t));
+        }
+    }
+}
+
+static double percentile(std::vector<double> v, double p) {
+    if (v.empty()) return 0.0;
+    std::sort(v.begin(), v.end());
+    const double idx = (p / 100.0) * (v.size() - 1);
+    const std::size_t lo = static_cast<std::size_t>(std::floor(idx));
+    const std::size_t hi = static_cast<std::size_t>(std::ceil(idx));
+    const double frac = idx - lo;
+    return v[lo] + (v[hi] - v[lo]) * frac;
+}
 
 
-BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20); 
+#define ADD_STATS() \
+    ->Repetitions(10) \
+    ->ComputeStatistics("p90", [](const std::vector<double>& v){ return percentile(v, 90.0); }) \
+    ->ComputeStatistics("p95", [](const std::vector<double>& v){ return percentile(v, 95.0); }) \
+    ->ComputeStatistics("p99", [](const std::vector<double>& v){ return percentile(v, 99.0); });
 
-BENCHMARK(BM_BulkInsert)->RangeMultiplier(2)->Range(256, 1<<20);
-BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20); 
-BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20); 
-BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20); 
-BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20); 
-BENCHMARK(BM_Search)->RangeMultiplier(2)->Range(256, 1<<20); 
-BENCHMARK(BM_Remove)->RangeMultiplier(2)->Range(256, 1<<20); 
+BENCHMARK(BM_Construct)->RangeMultiplier(4)->Range(256, 1<<20) \
+    ADD_STATS(); 
+
+BENCHMARK(BM_PushRandom)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
+BENCHMARK(BM_PushSortedAsc)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
+BENCHMARK(BM_PushSortedDesc)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
+BENCHMARK(BM_Extract)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
+BENCHMARK(BM_Search)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
+BENCHMARK(BM_SSearch)->RangeMultiplier(2)->Range(256, 1<<20) \
+ADD_STATS(); 
+BENCHMARK(BM_Remove)->RangeMultiplier(2)->Range(256, 1<<20) \
+    ADD_STATS(); 
 
 
 
