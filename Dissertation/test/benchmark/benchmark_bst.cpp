@@ -9,46 +9,34 @@
 
 inline std::vector<int> readRandomData(size_t n)
 {
-    std::ifstream myfile("numbers.txt");
-    std::vector<int> vec;
-    std::string line;
-    int i = 0;
-    while (getline(myfile, line) && i < n)
-    {
-        int result;
-        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
-        if (ec != std::errc::invalid_argument)
-        {
-            i++;
-            vec.push_back(result);
-        }
-    }
-    myfile.close();
-    return vec;
+    std::ifstream file("numbers.bin", std::ios::binary);
+    int value;
+    std::vector<int> buffer(n);
+
+    file.read(reinterpret_cast<char*>(buffer.data()),
+                     buffer.size() * sizeof(int));
+    return buffer;
 }
 
 inline std::vector<int> readRandomDataTest(size_t count)
 {
-    std::ifstream myfile("numbers.txt");
-    std::vector<int> vec;
-    std::string line;
-    int i = 0;
-    int j = 0.975 * count;
-    int final_count = count + 0.025 * count;
+    std::ifstream file("numbers.bin", std::ios::binary);
 
-    while (getline(myfile, line) && i < j) i++;
+    if (!file)
+        throw std::runtime_error("Could not open numbers.bin");
 
-    while (getline(myfile, line) && j < final_count)
-    {
-        int result;
-        auto [prt, ec] = std::from_chars(line.data(), line.data() + line.size(), result);
-        if (ec != std::errc::invalid_argument)
-        {
-            j++;
-            vec.push_back(result);
-        }
-    }
-    myfile.close();
+    // Compute the sampling window
+    size_t startIndex = static_cast<size_t>(0.975 * count);
+    size_t endIndex   = static_cast<size_t>(count + 0.025 * count);
+    size_t sampleSize = endIndex - startIndex;
+
+    std::vector<int> vec(sampleSize);
+
+    file.seekg(startIndex * sizeof(int), std::ios::beg);
+
+    file.read(reinterpret_cast<char*>(vec.data()),
+              sampleSize * sizeof(int));
+
     return vec;
 }
 

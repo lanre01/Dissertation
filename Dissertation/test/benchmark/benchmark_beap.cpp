@@ -29,10 +29,8 @@ inline std::vector<int> readRandomDataTest(size_t count)
 
     std::vector<int> vec(sampleSize);
 
-    // Seek to the starting integer
     file.seekg(startIndex * sizeof(int), std::ios::beg);
 
-    // Read sampleSize integers
     file.read(reinterpret_cast<char*>(vec.data()),
               sampleSize * sizeof(int));
 
