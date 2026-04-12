@@ -401,7 +401,7 @@ private:
 
     // This can actually use binary search since it is sorted
     // Beap search is used for consistency reason
-    bool search1D(T val, std::pair<size_t, size_t>& out)
+    inline bool search1D(T val, std::pair<size_t, size_t>& out)
     { 
         auto from = interval_.first;
         auto h = height_;
@@ -426,7 +426,7 @@ private:
         return false;
     }
 
-    bool search2D(T val, std::pair<size_t, size_t>& out)
+    inline bool search2D(T val, std::pair<size_t, size_t>& out)
     {
 
         if(size_ <= 0 || compare(container_[0], val))
@@ -446,6 +446,8 @@ private:
             return true;
         }
 
+        // The search should begin from the penultimate level
+        // if the last level is not full.
         if(start >= size_)
         {
             start = start - h;
@@ -500,7 +502,7 @@ private:
         }
     }
 
-    bool searchHelper(T val, std::pair<size_t, size_t>& out)
+    inline bool searchHelper(T val, std::pair<size_t, size_t>& out)
     {
         if constexpr (N == 1)
         {

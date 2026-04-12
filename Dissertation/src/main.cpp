@@ -23,16 +23,23 @@ std::vector<int> generateRandomData(size_t n) {
 
 void createFilesWithNumber()
 {
-    std::ofstream myfile("numbers.txt");
+    // std::ofstream myfile("numbers.txt");
     // std::ifstream myfile ("example.txt"); for reading
     // std::string line; while (getline(myfile, line)) 
     // std::from_chars(line.data(), line.data() + line.size(), result)
     std::uniform_int_distribution<int> dist(1, 1'000'000'000);
     dist(rng);
 
-    for(int i = 0; i < 2000000; i++)
-    {
-        myfile << dist(rng) << std::endl;
+    // for(int i = 0; i < 1'500'000'000; i++)
+    // {
+    //     myfile << dist(rng) << std::endl;
+    // }
+
+    std::ofstream myfile("numbers.bin", std::ios::binary);
+
+    for (int i = 0; i < 1'500'000'000; i++) {
+        int x = dist(rng);
+        myfile.write(reinterpret_cast<char*>(&x), sizeof(x));
     }
 
     myfile.close();
@@ -99,7 +106,7 @@ int main()
 
 
 
-    //createFilesWithNumber();
+    createFilesWithNumber();
 
     std::cout << "end" << std::endl;
 
