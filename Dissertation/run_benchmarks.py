@@ -4,12 +4,43 @@ import os
 import subprocess
 import sys 
 
-'''
-What is the plan?
-- I want to be able to run each benchmark result one at a time.
-- means the script needs to accept some arguments
-- I want to use a class this time
-'''
+"""
+Benchmark Runner Script
+
+This script automates the execution of Google Benchmark binaries for multiple
+data structures and collects results in CSV format.
+
+Supported benchmarks:
+    - beap
+    - heap
+    - bst
+    - nbeap
+    - minmax_heap
+    - dary
+
+Functionality:
+    - Automatically checks if benchmark binaries exist
+    - Compiles missing benchmarks using `make bench-<name>`
+    - Runs benchmarks with optional filtering
+    - Outputs results as CSV files in `benchmark_results/`
+    - Cleans CSV headers for easier post-processing
+
+Usage:
+
+1. Run all benchmarks:
+    python run_benchmarks.py
+
+2. Run a single benchmark for non template benchmark files:
+    python run_benchmarks.py <benchmark_name>
+
+3. Run a benchmark over a range of dimensions:
+    python run_benchmarks.py <benchmark_name> <lower> <upper>
+
+    Example:
+    python run_benchmarks.py nbeap 1 10
+    python run_benchmarks.py dary 2 2
+"""
+
 bench_dir = "bin"
 
 
@@ -20,14 +51,14 @@ class BenchmarkRunner():
                 "heap": "bench_heap",
                 "bst": "bench_bst",
                 "nbeap": "bench_nbeap",
-                "minmax_heap" : "bench_minmax_heap"
+                "minmax_heap" : "bench_minmax_heap",
+                "dary_heap": "bench_dary_heap"
             }
         self.bench_dir = "bin"
         self.bench_result_dir = "benchmark_results"
         os.makedirs(self.bench_result_dir, exist_ok=True)
         self.checkFiles()
-        self.nbeapDim = 0
-        pass 
+        self.dim = 0
     
     def present(self, bench):
         return bench in self.BENCH_BINARIES
@@ -41,7 +72,6 @@ class BenchmarkRunner():
                     print(f"Reading {path}")
             except FileNotFoundError:
                 print(f'{path} does not exist, compiling {path}')
-                # run make bench-{bench}
                 try:
                     subprocess.run(["make", f"bench-{bench}"], check=True)
                     print(f"Successfully compiled {bench} benchmark")
@@ -64,18 +94,20 @@ class BenchmarkRunner():
             pattern = ""
             if bench == "nbeap":
                 self.runRange(bench, 1, 10)
-                continue
-            self.run(bench, pattern)
-        pass 
+            elif bench == "dary_heap":
+                self.runRange(bench, 2, 10)
+            else:
+                self.run(bench, pattern)
+
     
-    def run(self, bench, pattern): # need to update this to accept template parameters for NBeap
+    def run(self, bench, pattern):
         benchmarkFile = self.BENCH_BINARIES[bench]
         path = os.path.join(self.bench_dir, benchmarkFile)
     
         print(f"Running benchmark for {bench}")
         resultPath = ""
         if pattern:
-            resultPath = os.path.join(self.bench_result_dir, f'bench_{self.nbeapDim}-{bench}.csv')
+            resultPath = os.path.join(self.bench_result_dir, f'bench_{self.dim}-{bench}.csv')
         else:
             resultPath = os.path.join(self.bench_result_dir, f'bench_{bench}.csv')
 
@@ -98,9 +130,13 @@ class BenchmarkRunner():
     
     def runRange(self, bench, lowerBoundary, upperBoundary):
         for N in range(lowerBoundary, upperBoundary+1):
-            pattern = rf"^BM_.*<[^>]*,[[:space:]]*{N}>($|/)"
+            pattern = None
+            if bench == "dary_heap":
+                pattern = rf"<{N}>"
+            else:
+                pattern = rf"^BM_.*<[^>]*,[[:space:]]*{N}>($|/)"
             print("--benchmark_filter=", pattern)
-            self.nbeapDim = N # setting this here to be used to name the output file
+            self.dim = N # setting this here to be used to name the output file
             self.run(bench, pattern)
         
 

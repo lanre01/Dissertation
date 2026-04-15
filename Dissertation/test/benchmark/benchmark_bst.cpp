@@ -10,7 +10,6 @@
 inline std::vector<int> readRandomData(size_t n)
 {
     std::ifstream file("numbers.bin", std::ios::binary);
-    int value;
     std::vector<int> buffer(n);
 
     file.read(reinterpret_cast<char*>(buffer.data()),
@@ -25,7 +24,6 @@ inline std::vector<int> readRandomDataTest(size_t count)
     if (!file)
         throw std::runtime_error("Could not open numbers.bin");
 
-    // Compute the sampling window
     size_t startIndex = static_cast<size_t>(0.975 * count);
     size_t endIndex   = static_cast<size_t>(count + 0.025 * count);
     size_t sampleSize = endIndex - startIndex;

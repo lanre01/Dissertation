@@ -23,21 +23,12 @@ std::vector<int> generateRandomData(size_t n) {
 
 void createFilesWithNumber()
 {
-    // std::ofstream myfile("numbers.txt");
-    // std::ifstream myfile ("example.txt"); for reading
-    // std::string line; while (getline(myfile, line)) 
-    // std::from_chars(line.data(), line.data() + line.size(), result)
     std::uniform_int_distribution<int> dist(1, 1'000'000'000);
     dist(rng);
 
-    // for(int i = 0; i < 1'500'000'000; i++)
-    // {
-    //     myfile << dist(rng) << std::endl;
-    // }
-
     std::ofstream myfile("numbers.bin", std::ios::binary);
 
-    for (int i = 0; i < 1'500'000'000; i++) {
+    for (int i = 0; i < 4'000'000; i++) {
         int x = dist(rng);
         myfile.write(reinterpret_cast<char*>(&x), sizeof(x));
     }
@@ -106,91 +97,9 @@ int main()
 
 
 
-    createFilesWithNumber();
+    // createFilesWithNumber();
 
     std::cout << "end" << std::endl;
 
     return 0;
 }
-
-// template <Comparable T, size_t N, typename Compare>
-// inline size_t NBeap<T, N, Compare>::getBestRemainingParents(
-//     size_t currentPos, std::pair<size_t, size_t> parentsInterval, size_t dOffset
-// )
-// {
-//     size_t bestParent = INVALID_INDEX_;
-
-//     while (true)
-//     {
-//         const size_t idx = currentPos - parentsInterval.first;
-
-//         auto innerLevelAndHeight = getSpanAndHeight(idx, N - dOffset);
-//         std::pair<size_t, size_t> innerLevelLocal{
-//             innerLevelAndHeight[0], innerLevelAndHeight[1]
-//         };
-
-//         const size_t innerLevelSize = INTERVALSIZE(innerLevelLocal);
-
-//         const size_t prevInnerLevelSize =
-//             getNumberOfElementInPreviousLevel(
-//                 innerLevelAndHeight[2],
-//                 innerLevelSize,
-//                 dOffset
-//             );
-
-//         std::pair<size_t, size_t> prevInnerLocal{
-//             innerLevelLocal.first - prevInnerLevelSize,
-//             innerLevelLocal.first - 1
-//         };
-
-//         std::pair<size_t, size_t> prevInnerGlobal{
-//             parentsInterval.first + prevInnerLocal.first,
-//             parentsInterval.first + prevInnerLocal.second
-//         };
-
-//         if (idx == innerLevelLocal.first)
-//         {
-//             const size_t parent = prevInnerGlobal.first;
-
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 return parent;
-//             }
-
-//             return parent + (bestParent - parent) *
-//                 !compare(container_[parent], container_[bestParent]);
-//         }
-
-//         if (idx == innerLevelLocal.second)
-//         {
-//             const size_t parent = prevInnerGlobal.second;
-
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 return parent;
-//             }
-
-//             return parent + (bestParent - parent) *
-//                 !compare(container_[parent], container_[bestParent]);
-//         }
-
-//         const size_t parent = currentPos - prevInnerLevelSize;
-
-//         if (parent <= prevInnerGlobal.second)
-//         {
-//             if (bestParent == INVALID_INDEX_)
-//             {
-//                 bestParent = parent;
-//             }
-//             else
-//             {
-//                 bestParent = parent + (bestParent - parent) *
-//                     !compare(container_[parent], container_[bestParent]);
-//             }
-//         }
-
-//         currentPos = parent;
-//         parentsInterval = prevInnerGlobal;
-//         dOffset++;
-//     }
-// }

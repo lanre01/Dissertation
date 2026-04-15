@@ -7,7 +7,6 @@
 inline std::vector<int> readRandomData(size_t n)
 {
     std::ifstream file("numbers.bin", std::ios::binary);
-    int value;
     std::vector<int> buffer(n);
 
     file.read(reinterpret_cast<char*>(buffer.data()),
@@ -22,7 +21,6 @@ inline std::vector<int> readRandomDataTest(size_t count)
     if (!file)
         throw std::runtime_error("Could not open numbers.bin");
 
-    // Compute the sampling window
     size_t startIndex = static_cast<size_t>(0.975 * count);
     size_t endIndex   = static_cast<size_t>(count + 0.025 * count);
     size_t sampleSize = endIndex - startIndex;
@@ -38,7 +36,6 @@ inline std::vector<int> readRandomDataTest(size_t count)
 }
 
 
-// Benchmark beap construction
 static void BM_Construct(benchmark::State& state) {
     size_t count = state.range(0);
 
@@ -52,7 +49,6 @@ static void BM_Construct(benchmark::State& state) {
     }
 }
 
-// Benchmark pushing random data
 static void BM_PushRandom(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
@@ -72,7 +68,6 @@ static void BM_PushRandom(benchmark::State& state) {
 }
 
 
-// Benchmark insert ascending random data
 static void BM_PushSortedAsc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
@@ -92,7 +87,6 @@ static void BM_PushSortedAsc(benchmark::State& state) {
 }
 
 
-// Benchmark insert descending random data 
 static void BM_PushSortedDesc(benchmark::State& state) {
     size_t count = state.range(0);
     auto data = readRandomData(count);
@@ -111,7 +105,6 @@ static void BM_PushSortedDesc(benchmark::State& state) {
     }
 }
 
-// Benchmark Extract
 static void BM_Extract(benchmark::State& state) {
     size_t count = state.range(0);
     

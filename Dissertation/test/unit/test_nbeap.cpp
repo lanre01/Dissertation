@@ -123,14 +123,6 @@ protected:
 
 TYPED_TEST_SUITE(NBeapBulkTestMultipleDim, DIMS);
 
-// TYPED_TEST(NBeapBulkTestMultipleDim, SearchInMultipleDimensions) 
-// {
-//     for(auto x : this->data)
-//     {
-//         EXPECT_TRUE(this->nbeap.search(x));
-//     }
-// }
-
 TYPED_TEST(NBeapBulkTestMultipleDim, SearchSuccedesInMultipleDimensions) 
 {
     auto tests = generateRandomData(this->MAX_NUMBER/4);

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <style> body { margin: 0; } </style>
+  <script src="https://cdn.jsdelivr.net/npm/3d-force-graph"></script>
+</head>
+
+<body>
+  <div id="nd-graph"></div>
+
+  <script type="module">
+    import SpriteText from 'https://esm.sh/three-spritetext';
+
+    const Graph = ForceGraph3D()(document.getElementById('nd-graph'))
+      .jsonUrl('3d-graph.json')
+      .nodeLabel('id')
+      .nodeAutoColorBy('group')
+      .nodeId('id')
+      .nodeThreeObject(node => {
+        const sprite = new SpriteText(node.id);
+        sprite.color = 'white';
+        sprite.textHeight = 8; // adjust size
+        return sprite;
+      })
+      .dagMode('td')
+      .dagLevelDistance(50);
+
+      
+      
+  </script>
+  <!--
+        {"source": "10", "target": "4", "value": 4},
+    {"source": "5", "target": "11", "value": 4},
+    {"source": "5", "target": "12", "value": 4},
+    {"source": "5", "target": "13", "value": 4},
+    {"source": "6", "target": "12", "value": 4},
+    {"source": "6", "target": "14", "value": 4},
+    {"source": "6", "target": "15", "value": 4},
+    {"source": "7", "target": "13", "value": 4},
+    {"source": "7", "target": "14", "value": 4},
+    {"source": "7", "target": "16", "value": 4},
+    {"source": "8", "target": "15", "value": 4},
+    {"source": "10", "target": "16", "value": 4}
+        
+        -->
+</body>
+</html>

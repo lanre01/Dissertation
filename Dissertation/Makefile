@@ -23,6 +23,7 @@ NBEAP_BENCH_SRC := test/benchmark/benchmark_nbeap.cpp
 HEAP_BENCH_SRC := test/benchmark/benchmark_heap.cpp
 BST_BENCH_SRC := test/benchmark/benchmark_bst.cpp
 MINMAX_HEAP_SRC := test/benchmark/benchmark_minmax_heap.cpp
+DARY_HEAP_SRC := test/benchmark/benchmark_dary_heap.cpp 
 
 # Object files
 MAIN_OBJ := $(BUILD_DIR)/main.o
@@ -35,8 +36,9 @@ NBEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_nbeap.o
 HEAP_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_heap.o
 BST_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_bst.o 
 MINMAX_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_minmax_heap.o
+DARY_BENCH_OBJ := $(BUILD_DIR)/test/benchmark/benchmark_dary_heap.o
 
-ALL_OBJS := $(MAIN_OBJ) # $(HEAP_OBJS) $(BEAP_OBJS) $(NBEAP_OBJS)
+ALL_OBJS := $(MAIN_OBJ)
 
 # Executables
 TARGET := $(BIN_DIR)/dissertation
@@ -47,6 +49,7 @@ NBEAP_BENCH_TARGET := $(BIN_DIR)/bench_nbeap
 HEAP_BENCH_TARGET := $(BIN_DIR)/bench_heap
 BST_BENCH_TARGET := $(BIN_DIR)/bench_bst
 MINMAX_BENCH_TARGET := $(BIN_DIR)/bench_minmax_heap
+DARY_BENCH_TARGET := $(BIN_DIR)/bench_dary_heap
 
 # Production code objects (without main)
 PRODUCTION_OBJS := $(filter-out $(BUILD_DIR)/main.o, $(ALL_OBJS))
@@ -61,6 +64,7 @@ all: $(TARGET)
 $(TARGET): $(ALL_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $(ALL_OBJS)
 
+$(UNIT_TEST_TARGET): CXXFLAGS := $(CXXFLAGS_DEBUG)
 $(UNIT_TEST_TARGET): $(UNIT_TEST_OBJS) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lgtest -lgtest_main -pthread
 
@@ -84,19 +88,15 @@ $(BST_BENCH_TARGET): $(BST_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 $(MINMAX_BENCH_TARGET): $(MINMAX_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
 
+# minmax heap benchmark
+$(DARY_BENCH_TARGET): $(DARY_BENCH_OBJ) $(PRODUCTION_OBJS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) -o $@ $^ -lbenchmark -lpthread -static -fno-omit-frame-pointer
+
+
 # Compilation rules
 $(BUILD_DIR)/main.o: $(MAIN_SRC) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/Heap/%.o: $(SRC_DIR)/Heap/%.cpp | $(BUILD_DIR)/Heap
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/Beap/%.o: $(SRC_DIR)/Beap/%.cpp | $(BUILD_DIR)/Beap
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/NBeap/%.o: $(SRC_DIR)/NBeap/%.cpp | $(BUILD_DIR)/NBeap
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
+	
 $(BUILD_DIR)/test/unit/%.o: test/unit/%.cpp | $(BUILD_DIR)/test/unit
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
@@ -116,6 +116,9 @@ $(BUILD_DIR)/test/benchmark/benchmark_bst.o: $(BST_BENCH_SRC) | $(BUILD_DIR)/tes
 $(BUILD_DIR)/test/benchmark/benchmark_minmax_heap.o: $(MINMAX_HEAP_SRC) | $(BUILD_DIR)/test/benchmark
 	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
 
+$(BUILD_DIR)/test/benchmark/benchmark_dary_heap.o: $(DARY_HEAP_SRC) | $(BUILD_DIR)/test/benchmark
+	$(CXX) $(CXXFLAGS) -I./src -c $< -o $@
+
 # Build unit test
 tests: $(UNIT_TEST_TARGET)
 
@@ -130,7 +133,9 @@ bench-bst: $(BST_BENCH_TARGET)
 
 bench-minmax_heap: $(MINMAX_BENCH_TARGET)
 
-bench-all: bench-beap bench-beap bench-bst bench-nbeap bench-minmax_heap
+bench-dary_heap: $(DARY_BENCH_TARGET)
+
+bench-all: bench-beap bench-beap bench-bst bench-nbeap bench-minmax_heap bench-dary_heap
  
 
 # ============================================================
@@ -164,7 +169,10 @@ run-bench-bst: $(BST_BENCH_TARGET)
 run-bench-minmax_heap: $(MINMAX_BENCH_TARGET)
 	./$(MINMAX_BENCH_TARGET)
 
-run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap run-bench-minmax_heap
+run-bench-dary_heap: $(DARY_BENCH_TARGET)
+	./$(DARY_BENCH_TARGET)
+
+run-bench-all: run-bench-heap run-bench-beap run-bench-nbeap run-bench-minmax_heap run-bench-dary_heap
 
 
 debug: CXXFLAGS := $(CXXFLAGS_DEBUG)

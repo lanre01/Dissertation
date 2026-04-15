@@ -13,24 +13,28 @@ import re
 cache_dir = "bench_results_cache"
 benchmark_dir = "benchmark_results"
 
-
+#  I want to store the mean, standard deviation and percentiles
 # get the csv file from benchmark_results dir
 # get the cache file from the benchmark_result cache otherwise create a new one
 def process(filename, message):
     bench = re.search(r".*/bench_(.*)\.csv$", str(filename)).group(1)
     dest_path = Path(cache_dir) / f"{bench}.csv"
     df_result = pd.read_csv(filename)
-    df_result["size"] = df_result["name"].str.split("/").str[1].astype("float64")
-    df_result["op"] = df_result["name"].str.extract(r"BM_([^/<]+)")
-    df_out = df_result[["op", "size", "cpu_time"]]
+    df_summary = df_result[df_result["name"].str.contains(r":\d+_")].copy()
+    df_summary["stat"] = df_summary["name"].str.extract(r".*:\d+_(.*)")
+    df_summary["size"] = df_summary["name"].str.split("/").str[1].astype("float64")
+    df_summary["op"] = df_summary["name"].str.extract(r"BM_([^/<]+)")
+
+    df_out = df_summary[["op", "size", "cpu_time", "stat"]]
 
     if not dest_path.exists():
         df_out.to_csv(dest_path, index=False)
     else:
         df_dest = pd.read_csv(dest_path)
         l = len(df_dest.columns) - 1
+        new_col = df_out["cpu_time"].reset_index(drop=True).rename(f"cpu_time_{l}{message}")
         df_dest = pd.concat(
-            [df_dest, df_result["cpu_time"].rename(f"cpu_time_{l}{message}")], 
+            [df_dest.reset_index(drop=True), new_col],
             axis=1
         )
         df_dest.to_csv(dest_path, index=False)

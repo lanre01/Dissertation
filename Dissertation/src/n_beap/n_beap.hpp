@@ -276,6 +276,10 @@ private:
 
     static constexpr size_t INVALID_INDEX_ = static_cast<size_t>(-1);
 
+    #ifdef DEBUG
+    size_t CACHE_HIT = 0, CACHE_MISS = 0;
+    #endif
+
     void initFactorials()
     {
         factorials[0] = 1.0;
@@ -893,6 +897,9 @@ size_t NBeap<T, N, Compare>::getBestChildIndex(
 template <Comparable T, size_t N, typename Compare>
 bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
 {
+    #ifdef DEBUG
+    CACHE_HIT = 0;
+    #endif
 
     if (size_ <= 0 || compare(container_[0], val))
     {
@@ -929,13 +936,18 @@ bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
         if (loc >= CACHE[slot] && loc <= CACHE[slot + 1])
         {
             currentInterval = {CACHE[slot], CACHE[slot + 1]};
+            #ifdef DEBUG
+            CACHE_HIT++;
+            #endif
         }
         else
         {
-            auto spanAndHeight = getSpanAndHeight(loc, N);
-            currentInterval = {spanAndHeight[0], spanAndHeight[1]};
+            currentInterval = span(h, N);
             CACHE[slot] = currentInterval.first;
             CACHE[slot + 1] = currentInterval.second;
+            #ifdef DEBUG
+            CACHE_MISS++;
+            #endif
         }
 
         if(loc >= size_ || compare(container_[loc], val))
@@ -977,11 +989,20 @@ bool NBeap<T, N, Compare>::searchND(T val, std::pair<size_t, size_t> &out)
         }
         else 
         {
+            #ifdef DEBUG
+            if (CACHE_MISS > 0)
+                std::cout << "Cache hit =" << CACHE_HIT << ", CACHE_MISS=" << CACHE_MISS << std::endl; 
+            #endif
             out.first = loc;
             out.second = h;
             return true;
         }
     }
+
+    #ifdef DEBUG
+    if (CACHE_MISS > 0)
+        std::cout << "Cache hit =" << CACHE_HIT << ", CACHE_MISS=" << CACHE_MISS << std::endl; 
+    #endif
 
     return false;
 }
@@ -1030,7 +1051,9 @@ inline std::array<size_t, 3> NBeap<T, N, Compare>::getInnerLayerAndHeight(
             auto i = idx - levelInterval.first + 1;
             auto h = static_cast<std::size_t>(std::round(std::sqrt(i * 2)));
             auto it = span(h, 2);
+
             assert(i-1 >= it.first && i-1 <= it.second);
+            
             return {it.first + levelInterval.first, it.second + levelInterval.first,  h};
         }
     default:
