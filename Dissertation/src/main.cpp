@@ -97,7 +97,7 @@ int main()
 
 
 
-    // createFilesWithNumber();
+    createFilesWithNumber();
 
     std::cout << "end" << std::endl;
 
