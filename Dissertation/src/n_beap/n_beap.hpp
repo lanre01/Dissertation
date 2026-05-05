@@ -783,7 +783,10 @@ size_t NBeap<T, N, Compare>::getBestParentIndex(
 
             const auto prevLevelSize = getNumOfElemInPrevLevel(innerLevelAndHeight[2], currentLevelSize, dim);
             currentLoc -= prevLevelSize;
-
+			
+			// currentLoc is not always a valid parent. 
+			// currentLoc is invalid if it exist within the child level
+			// in any dimension. The algorithm ignores this location.
             if(childPos - prevLevelSize < innerLevelAndHeight[0])
             {
                 if (bestParent == INVALID_INDEX_)
